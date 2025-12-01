@@ -1,0 +1,5 @@
+{
+  "name": "Alhmail",
+  "description": "A Red Cross styled email client that uses Gemini AI to automatically classify incoming emails into folders.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alhmail</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary-red: #D50032; --accent-orange: #F06D00; --dark-magenta: #C20049; --oxide-red: #C1372B;
+            --bg-color: #f9fafb; --text-color: #374151; --text-light: #6b7280; --border-color: #e5e7eb;
+            --sidebar-width: 250px; --sidebar-collapsed-width: 70px; --transition-speed: 0.3s;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; height: 100vh; background-color: var(--bg-color); overflow: hidden; }
+
+        /* Estilos generales */
+        .toggle-btn, .compose-actions button, .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-light); transition: color 0.2s; }
+        .toggle-btn:hover, .compose-actions button:hover { color: var(--primary-red); }
+        .email-list, .email-preview, .compose-body, .autocomplete-list { overflow-y: auto; }
+        .fake-email p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: white; display: flex; flex-direction: column; padding: 20px 10px; border-right: 1px solid var(--border-color); transition: width var(--transition-speed) ease; position: relative; z-index: 100; overflow: visible; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding: 0 10px; }
+        .logo-text { font-size: 1.5rem; font-weight: bold; color: var(--primary-red); white-space: nowrap; transition: opacity 0.2s; }
+        .sidebar.collapsed .logo-text { display: none; opacity: 0; }
+        .toggle-btn { font-size: 1.2rem; }
+
+        .compose-btn { background-color: var(--primary-red); color: white; border: none; border-radius: 50px; padding: 12px 20px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(213, 0, 50, 0.4); transition: all var(--transition-speed); white-space: nowrap; overflow: hidden; }
+        .compose-btn:hover { background-color: var(--dark-magenta); transform: translateY(-1px); }
+        .sidebar.collapsed .compose-btn { padding: 0; width: 48px; height: 48px; border-radius: 50%; margin: 0 auto 30px auto; }
+        .sidebar.collapsed .compose-btn span { display: none; }
+
+        .nav-list { list-style: none; }
+        .nav-item { position: relative; margin-bottom: 5px; }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: var(--text-color); text-decoration: none; border-radius: 8px; transition: background 0.2s; white-space: nowrap; }
+        .nav-link i { width: 24px; text-align: center; font-size: 1.1rem; margin-right: 15px; color: var(--text-light); }
+        .nav-link:hover { background-color: rgba(240, 109, 0, 0.1); color: var(--accent-orange); }
+        .nav-item.active .nav-link { background-color: rgba(213, 0, 50, 0.1); color: var(--primary-red); }
+        .nav-item.active .nav-link i { color: var(--primary-red); }
+        .sidebar.collapsed .nav-link { justify-content: center; }
+        .sidebar.collapsed .nav-link span { display: none; }
+        .sidebar.collapsed .nav-link i { margin-right: 0; }
+
+        .tooltip-text { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); background-color: var(--oxide-red); color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; white-space: nowrap; opacity: 0; visibility: hidden; pointer-events: none; z-index: 999; margin-left: 15px; transition: opacity 0.2s; }
+        .tooltip-text::before { content: ""; position: absolute; top: 50%; right: 100%; transform: translateY(-50%); border: 5px solid transparent; border-right-color: var(--oxide-red); }
+        .sidebar.collapsed .nav-item:hover .tooltip-text { opacity: 1; visibility: visible; }
+
+        /* Main Content */
+        .main-content { flex-grow: 1; background-color: white; margin: 10px; border-radius: 10px; padding: 0; display: flex; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .email-list { width: 350px; min-width: 250px; max-width: 600px; padding: 20px; flex-shrink: 0; }
+        .resizer { width: 5px; cursor: col-resize; background-color: #f3f4f6; border: 1px solid #e5e7eb; transition: background 0.2s; z-index: 10; }
+        .resizer:hover, .resizer.resizing { background-color: var(--primary-red); }
+
+        .fake-email { padding: 15px; border-bottom: 1px solid #f3f4f6; cursor: pointer; background-color: #f9fafb; transition: all 0.2s; border-left: 4px solid transparent; }
+        .fake-email:hover { background-color: #f3f4f6; }
+        .fake-email h4 { color: #4b5563; font-weight: 500; margin-bottom: 5px; }
+        .fake-email.unread { background-color: white; border-left-color: var(--primary-red); }
+        .fake-email.unread h4 { color: #111827; font-weight: 700; }
+        .fake-email.selected { background-color: #fef2f2 !important; border-left-color: var(--primary-red); }
+
+        .email-preview { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-light); }
+        .email-detail-view { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; text-align: left; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .detail-header { padding-bottom: 20px; border-bottom: 1px solid #f3f4f6; margin-bottom: 20px; }
+        .detail-subject { font-size: 1.5rem; color: #111827; margin-bottom: 15px; font-weight: 600; }
+        .sender-info-container { display: flex; justify-content: space-between; align-items: center; }
+        .avatar-circle { width: 45px; height: 45px; border-radius: 50%; background-color: var(--primary-red); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; margin-right: 15px; flex-shrink: 0; }
+        .detail-body { color: var(--text-color); line-height: 1.6; font-size: 1rem; white-space: pre-line; }
+
+        /* Modal */
+        .compose-modal { position: fixed; bottom: 0; right: 80px; width: 600px; height: 700px; background: white; border-radius: 10px 10px 0 0; box-shadow: 0 0 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 1000; transition: transform 0.3s ease; }
+        .compose-modal.hidden { transform: translateY(120%); pointer-events: none; }
+        .compose-header { background-color: #f3f4f6; padding: 10px 15px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .compose-body { flex-grow: 1; display: flex; flex-direction: column; padding: 10px 15px; overflow: hidden; }
+        
+        .input-group { border-bottom: 1px solid var(--border-color); margin-bottom: 5px; position: relative; }
+        .input-group input { width: 100%; border: none; outline: none; padding: 10px 0; font-family: inherit; }
+        
+        /* Quill Editor Fixes */
+        #editor-container { height: 100%; border: none !important; font-family: 'Segoe UI', sans-serif; font-size: 1rem; }
+        .ql-toolbar.ql-snow { border: none !important; border-top: 1px solid #eee !important; border-bottom: 1px solid #eee !important; padding: 8px; background: #fcfcfc; }
+        .ql-container.ql-snow { border: none !important; }
+        
+        .autocomplete-list { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid var(--border-color); border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto; z-index: 10; display: none; }
+        .autocomplete-list.visible { display: block; }
+        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
+        .suggestion-item:hover { background-color: #f9fafb; }
+        
+        .compose-footer { padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color); }
+        .send-btn { background-color: var(--primary-red); color: white; border: none; padding: 8px 24px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .send-btn:hover { background-color: var(--dark-magenta); }
+        .send-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-text">Alhmail</div>
+            <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
+        </div>
+        <button class="compose-btn" id="composeBtn"><i class="fas fa-plus"></i><span>Redactar</span></button>
+        
+        <ul class="nav-list" id="navList">
+            <li class="nav-item active" data-target="inbox"><a href="#" class="nav-link"><i class="fas fa-inbox"></i><span>Entrada</span></a><div class="tooltip-text">Entrada</div></li>
+            <li class="nav-item" data-target="sent"><a href="#" class="nav-link"><i class="fas fa-paper-plane"></i><span>Enviados</span></a><div class="tooltip-text">Enviados</div></li>
+            <li class="nav-item" data-target="drafts"><a href="#" class="nav-link"><i class="fas fa-file"></i><span>Borradores</span></a><div class="tooltip-text">Borradores</div></li>
+            <li class="nav-item" id="logoutBtn" style="margin-top: 50px;">
+                <a href="#" class="nav-link" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i><span>Salir</span></a>
+                <div class="tooltip-text">Cerrar Sesión</div>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="email-list" id="emailListPanel">
+            <h3 id="folderTitle" style="margin-bottom: 20px; color: var(--primary-red);">Bandeja de Entrada</h3>
+            <div id="emailContainer">Cargando correos...</div> 
+        </div>
+        <div class="resizer" id="dragHandle"></div>
+        <div class="email-preview">
+            <i class="far fa-envelope" style="font-size: 4rem; margin-bottom: 20px; color: var(--primary-red); opacity: 0.5;"></i>
+            <p>Selecciona un correo para leer</p>
+        </div>
+    </main>
+
+    <div class="compose-modal hidden" id="composeModal">
+        <div class="compose-header"><span>Mensaje nuevo</span><button id="closeModal">X</button></div>
+        <div class="compose-body">
+            <div class="input-group">
+                <input type="text" id="composeTo" placeholder="Para">
+                <div class="autocomplete-list" id="autocompleteList"></div>
+            </div>
+            <div class="input-group">
+                <input type="text" id="composeSubject" placeholder="Asunto">
+            </div>
+            <div id="editor-container"></div>
+        </div>
+        <div class="compose-footer">
+            <button class="send-btn" id="sendEmailBtn">Enviar</button>
+            <div style="color:#666; cursor:pointer;" title="Descartar"><i class="far fa-trash-alt" id="discardBtn"></i></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <script>
+        // --- CONFIGURACIÓN DE SWEETALERT (TOAST) ---
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Protección de ruta
+            if (!localStorage.getItem('alhmail_token')) {
+                window.location.href = 'login.html';
+            }
+
+            const API_URL = 'http://localhost:3001';
+            let emailsData = [];
+            let contactsData = [];
+
+            // Quill Init
+            var quill = new Quill('#editor-container', {
+                theme: 'snow',
+                placeholder: 'Escribe tu mensaje...',
+                modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], [{ 'color': [] }], ['clean']] }
+            });
+
+            const emailContainer = document.getElementById('emailContainer');
+            const previewPanel = document.querySelector('.email-preview');
+            const folderTitle = document.getElementById('folderTitle');
+            const sidebar = document.getElementById('sidebar');
+            const composeModal = document.getElementById('composeModal');
+            const inputTo = document.getElementById('composeTo');
+            const autocompleteList = document.getElementById('autocompleteList');
+
+            // --- CARGAR DATOS ---
+            async function initData() {
+                try {
+                    const resEmails = await fetch(`${API_URL}/emails`);
+                    if(resEmails.ok) emailsData = await resEmails.json();
+
+                    const resContacts = await fetch(`${API_URL}/contacts`);
+                    if(resContacts.ok) contactsData = await resContacts.json();
+
+                    const currentTab = document.querySelector('.nav-item.active').dataset.target;
+                    renderEmails(currentTab);
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+
+            // --- AUTOCOMPLETADO ---
+            inputTo.addEventListener('input', function() {
+                const val = this.value.toLowerCase();
+                autocompleteList.innerHTML = '';
+                if (!val) { autocompleteList.classList.remove('visible'); return; }
+
+                const matches = contactsData.filter(c => c.name.toLowerCase().includes(val) || c.email.toLowerCase().includes(val));
+
+                if (matches.length > 0) {
+                    autocompleteList.classList.add('visible');
+                    matches.forEach(c => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.innerHTML = `<div style="font-weight:600;">${c.name}</div><div style="font-size:0.8rem; color:#666;">${c.email}</div>`;
+                        div.onclick = () => { inputTo.value = c.email; autocompleteList.classList.remove('visible'); };
+                        autocompleteList.appendChild(div);
+                    });
+                } else { autocompleteList.classList.remove('visible'); }
+            });
+            document.addEventListener('click', (e) => { if (!e.target.closest('.input-group')) autocompleteList.classList.remove('visible'); });
+
+            // --- RENDERIZAR ---
+            function renderEmails(folderName) {
+                emailContainer.innerHTML = '';
+                previewPanel.innerHTML = `<i class="far fa-envelope" style="font-size: 4rem; margin-bottom: 20px; color: var(--primary-red); opacity: 0.5;"></i><p>Selecciona un correo</p>`;
+                
+                const titles = { 'inbox': 'Bandeja de Entrada', 'sent': 'Enviados', 'drafts': 'Borradores' };
+                folderTitle.textContent = titles[folderName] || folderName;
+
+                const filtered = emailsData.filter(email => email.folder === folderName);
+
+                if (filtered.length === 0) {
+                    emailContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: #9ca3af;">No hay correos aquí</div>`;
+                    return;
+                }
+
+                filtered.forEach(email => {
+                    const el = document.createElement('div');
+                    el.className = `fake-email ${email.unread ? 'unread' : ''}`;
+                    el.innerHTML = `
+                        <div style="display:flex; justify-content:space-between;"><h4>${email.sender}</h4><span>${email.date}</span></div>
+                        <div style="font-weight:600; color:#374151;">${email.subject}</div>
+                        <p>${email.preview}</p>
+                    `;
+                    el.addEventListener('click', () => {
+                        el.classList.remove('unread');
+                        document.querySelectorAll('.fake-email').forEach(e => e.classList.remove('selected'));
+                        el.classList.add('selected');
+                        const initial = email.sender ? email.sender.charAt(0).toUpperCase() : '?';
+                        let draftWarning = folderName === 'drafts' ? `<div style="background:#fff3cd; color:#856404; padding:10px; margin-bottom:10px;">⚠️ Borrador</div>` : '';
+                        previewPanel.innerHTML = `
+                            <div class="email-detail-view">
+                                ${draftWarning}
+                                <div class="detail-header">
+                                    <h2 class="detail-subject">${email.subject}</h2>
+                                    <div class="sender-info-container">
+                                        <div style="display:flex; align-items:center;">
+                                            <div class="avatar-circle">${initial}</div>
+                                            <div><h4>${email.sender}</h4><span style="font-size:0.8rem; color:#666;">${email.date}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="detail-body">${email.body}</div> 
+                            </div>
+                        `;
+                    });
+                    emailContainer.appendChild(el);
+                });
+            }
+
+            // --- ENVIAR ---
+            document.getElementById('sendEmailBtn').addEventListener('click', async () => {
+                await sendOrSaveEmail(false);
+            });
+
+            // --- CERRAR (GUARDAR BORRADOR) ---
+            document.getElementById('closeModal').onclick = async () => {
+                const hasContent = document.getElementById('composeTo').value || document.getElementById('composeSubject').value || quill.getLength() > 1;
+                if (hasContent) {
+                    await sendOrSaveEmail(true);
+                    // Toast de borrador guardado
+                    Toast.fire({ icon: 'info', title: 'Guardado en Borradores' });
+                }
+                composeModal.classList.add('hidden');
+                clearForm();
+            };
+
+            // --- DESCARTAR (SWEET ALERT) ---
+            document.getElementById('discardBtn').onclick = () => {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "El borrador se eliminará permanentemente.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#D50032',
+                    cancelButtonColor: '#718096',
+                    confirmButtonText: 'Sí, borrar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        clearForm();
+                        composeModal.classList.add('hidden');
+                        Swal.fire({
+                            title: 'Descartado',
+                            text: 'El mensaje ha sido eliminado.',
+                            icon: 'success',
+                            confirmButtonColor: '#D50032',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+            };
+
+            // --- LOGICA PRINCIPAL DE ENVÍO/GUARDADO ---
+            async function sendOrSaveEmail(isDraft) {
+                const to = document.getElementById('composeTo').value;
+                const subject = document.getElementById('composeSubject').value;
+                const btn = document.getElementById('sendEmailBtn');
+                const bodyHTML = quill.root.innerHTML; 
+                const bodyText = quill.getText();
+
+                // Validación con SweetAlert
+                if (!isDraft) {
+                    if(!to || !to.includes('@')) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Por favor ingresa un destinatario válido.', confirmButtonColor: '#D50032' });
+                        return;
+                    }
+                    if(!subject) {
+                        Swal.fire({ icon: 'warning', title: 'Falta Asunto', text: 'Por favor escribe un asunto.', confirmButtonColor: '#D50032' });
+                        return;
+                    }
+                    btn.innerText = "Enviando...";
+                    btn.disabled = true;
+                }
+
+                const newEmail = {
+                    to: to,
+                    folder: isDraft ? 'drafts' : 'sent',
+                    sender: isDraft ? 'Borrador' : 'Yo',
+                    subject: subject,
+                    preview: `Para: ${to} - ${bodyText.substring(0, 30)}...`,
+                    body: bodyHTML, 
+                    date: 'Ahora',
+                    unread: false,
+                    hasAttachments: false,
+                    securityAnalysis: { status: "clean" },
+                    isDraft: isDraft 
+                };
+
+                try {
+                    const res = await fetch(`${API_URL}/emails`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newEmail)
+                    });
+
+                    if(res.ok) {
+                        if(!isDraft) {
+                            // Alerta de Éxito
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Enviado!',
+                                text: 'Tu correo ha sido enviado correctamente.',
+                                confirmButtonColor: '#D50032',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            composeModal.classList.add('hidden');
+                            clearForm();
+                        }
+                        initData(); 
+                    } else {
+                        throw new Error("Error en servidor");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    if(!isDraft) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo enviar el correo.', confirmButtonColor: '#D50032' });
+                } finally {
+                    if(!isDraft) {
+                        btn.innerText = "Enviar";
+                        btn.disabled = false;
+                    }
+                }
+            }
+
+            function clearForm() {
+                document.getElementById('composeTo').value = '';
+                document.getElementById('composeSubject').value = '';
+                quill.setText(''); 
+            }
+
+            // --- LOGOUT ---
+            const logoutBtn = document.getElementById('logoutBtn');
+            if(logoutBtn) {
+                logoutBtn.onclick = (e) => {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Cerrar Sesión?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#D50032',
+                        cancelButtonColor: '#718096',
+                        confirmButtonText: 'Sí, salir'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            localStorage.removeItem('alhmail_token');
+                            window.location.href = 'login.html';
+                        }
+                    });
+                };
+            }
+
+            // Listeners Generales
+            document.getElementById('toggleBtn').onclick = () => sidebar.classList.toggle('collapsed');
+            document.getElementById('composeBtn').onclick = () => composeModal.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if(item.id !== 'logoutBtn') {
+                    item.onclick = (e) => {
+                        e.preventDefault();
+                        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                        item.classList.add('active');
+                        renderEmails(item.dataset.target);
+                    }
+                }
+            });
+
+            initData();
+            setInterval(initData, 30000); 
+        });
+    </script>
+</body>
+</html>
