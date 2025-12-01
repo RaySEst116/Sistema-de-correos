@@ -25,6 +25,7 @@
         body { display: flex; height: 100vh; background-color: var(--bg-color); overflow: hidden; padding-right: 0 !important; }
         body.swal2-shown { height: 100vh !important; overflow-y: hidden !important; }
 
+        /* Estilos generales */
         .toggle-btn, .compose-actions button, .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-light); transition: color 0.2s; }
         .toggle-btn:hover, .compose-actions button:hover { color: var(--primary-red); }
         .email-list, .email-preview, .compose-body, .autocomplete-list { overflow-y: auto; }
@@ -58,8 +59,19 @@
         .tooltip-text::before { content: ""; position: absolute; top: 50%; right: 100%; transform: translateY(-50%); border: 5px solid transparent; border-right-color: var(--oxide-red); }
         .sidebar.collapsed .nav-item:hover .tooltip-text, .sidebar.collapsed .sidebar-footer:hover .tooltip-text { opacity: 1; visibility: visible; }
 
-        .sidebar-footer { margin-top: 20px; position: relative; }
-        .logout-link { display: flex; align-items: center; padding: 12px 15px; background-color: #fee2e2; color: var(--primary-red) !important; text-decoration: none; border-radius: 8px; transition: all 0.2s; white-space: nowrap; font-weight: 600; border: 1px solid var(--primary-red); cursor: pointer; }
+        /* FOOTER SIDEBAR (CUENTA Y SALIR) */
+        .sidebar-footer { margin-top: 10px; position: relative; border-top: 1px solid #eee; padding-top: 10px; }
+        
+        /* Botón de Cuenta */
+        .account-link { display: flex; align-items: center; padding: 12px 15px; color: var(--text-color); text-decoration: none; border-radius: 8px; transition: background 0.2s; cursor: pointer; }
+        .account-link i { width: 24px; text-align: center; font-size: 1.1rem; margin-right: 15px; color: var(--text-light); }
+        .account-link:hover { background-color: #f3f4f6; }
+        .sidebar.collapsed .account-link { justify-content: center; padding: 12px; }
+        .sidebar.collapsed .account-link span { display: none; }
+        .sidebar.collapsed .account-link i { margin-right: 0; }
+
+        /* Botón Salir (Estilo Rojo) */
+        .logout-link { display: flex; align-items: center; padding: 12px 15px; background-color: #fee2e2; color: var(--primary-red) !important; text-decoration: none; border-radius: 8px; transition: all 0.2s; white-space: nowrap; font-weight: 600; border: 1px solid var(--primary-red); margin-top: 5px; cursor: pointer; }
         .logout-link i { width: 24px; text-align: center; font-size: 1.1rem; margin-right: 15px; color: var(--primary-red); }
         .logout-link:hover { background-color: var(--primary-red); color: white !important; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(213, 0, 50, 0.2); }
         .logout-link:hover i { color: white; }
@@ -90,12 +102,29 @@
         .avatar-circle { width: 45px; height: 45px; border-radius: 50%; background-color: var(--primary-red); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; margin-right: 15px; flex-shrink: 0; }
         .detail-body { color: var(--text-color); line-height: 1.6; font-size: 1rem; white-space: pre-line; }
 
-        /* Modal */
+        /* ================= MODALES (REDACTAR Y CUENTA) ================= */
         .compose-modal { position: fixed; bottom: 0; right: 80px; width: 600px; height: 700px; background: white; border-radius: 10px 10px 0 0; box-shadow: 0 0 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 1000; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .compose-modal.hidden { transform: translateY(120%); pointer-events: none; }
         .compose-modal.minimized { height: 45px !important; width: 250px !important; border-radius: 10px 10px 0 0; overflow: hidden; }
         .compose-modal.minimized .compose-body, .compose-modal.minimized .compose-footer { display: none; }
         .compose-modal.maximized { width: 100% !important; height: 100% !important; right: 0 !important; bottom: 0 !important; border-radius: 0; }
+
+        /* Modal Cuenta (Centrado) */
+        .account-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .account-modal.active { opacity: 1; pointer-events: all; }
+        .account-card { background: white; width: 400px; padding: 25px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.2s; }
+        .account-modal.active .account-card { transform: scale(1); }
+        .account-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .account-header h3 { color: var(--text-color); margin: 0; }
+        .account-close { cursor: pointer; font-size: 1.2rem; color: #999; }
+        .account-close:hover { color: var(--primary-red); }
+        
+        .account-form label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; color: #555; }
+        .account-form input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        .account-form input:disabled { background-color: #f3f4f6; color: #888; cursor: not-allowed; }
+        .account-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; margin-bottom: 15px; }
+        .badge-admin { background-color: #fee2e2; color: var(--primary-red); }
+        .badge-user { background-color: #e0e7ff; color: #4338ca; }
 
         .compose-header { background-color: #f3f4f6; padding: 10px 15px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); cursor: pointer; }
         .window-actions { display: flex; gap: 5px; }
@@ -129,7 +158,6 @@
         .send-btn:disabled { background-color: #ccc; cursor: not-allowed; }
         .footer-icons { display: flex; gap: 10px; align-items: center; }
 
-        /* ADJUNTOS */
         .attachments-section { margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; max-height: 100px; overflow-y: auto; }
         .progress-wrapper { width: 100%; height: 6px; background-color: #f1f1f1; border-radius: 3px; overflow: hidden; margin-bottom: 8px; display: none; }
         .progress-bar { height: 100%; width: 0%; background-color: #10b981; transition: width 0.3s ease, background-color 0.3s ease; }
@@ -141,13 +169,7 @@
         .file-remove { color: #ef4444; cursor: pointer; }
         .file-remove:hover { color: #b91c1c; }
 
-        /* DRAG OVERLAY */
-        #drag-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 255, 255, 0.95);
-            z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center;
-            border: 3px dashed var(--primary-red); color: var(--primary-red);
-        }
+        #drag-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; border: 3px dashed var(--primary-red); color: var(--primary-red); }
         #drag-overlay i { font-size: 3rem; margin-bottom: 10px; }
         #drag-overlay span { font-size: 1.2rem; font-weight: bold; }
     </style>
@@ -167,8 +189,17 @@
             <li class="nav-item" data-target="drafts"><a href="#" class="nav-link"><i class="fas fa-file"></i><span>Borradores</span></a><div class="tooltip-text">Borradores</div></li>
         </ul>
 
-        <div class="sidebar-footer" id="logoutBtn">
-            <a href="#" class="logout-link"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+        <div class="sidebar-footer">
+            <div class="account-link" id="accountBtn">
+                <i class="fas fa-user-circle"></i>
+                <span>Mi Cuenta</span>
+                <div class="tooltip-text">Cuenta</div>
+            </div>
+
+            <a href="#" class="logout-link" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </a>
             <div class="tooltip-text">Salir</div>
         </div>
     </nav>
@@ -196,45 +227,52 @@
         </div>
         <div class="compose-body" id="dropZoneBody">
             <div id="drag-overlay"><i class="fas fa-cloud-upload-alt"></i><span>Suelta tus archivos aquí</span></div>
-
             <div class="input-group">
                 <input type="text" id="composeTo" placeholder="Para">
-                <div class="cc-bcc-container">
-                    <span class="toggle-link" id="btnCc">Cc</span>
-                    <span class="toggle-link" id="btnBcc">Cco</span>
-                </div>
+                <div class="cc-bcc-container"><span class="toggle-link" id="btnCc">Cc</span><span class="toggle-link" id="btnBcc">Cco</span></div>
                 <div class="autocomplete-list" id="autocompleteList"></div>
             </div>
-
-            <div class="input-group hidden-field" id="ccField">
-                <input type="text" id="composeCc" placeholder="Cc (Copia)">
-                <button type="button" class="remove-field-btn" id="closeCc" title="Quitar Cc"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="input-group hidden-field" id="bccField">
-                <input type="text" id="composeBcc" placeholder="Cco (Copia Oculta)">
-                <button type="button" class="remove-field-btn" id="closeBcc" title="Quitar Cco"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="input-group">
-                <input type="text" id="composeSubject" placeholder="Asunto">
-            </div>
-            
+            <div class="input-group hidden-field" id="ccField"><input type="text" id="composeCc" placeholder="Cc (Copia)"><button type="button" class="remove-field-btn" id="closeCc"><i class="fas fa-times"></i></button></div>
+            <div class="input-group hidden-field" id="bccField"><input type="text" id="composeBcc" placeholder="Cco (Copia Oculta)"><button type="button" class="remove-field-btn" id="closeBcc"><i class="fas fa-times"></i></button></div>
+            <div class="input-group"><input type="text" id="composeSubject" placeholder="Asunto"></div>
             <div id="editor-container"></div>
-
             <div class="attachments-section">
                 <div class="progress-text" id="sizeText">0 MB / 25 MB</div>
                 <div class="progress-wrapper" id="progressWrapper"><div class="progress-bar" id="progressBar"></div></div>
                 <div id="filesListContainer"></div>
             </div>
         </div>
-
         <div class="compose-footer">
             <button class="send-btn" id="sendEmailBtn">Enviar</button>
             <div class="footer-icons">
                 <input type="file" id="fileInput" multiple style="display:none">
-                <button class="icon-btn" id="attachBtn" title="Adjuntar archivos"><i class="fas fa-paperclip"></i></button>
+                <button class="icon-btn" id="attachBtn" title="Adjuntar"><i class="fas fa-paperclip"></i></button>
                 <button class="icon-btn" title="Descartar" id="discardBtn"><i class="far fa-trash-alt"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="account-modal" id="accountModal">
+        <div class="account-card">
+            <div class="account-header">
+                <h3>Detalles de la Cuenta</h3>
+                <i class="fas fa-times account-close" id="closeAccountBtn"></i>
+            </div>
+            <div style="text-align:center;">
+                <span id="roleBadge" class="account-badge"></span>
+            </div>
+            <div class="account-form">
+                <label>Nombre</label>
+                <input type="text" id="accName" disabled>
+                
+                <label>Correo Electrónico</label>
+                <input type="text" id="accEmail" disabled style="background:#f3f4f6; color:#888;">
+                
+                <label>Nueva Contraseña (Opcional)</label>
+                <input type="password" id="accPass" disabled placeholder="Dejar en blanco para mantener">
+            </div>
+            <div style="text-align:right;">
+                <button class="send-btn" id="saveAccountBtn" style="display:none;">Guardar Cambios</button>
             </div>
         </div>
     </div>
@@ -248,98 +286,81 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('alhmail_token')) window.location.href = 'index.html';
+
             const API_URL = 'http://localhost:3001';
+            const user = JSON.parse(localStorage.getItem('alhmail_user') || '{}');
+            
+            // --- LÓGICA DE PERFIL / ADMIN ---
+            // Definimos quién es admin (puedes cambiar este correo por el tuyo real)
+            const ADMIN_EMAIL = 'mcskipper16@gmail.com'; 
+            const isAdmin = user.email === ADMIN_EMAIL;
+
+            const accountModal = document.getElementById('accountModal');
+            const accountBtn = document.getElementById('accountBtn');
+            const closeAccountBtn = document.getElementById('closeAccountBtn');
+            const saveAccountBtn = document.getElementById('saveAccountBtn');
+            const accName = document.getElementById('accName');
+            const accEmail = document.getElementById('accEmail');
+            const accPass = document.getElementById('accPass');
+            const roleBadge = document.getElementById('roleBadge');
+
+            accountBtn.onclick = () => {
+                // Llenar datos
+                accName.value = user.name;
+                accEmail.value = user.email;
+                accPass.value = '';
+                
+                // Configurar vista según rol
+                if (isAdmin) {
+                    roleBadge.textContent = "Administrador";
+                    roleBadge.className = "account-badge badge-admin";
+                    accName.disabled = false;
+                    accPass.disabled = false;
+                    saveAccountBtn.style.display = 'inline-block';
+                } else {
+                    roleBadge.textContent = "Usuario Estándar";
+                    roleBadge.className = "account-badge badge-user";
+                    accName.disabled = true;
+                    accPass.disabled = true;
+                    saveAccountBtn.style.display = 'none';
+                }
+                
+                accountModal.classList.add('active');
+            };
+
+            closeAccountBtn.onclick = () => accountModal.classList.remove('active');
+
+            // Guardar cambios (Solo Admin)
+            saveAccountBtn.onclick = async () => {
+                const newName = accName.value;
+                const newPass = accPass.value;
+
+                try {
+                    const res = await fetch(`${API_URL}/users/${user.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: newName, password: newPass })
+                    });
+
+                    if(res.ok) {
+                        user.name = newName;
+                        localStorage.setItem('alhmail_user', JSON.stringify(user));
+                        Swal.fire({ icon: 'success', title: 'Perfil actualizado', confirmButtonColor: '#D50032' });
+                        accountModal.classList.remove('active');
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error al guardar' });
+                    }
+                } catch (err) { console.error(err); }
+            };
+
+            // --- RESTO DE LA LÓGICA (CORREO, ETC) ---
             let emailsData = [];
             let contactsData = [];
-            
             let attachedFiles = [];
             const MAX_SIZE_BYTES = 25 * 1024 * 1024;
 
-            const fileInput = document.getElementById('fileInput');
-            const attachBtn = document.getElementById('attachBtn');
-            const filesListContainer = document.getElementById('filesListContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressWrapper = document.getElementById('progressWrapper');
-            const sizeText = document.getElementById('sizeText');
-            
-            const dropZoneBody = document.getElementById('dropZoneBody');
-            const dragOverlay = document.getElementById('drag-overlay');
-
-            window.addEventListener('dragover', e => e.preventDefault(), false);
-            window.addEventListener('drop', e => e.preventDefault(), false);
-
-            dropZoneBody.addEventListener('dragenter', (e) => { e.preventDefault(); dragOverlay.style.display = 'flex'; });
-            dragOverlay.addEventListener('dragleave', (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; });
-            dragOverlay.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dragOverlay.style.display = 'none';
-                handleNewFiles(Array.from(e.dataTransfer.files));
-            });
-
-            attachBtn.onclick = () => fileInput.click();
-            fileInput.onchange = (e) => { handleNewFiles(Array.from(e.target.files)); fileInput.value = ''; };
-
-            function handleNewFiles(files) {
-                let currentTotal = attachedFiles.reduce((acc, f) => acc + f.size, 0);
-                files.forEach(file => {
-                    if (currentTotal + file.size > MAX_SIZE_BYTES) {
-                        Swal.fire({ icon: 'error', title: 'Límite excedido', text: `El archivo ${file.name} hace que superes los 25MB.`, confirmButtonColor: '#D50032', heightAuto: false });
-                    } else {
-                        attachedFiles.push(file);
-                        currentTotal += file.size;
-                    }
-                });
-                renderFiles();
-            }
-
-            function renderFiles() {
-                filesListContainer.innerHTML = '';
-                let totalSize = 0;
-                attachedFiles.forEach((file, index) => {
-                    totalSize += file.size;
-                    const div = document.createElement('div');
-                    div.className = 'file-item';
-                    let iconClass = 'fa-file';
-                    if(file.type.startsWith('image')) iconClass = 'fa-file-image';
-                    else if(file.type.startsWith('video')) iconClass = 'fa-file-video';
-                    else if(file.type.includes('pdf')) iconClass = 'fa-file-pdf';
-
-                    div.innerHTML = `<i class="fas ${iconClass} file-icon"></i><span class="file-name" title="${file.name}">${file.name}</span><span class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span><i class="fas fa-times file-remove" data-index="${index}"></i>`;
-                    div.querySelector('.file-remove').onclick = () => { attachedFiles.splice(index, 1); renderFiles(); };
-                    filesListContainer.appendChild(div);
-                });
-
-                const percentage = (totalSize / MAX_SIZE_BYTES) * 100;
-                progressBar.style.width = `${percentage}%`;
-                sizeText.innerText = `${(totalSize / 1024 / 1024).toFixed(2)} MB / 25 MB`;
-                progressWrapper.style.display = totalSize > 0 ? 'block' : 'none';
-                if(percentage < 50) progressBar.style.backgroundColor = '#10b981';
-                else if(percentage < 80) progressBar.style.backgroundColor = '#f59e0b';
-                else progressBar.style.backgroundColor = '#ef4444';
-            }
-
-            const toBase64 = file => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-
-            // WINDOW LOGIC
-            const composeModal = document.getElementById('composeModal');
-            const btnMinimize = document.getElementById('btnMinimize');
-            const btnMaximize = document.getElementById('btnMaximize');
-            const composeHeader = document.getElementById('composeHeader');
-
-            btnMinimize.onclick = (e) => { e.stopPropagation(); composeModal.classList.toggle('minimized'); composeModal.classList.remove('maximized'); };
-            btnMaximize.onclick = (e) => {
-                e.stopPropagation(); composeModal.classList.toggle('maximized'); composeModal.classList.remove('minimized');
-                const icon = btnMaximize.querySelector('i');
-                icon.className = composeModal.classList.contains('maximized') ? 'fas fa-compress' : 'fas fa-expand';
-            };
-            composeHeader.onclick = (e) => { if(!e.target.closest('button') && composeModal.classList.contains('minimized')) composeModal.classList.remove('minimized'); };
-
-            // TOGGLE FIELDS
+            // Toggle CC/BCC
             const btnCc = document.getElementById('btnCc');
             const btnBcc = document.getElementById('btnBcc');
             const ccField = document.getElementById('ccField');
@@ -358,8 +379,60 @@
             const previewPanel = document.querySelector('.email-preview');
             const folderTitle = document.getElementById('folderTitle');
             const sidebar = document.getElementById('sidebar');
+            const composeModal = document.getElementById('composeModal');
             const inputTo = document.getElementById('composeTo');
             const autocompleteList = document.getElementById('autocompleteList');
+            const fileInput = document.getElementById('fileInput');
+            const attachBtn = document.getElementById('attachBtn');
+            const filesListContainer = document.getElementById('filesListContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressWrapper = document.getElementById('progressWrapper');
+            const sizeText = document.getElementById('sizeText');
+            const dropZoneBody = document.getElementById('dropZoneBody');
+            const dragOverlay = document.getElementById('drag-overlay');
+
+            window.addEventListener('dragover', e => e.preventDefault(), false);
+            window.addEventListener('drop', e => e.preventDefault(), false);
+            dropZoneBody.addEventListener('dragenter', (e) => { e.preventDefault(); dragOverlay.style.display = 'flex'; });
+            dragOverlay.addEventListener('dragleave', (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; });
+            dragOverlay.addEventListener('drop', (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; handleNewFiles(Array.from(e.dataTransfer.files)); });
+
+            attachBtn.onclick = () => fileInput.click();
+            fileInput.onchange = (e) => { handleNewFiles(Array.from(e.target.files)); fileInput.value = ''; };
+
+            function handleNewFiles(files) {
+                let currentTotal = attachedFiles.reduce((acc, f) => acc + f.size, 0);
+                files.forEach(file => {
+                    if (currentTotal + file.size > MAX_SIZE_BYTES) { Swal.fire({ icon: 'error', title: 'Límite excedido', text: 'Max 25MB', confirmButtonColor: '#D50032' }); }
+                    else { attachedFiles.push(file); currentTotal += file.size; }
+                });
+                renderFiles();
+            }
+
+            function renderFiles() {
+                filesListContainer.innerHTML = '';
+                let totalSize = 0;
+                attachedFiles.forEach((file, index) => {
+                    totalSize += file.size;
+                    const div = document.createElement('div');
+                    div.className = 'file-item';
+                    div.innerHTML = `<i class="fas fa-file file-icon"></i><span class="file-name">${file.name}</span><span class="file-size">${(file.size/1024/1024).toFixed(2)} MB</span><i class="fas fa-times file-remove" data-index="${index}"></i>`;
+                    div.querySelector('.file-remove').onclick = () => { attachedFiles.splice(index, 1); renderFiles(); };
+                    filesListContainer.appendChild(div);
+                });
+                const percentage = (totalSize / MAX_SIZE_BYTES) * 100;
+                progressBar.style.width = `${percentage}%`;
+                sizeText.innerText = `${(totalSize / 1024 / 1024).toFixed(2)} MB / 25 MB`;
+                progressWrapper.style.display = totalSize > 0 ? 'block' : 'none';
+                progressBar.style.backgroundColor = percentage < 50 ? '#10b981' : percentage < 80 ? '#f59e0b' : '#ef4444';
+            }
+
+            const toBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
 
             async function initData() {
                 try {
@@ -406,7 +479,7 @@
                         el.classList.add('selected');
                         const initial = email.sender ? email.sender.charAt(0).toUpperCase() : '?';
                         let draftWarning = folderName === 'drafts' ? `<div style="background:#fff3cd; color:#856404; padding:10px; margin-bottom:10px;">⚠️ Borrador</div>` : '';
-                        let attachHTML = email.hasAttachments ? `<div style="margin-top:15px; padding-top:10px; border-top:1px solid #eee; color:#666;"><i class="fas fa-paperclip"></i> Archivos adjuntos en Gmail.</div>` : '';
+                        let attachHTML = email.hasAttachments ? `<div style="margin-top:15px; padding-top:10px; border-top:1px solid #eee; color:#666;"><i class="fas fa-paperclip"></i> Adjuntos en Gmail.</div>` : '';
                         previewPanel.innerHTML = `<div class="email-detail-view">${draftWarning}<div class="detail-header"><h2 class="detail-subject">${email.subject}</h2><div class="sender-info-container"><div style="display:flex; align-items:center;"><div class="avatar-circle">${initial}</div><div><h4>${email.sender}</h4><span style="font-size:0.8rem; color:#666;">${email.date}</span></div></div></div></div><div class="detail-body">${email.body}</div>${attachHTML}</div>`;
                     });
                     emailContainer.appendChild(el);
@@ -420,7 +493,7 @@
                 composeModal.classList.add('hidden'); composeModal.classList.remove('maximized', 'minimized'); clearForm();
             };
             document.getElementById('discardBtn').onclick = () => {
-                Swal.fire({ title: '¿Estás seguro?', text: "Se perderán cambios.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: 'Borrar', heightAuto: false, scrollbarPadding: false }).then((result) => {
+                Swal.fire({ title: '¿Estás seguro?', text: "Se perderán cambios.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: 'Borrar', heightAuto: false }).then((result) => {
                     if (result.isConfirmed) { clearForm(); composeModal.classList.add('hidden'); composeModal.classList.remove('maximized', 'minimized'); }
                 });
             };
@@ -435,26 +508,26 @@
                 const bodyText = quill.getText();
 
                 if (!isDraft) {
-                    if(!to || !to.includes('@')) { Swal.fire({ icon: 'error', title: 'Error', text: 'Destinatario inválido', confirmButtonColor: '#D50032', heightAuto: false, scrollbarPadding: false }); return; }
-                    if(!subject) { Swal.fire({ icon: 'warning', title: 'Falta Asunto', confirmButtonColor: '#D50032', heightAuto: false, scrollbarPadding: false }); return; }
+                    if(!to || !to.includes('@')) { Swal.fire({ icon: 'error', title: 'Error', text: 'Destinatario inválido', confirmButtonColor: '#D50032', heightAuto: false }); return; }
+                    if(!subject) { Swal.fire({ icon: 'warning', title: 'Falta Asunto', confirmButtonColor: '#D50032', heightAuto: false }); return; }
                     btn.innerText = "Enviando..."; btn.disabled = true;
                 }
 
                 const processedAttachments = await Promise.all(attachedFiles.map(async file => ({ filename: file.name, content: await toBase64(file), encoding: 'base64' })));
 
                 const newEmail = {
-                    to, cc, bcc, folder: isDraft ? 'drafts' : 'sent', sender: isDraft ? 'Borrador' : 'Yo', subject: subject,
+                    to, cc, bcc, folder: isDraft ? 'drafts' : 'sent', sender: isDraft ? 'Borrador' : 'Yo', subject,
                     preview: `Para: ${to} - ${bodyText.substring(0, 30)}...`, body: bodyHTML, date: 'Ahora', unread: false,
-                    hasAttachments: attachedFiles.length > 0, attachments: processedAttachments, securityAnalysis: { status: "clean" }, isDraft: isDraft 
+                    hasAttachments: attachedFiles.length > 0, attachments: processedAttachments, securityAnalysis: { status: "clean" }, isDraft 
                 };
 
                 try {
                     const res = await fetch(`${API_URL}/emails`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newEmail) });
                     if(res.ok) {
-                        if(!isDraft) { Swal.fire({ icon: 'success', title: '¡Enviado!', timer: 2000, showConfirmButton: false, confirmButtonColor: '#D50032', heightAuto: false, scrollbarPadding: false }); composeModal.classList.add('hidden'); composeModal.classList.remove('maximized', 'minimized'); clearForm(); }
+                        if(!isDraft) { Swal.fire({ icon: 'success', title: '¡Enviado!', timer: 2000, showConfirmButton: false, confirmButtonColor: '#D50032', heightAuto: false }); composeModal.classList.add('hidden'); composeModal.classList.remove('maximized', 'minimized'); clearForm(); }
                         initData(); 
                     } else throw new Error("Error server");
-                } catch (err) { console.error(err); if(!isDraft) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo enviar', confirmButtonColor: '#D50032', heightAuto: false, scrollbarPadding: false }); } 
+                } catch (err) { console.error(err); if(!isDraft) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo enviar', confirmButtonColor: '#D50032', heightAuto: false }); } 
                 finally { if(!isDraft) { btn.innerText = "Enviar"; btn.disabled = false; } }
             }
 
@@ -465,11 +538,19 @@
                 attachedFiles = []; renderFiles();
             }
 
+            // WINDOW LOGIC
+            const btnMinimize = document.getElementById('btnMinimize');
+            const btnMaximize = document.getElementById('btnMaximize');
+            const composeHeader = document.getElementById('composeHeader');
+            btnMinimize.onclick = (e) => { e.stopPropagation(); composeModal.classList.toggle('minimized'); composeModal.classList.remove('maximized'); };
+            btnMaximize.onclick = (e) => { e.stopPropagation(); composeModal.classList.toggle('maximized'); composeModal.classList.remove('minimized'); };
+            composeHeader.onclick = (e) => { if(!e.target.closest('button') && composeModal.classList.contains('minimized')) composeModal.classList.remove('minimized'); };
+
             const logoutBtn = document.getElementById('logoutBtn');
             if(logoutBtn) {
                 logoutBtn.onclick = (e) => {
                     e.preventDefault();
-                    Swal.fire({ title: '¿Cerrar Sesión?', icon: 'question', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: 'Sí, salir', heightAuto: false, scrollbarPadding: false }).then((result) => {
+                    Swal.fire({ title: '¿Cerrar Sesión?', icon: 'question', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: 'Sí, salir', heightAuto: false }).then((result) => {
                         if (result.isConfirmed) { localStorage.removeItem('alhmail_token'); window.location.href = 'index.html'; }
                     });
                 };

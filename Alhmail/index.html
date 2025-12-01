@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Alhmail</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body {
             margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif;
@@ -31,6 +33,13 @@
         }
         .login-btn:hover { background-color: #C20049; }
         .error-msg { color: #D50032; font-size: 0.9rem; margin-top: 15px; display: none; }
+        
+        /* Enlace de recuperar */
+        .forgot-link {
+            display: block; margin-top: 15px; font-size: 0.9rem; color: #6b7280;
+            text-decoration: none; cursor: pointer;
+        }
+        .forgot-link:hover { text-decoration: underline; color: #D50032; }
     </style>
     
     <script>
@@ -52,14 +61,18 @@
                 <label>Contraseña</label>
                 <input type="password" id="password" placeholder="••••••" required>
             </div>
+            
             <button type="submit" class="login-btn" id="btnSubmit">Ingresar</button>
             <div class="error-msg" id="errorMsg">Usuario o contraseña incorrectos</div>
+            
+            <a class="forgot-link" id="forgotBtn">¿Olvidaste tu contraseña?</a>
         </form>
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3001/login';
+        const API_URL = 'http://localhost:3001';
 
+        // --- LÓGICA DE LOGIN ---
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -72,7 +85,7 @@
             errorDiv.style.display = 'none';
 
             try {
-                const res = await fetch(API_URL, {
+                const res = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -83,7 +96,7 @@
                 if (data.success) {
                     localStorage.setItem('alhmail_token', data.token);
                     localStorage.setItem('alhmail_user', JSON.stringify(data.user));
-                    window.location.href = 'inbox.html'; // Redirigir al Inbox
+                    window.location.href = 'inbox.html';
                 } else {
                     errorDiv.style.display = 'block';
                     errorDiv.innerText = data.message || "Error al ingresar";
@@ -95,6 +108,47 @@
             } finally {
                 btn.innerText = "Ingresar";
                 btn.disabled = false;
+            }
+        });
+
+        // --- LÓGICA DE RECUPERAR CONTRASEÑA ---
+        document.getElementById('forgotBtn').addEventListener('click', async () => {
+            const { value: email } = await Swal.fire({
+                title: 'Recuperar Contraseña',
+                text: 'Ingresa tu correo para recibir una nueva contraseña temporal.',
+                input: 'email',
+                inputPlaceholder: 'tu@correo.com',
+                showCancelButton: true,
+                confirmButtonColor: '#D50032',
+                confirmButtonText: 'Enviar',
+                cancelButtonText: 'Cancelar',
+                showLoaderOnConfirm: true,
+                preConfirm: (email) => {
+                    return fetch(`${API_URL}/forgot-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(response.statusText)
+                        }
+                        return response.json()
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error: No se encontró el correo`)
+                    })
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            });
+
+            if (email) {
+                Swal.fire({
+                    title: '¡Correo enviado!',
+                    text: 'Revisa tu bandeja de entrada para ver tu nueva contraseña.',
+                    icon: 'success',
+                    confirmButtonColor: '#D50032'
+                });
             }
         });
     </script>

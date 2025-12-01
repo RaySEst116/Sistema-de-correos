@@ -186,4 +186,78 @@ async function syncGmailInbox() {
     } catch (err) { console.log("Info IMAP:", err.message); }
 }
 
+// = NUEVA RUTA: ACTUALIZAR PERFIL (PUT) =
+app.put('/users/:id', (req, res) => {
+    const userId = req.params.id;
+    const { name, password } = req.body;
+
+    // Si envía password, actualizamos todo, si no, solo el nombre
+    let sql = "UPDATE users SET name = ? WHERE id = ?";
+    let params = [name, userId];
+
+    if (password && password.trim() !== "") {
+        sql = "UPDATE users SET name = ?, password = ? WHERE id = ?";
+        params = [name, password, userId];
+    }
+
+    db.query(sql, params, (err, result) => {
+        if (err) return res.status(500).json({ error: "Error al actualizar" });
+        res.json({ success: true });
+    });
+});
+
+// ==========================================
+// RECUPERAR CONTRASEÑA (NUEVA RUTA)
+// ==========================================
+app.post('/forgot-password', (req, res) => {
+    const { email } = req.body;
+
+    if (!email) return res.status(400).json({ message: "Falta el correo" });
+
+    // 1. Verificar si el usuario existe
+    db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+        if (err) return res.status(500).json({ message: "Error de base de datos" });
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Este correo no está registrado." });
+        }
+
+        // 2. Generar contraseña temporal (8 caracteres aleatorios)
+        const tempPassword = Math.random().toString(36).slice(-8);
+
+        // 3. Actualizar la contraseña en la Base de Datos
+        // NOTA: En un sistema real, aquí deberíamos encriptar la contraseña (hash)
+        db.query('UPDATE users SET password = ? WHERE email = ?', [tempPassword, email], async (updateErr) => {
+            if (updateErr) return res.status(500).json({ message: "No se pudo actualizar la contraseña" });
+
+            // 4. Enviar el correo con la nueva contraseña
+            try {
+                await transporter.sendMail({
+                    from: `"Soporte Alhmail" <${GMAIL_USER}>`,
+                    to: email,
+                    subject: 'Recuperación de Contraseña - Alhmail',
+                    html: `
+                        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee; max-width: 500px;">
+                            <h2 style="color: #D50032;">Restablecimiento de Contraseña</h2>
+                            <p>Hola,</p>
+                            <p>Hemos recibido una solicitud para recuperar tu acceso.</p>
+                            <p>Tu nueva contraseña temporal es:</p>
+                            <h1 style="background: #f3f4f6; padding: 10px; text-align: center; letter-spacing: 2px;">${tempPassword}</h1>
+                            <p>Por favor ingresa con esta clave.</p>
+                            <hr>
+                            <small style="color: #888;">Si no solicitaste esto, ignora este correo.</small>
+                        </div>
+                    `
+                });
+
+                res.json({ success: true, message: "Correo enviado con la nueva contraseña." });
+
+            } catch (mailError) {
+                console.error("Error enviando correo:", mailError);
+                res.status(500).json({ message: "Error al enviar el correo." });
+            }
+        });
+    });
+});
+
 app.listen(3001, () => console.log('🚀 Servidor Listo (Con soporte de Archivos Grandes)'));
