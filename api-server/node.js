@@ -42,74 +42,76 @@ const transporter = nodemailer.createTransport({
 // --- OBTENER EMAILS ---
 // REEMPLAZA SOLO LA PARTE DEL app.post('/emails'...) EN TU SERVER.JS
 
+// --- ENVIAR / GUARDAR EMAIL (CON CC y BCC) ---
 app.post('/emails', async (req, res) => {
-    console.log("--- INTENTO DE ENVÍO ---");
-    const { to, subject, body, preview, isDraft } = req.body;
-    
-    // 1. Ver qué datos llegaron
-    console.log("Datos recibidos:", { to, subject, isDraft });
+    const { to, cc, bcc, subject, body, preview, isDraft } = req.body; // <--- Aceptamos cc y bcc
 
+    // Validación
     let finalTo = to;
     if (!finalTo && preview && preview.startsWith("Para:")) {
         finalTo = preview.split(" - ")[0].replace("Para: ", "").trim();
     }
 
-    // Validación básica
-    if (!isDraft && !finalTo) {
-        console.log("❌ Error: Falta destinatario en envío real");
-        return res.status(400).send("Falta destinatario");
-    }
+    if (!isDraft && !finalTo) return res.status(400).send("Falta destinatario");
 
     try {
         let folder = 'sent';
+        
+        if (!isDraft) {
+            // Configuración para Nodemailer (Gmail)
+            const mailOptions = {
+                from: GMAIL_USER,
+                to: finalTo,
+                subject: subject,
+                text: body,
+                html: `<p>${body}</p>`
+            };
 
-        if (isDraft) {
-            folder = 'drafts';
-            console.log(`💾 Modo Borrador detectado. Guardando sin enviar.`);
+            // Solo agregamos si existen
+            if (cc) mailOptions.cc = cc;
+            if (bcc) mailOptions.bcc = bcc;
+
+            await transporter.sendMail(mailOptions);
+            console.log(`📨 Enviado a ${finalTo} (Cc: ${cc || 'none'}, Bcc: ${bcc || 'none'})`);
         } else {
-            console.log(`📨 Modo Envío detectado. Intentando conectar con Gmail...`);
-            
-            // INTENTO DE ENVÍO SMTP
-            try {
-                const info = await transporter.sendMail({ 
-                    from: GMAIL_USER, 
-                    to: finalTo, 
-                    subject, 
-                    text: body, 
-                    html: `<p>${body}</p>` 
-                });
-                console.log(`✅ Gmail respondió: ${info.response}`);
-            } catch (smtpError) {
-                console.error("❌ ERROR CRÍTICO AL ENVIAR CON GMAIL:", smtpError);
-                return res.status(500).json({ error: "Fallo al enviar correo real: " + smtpError.message });
-            }
+            folder = 'drafts';
+            console.log(`💾 Guardado en borradores`);
         }
 
-        // GUARDAR EN BASE DE DATOS
+        // Guardar en MySQL
         const sql = `INSERT INTO emails SET ?`;
         const emailData = {
             folder: folder,
             sender: isDraft ? 'Borrador' : 'Yo',
             subject: subject || '(Sin Asunto)',
-            preview: `Para: ${finalTo || '?'} - ${body ? body.substring(0, 30) : ''}...`,
+            // Guardamos To, Cc y Bcc en el preview o en columnas nuevas si las creaste
+            preview: `Para: ${finalTo} - ${body ? body.substring(0, 30) : ''}...`,
             body: body || '',
             date: new Date().toLocaleDateString(),
             unread: 0,
             hasAttachments: 0,
-            securityAnalysis: JSON.stringify({ status: "clean" })
+            securityAnalysis: JSON.stringify({ status: "clean" }),
+            // Si creaste las columnas en el PASO 1, descomenta estas lineas:
+            recipient_cc: cc || '',
+            recipient_bcc: bcc || ''
         };
 
         db.query(sql, emailData, (err, result) => {
             if (err) {
-                console.error("❌ Error al guardar en MySQL:", err);
-                throw err;
+                console.error("Error SQL:", err); 
+                // Si falla por columnas faltantes, intentamos guardar sin ellas
+                delete emailData.recipient_cc;
+                delete emailData.recipient_bcc;
+                db.query(sql, emailData, (err2, res2) => {
+                    if(err2) throw err2;
+                    res.json({ success: true });
+                });
+            } else {
+                res.json({ success: true });
             }
-            console.log(`✅ Guardado exitosamente en carpeta: ${folder}`);
-            res.json({ success: true });
         });
-
     } catch (error) {
-        console.error("❌ Error General:", error);
+        console.error("Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
