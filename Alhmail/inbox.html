@@ -46,7 +46,6 @@
         .footer-item:hover { background: #f3f4f6; color: var(--primary-red); }
         .footer-item i { margin-right: 8px; font-size: 1.1rem; }
         
-        /* Estilo Botón Admin */
         .footer-item.admin { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
         .footer-item.admin:hover { background: #047857; color: white; }
         
@@ -62,22 +61,65 @@
         .email-list { width: 400px; display: flex; flex-direction: column; border-right: 1px solid #eee; flex-shrink: 0; }
         .list-header { padding: 15px; border-bottom: 1px solid #eee; background: #fff; }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* HERRAMIENTAS DE LISTA (Botones mejorados) */
+        .list-tools { 
+            padding: 8px 15px; 
+            background: #f8f9fa; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; /* Gap ajustado */
+            height: 50px; 
+        }
+
+        .tool-btn {
+            width: 36px;                 
+            height: 36px;                
+            border-radius: 50%;          
+            background: transparent;     
+            border: none;                
+            cursor: pointer;
+            color: #5f6368;              
+            font-size: 1.1rem;           
+            display: inline-flex;        
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;   
+        }
+
+        .tool-btn:hover {
+            background-color: rgba(0, 0, 0, 0.08); 
+            color: var(--primary-red);             
+            transform: scale(1.05);                
+        }
+
+        .tool-btn:active {
+            background-color: rgba(213, 0, 50, 0.15); 
+            transform: scale(0.95);                   
+        }
+
         .search-container { position: relative; width: 100%; }
         .search-input { width: 100%; padding: 8px 10px 8px 35px; border: 1px solid #eee; border-radius: 6px; background: #f9fafb; outline: none; }
         .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #999; }
-        .list-tools { padding: 10px 15px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 15px; }
-        .tool-btn { background: none; border: none; cursor: pointer; color: #666; font-size: 1rem; }
-        .tool-btn:hover { color: var(--primary-red); }
+        
         .master-check, .email-check { appearance: none; width: 18px; height: 18px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; background: white; position: relative; flex-shrink: 0; }
         .master-check:checked, .email-check:checked { background: var(--primary-red); border-color: var(--primary-red); }
         .master-check:checked::after, .email-check:checked::after { content: ''; position: absolute; left: 5px; top: 1px; width: 4px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
 
         #emailContainer { overflow-y: auto; flex-grow: 1; }
+        
         .fake-email { padding: 15px; border-bottom: 1px solid #f3f4f6; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; transition: 0.2s; border-left: 4px solid transparent; }
         .fake-email:hover { background: #f9fafb; border-left-color: #e5e7eb; }
         .fake-email.unread { background: white; font-weight: bold; border-left-color: var(--primary-red); }
+        
+        /* ESTILO SELECCIONADO */
+        .fake-email.selected { 
+            background-color: #ffe4e6 !important; 
+            border-left-color: var(--primary-red) !important; 
+        }
         .fake-email.row-checked { background-color: #fee2e2 !important; border-left-color: var(--primary-red) !important; }
-        .fake-email.selected { background-color: #f3f4f6; border-left-color: #666; }
+        
         .email-content { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
         .email-from { font-size: 0.95rem; color: #374151; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
         .email-to { font-size: 0.8rem; color: #6b7280; display: block; margin-bottom: 4px; }
@@ -97,26 +139,18 @@
         .detail-body { line-height: 1.6; font-size: 1rem; color: #333; margin-top: 20px; overflow-wrap: break-word; }
         .detail-body img { max-width: 100%; height: auto; }
 
-        /* MODALES (SISTEMA UNIFICADO) */
-        /* Clase base para cualquier modal */
+        /* MODALES */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.5); z-index: 2000; 
             display: flex; align-items: center; justify-content: center; 
             opacity: 0; pointer-events: none; transition: opacity 0.2s;
         }
-        /* Cuando está activo se ve */
         .modal-overlay.active { opacity: 1; pointer-events: all; }
-
-        /* Cards dentro de los modales */
         .modal-card { background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
-        
-        /* Modal Cuenta */
         .account-card { width: 400px; padding: 30px; }
-        /* Modal Usuarios (Admin) */
         .users-card { width: 800px; max-height: 80vh; padding: 20px; }
         
-        /* Modal Redactar (Comportamiento especial slide-up) */
         .compose-modal { 
             position: fixed; bottom: 0; right: 80px; width: 600px; height: 700px; 
             background: white; box-shadow: 0 0 20px rgba(0,0,0,0.2); z-index: 1000; 
@@ -127,7 +161,6 @@
         .compose-modal.minimized { height: 45px; width: 250px; overflow: hidden; }
         .compose-modal.maximized { width: 100%; height: 100%; right: 0; bottom: 0; border-radius: 0; }
 
-        /* Estilos internos de modales */
         .compose-header, .users-header { background: #f3f4f6; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; cursor: pointer; border-radius: 10px 10px 0 0; }
         .window-btn { background: none; border: none; cursor: pointer; padding: 6px; color: #666; border-radius: 4px; }
         .window-btn:hover { background: rgba(0,0,0,0.1); color: var(--primary-red); }
@@ -143,7 +176,6 @@
         #editor-container { height: 100%; border: none !important; }
         .compose-footer { padding: 15px; display: flex; justify-content: space-between; border-top: 1px solid #eee; background: #f9fafb; border-radius: 0 0 10px 10px; }
         
-        /* Chips */
         .chip-container { flex-grow: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; border: 1px solid transparent; padding: 5px; min-height: 45px; }
         .email-chip { display: flex; align-items: center; background: #e8f0fe; color: #1967d2; padding: 4px 8px; border-radius: 16px; font-size: 0.9rem; font-weight: 500; }
         .chip-close { margin-left: 6px; cursor: pointer; font-size: 1rem; opacity: 0.6; }
@@ -153,7 +185,6 @@
         .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
         .suggestion-item:hover { background: #f9fafb; }
 
-        /* Tabla Usuarios */
         .user-table { width: 100%; border-collapse: collapse; }
         .user-table th { text-align: left; padding: 12px; border-bottom: 2px solid #f3f4f6; color: #666; font-weight: 600; font-size: 0.9rem; }
         .user-table td { padding: 12px; border-bottom: 1px solid #eee; color: #333; }
@@ -165,7 +196,6 @@
         .btn-delete { color: #ef4444; }
         .btn-create { background: var(--primary-red); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
     
-        /* Account Form */
         .account-form label { display: block; margin-top: 15px; font-weight: 600; font-size: 0.9rem; color: #374151; }
         .account-form input, .account-form select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; margin-top: 5px; }
         .account-form input:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
@@ -180,7 +210,6 @@
         .file-remove { margin-left: 5px; cursor: pointer; color: #ef4444; }
         .ai-btn { background: linear-gradient(135deg, #8b5cf6, #d946ef); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
         .footer-left, .footer-right { display: flex; gap: 10px; align-items: center; }
-        .tool-btn { background: none; border: none; cursor: pointer; color: #666; font-size: 1rem; }
     </style>
 </head>
 <body>
@@ -373,14 +402,12 @@
                 try {
                     let res;
                     if(isCreatingUser) {
-                        // POST para crear
                         res = await fetch(`${API_URL}/users`, {
                             method:'POST', 
                             headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify(data)
                         });
                     } else {
-                        // PUT para editar
                         res = await fetch(`${API_URL}/users/${selectedUserId}`, {
                             method:'PUT', 
                             headers:{'Content-Type':'application/json'}, 
@@ -388,15 +415,11 @@
                         });
                     }
 
-                    // --- INICIO CAMBIO: Verificación de errores ---
                     if (!res.ok) {
-                        // Si el servidor devuelve error (ej. email duplicado)
                         const errData = await res.json();
                         throw new Error(errData.message || 'Error al guardar');
                     }
-                    // --- FIN CAMBIO ---
 
-                    // Si es tu propia cuenta, actualizar localStorage
                     if(!isCreatingUser && selectedUserId === user.id) { 
                         user.name=data.name; 
                         user.role=data.role; 
@@ -407,14 +430,12 @@
                     Swal.fire({icon:'success', title:'Listo', timer:1000, showConfirmButton:false});
                     document.getElementById('accountModal').classList.remove('active');
                     
-                    // Recargar tabla si eres admin
                     if(IS_ADMIN) { 
                         loadUsersTable(); 
                         document.getElementById('usersModal').classList.add('active'); 
                     }
 
                 } catch(e) { 
-                    // Mostrar el error real
                     Swal.fire({icon: 'error', title: 'Error', text: e.message}); 
                 }
             };
@@ -423,25 +444,77 @@
             document.getElementById('addUserBtn').onclick = () => {
                 isCreatingUser = true; selectedUserId = null;
                 document.getElementById('usersModal').classList.remove('active');
-                fillAccountForm({}, false); // empty form
+                fillAccountForm({}, false); 
                 document.getElementById('accountModal').classList.add('active');
             };
 
-            // CORREO
+            // CORREO NAV
             document.querySelectorAll('.nav-item').forEach(item => { item.onclick = (e) => { e.preventDefault(); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); item.classList.add('active'); renderEmails(item.dataset.target); } });
             document.getElementById('refreshBtn').onclick = () => { initData(); Swal.fire({toast:true, position:'top-end', icon:'info', title:'Actualizado', timer:1000}); };
+            
+            // COMPOSER
             const modal = document.getElementById('composeModal');
             document.getElementById('composeBtn').onclick = () => { resetForm(); modal.classList.add('active'); };
             document.getElementById('btnCloseX').onclick = () => modal.classList.remove('active');
             document.getElementById('sendBtn').onclick = () => sendEmail(false);
             document.getElementById('discardBtn').onclick = () => { if(confirm("¿Descartar?")) { resetForm(); modal.classList.remove('active'); }};
+            
             setupChipInput('to', selectedTo); setupChipInput('cc', selectedCc); setupChipInput('bcc', selectedBcc);
             const btnCc = document.getElementById('btnCc'), btnBcc = document.getElementById('btnBcc');
             btnCc.onclick = () => { document.getElementById('ccField').classList.remove('hidden-field'); btnCc.style.display='none'; document.getElementById('cc-input').focus(); };
             btnBcc.onclick = () => { document.getElementById('bccField').classList.remove('hidden-field'); btnBcc.style.display='none'; document.getElementById('bcc-input').focus(); };
+
+            // ================== LOGICA DE BOTONES Y CHECKBOXES ==================
+            // 1. SELECCIONAR TODO
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const isChecked = this.checked;
+                document.querySelectorAll('.email-check').forEach(chk => {
+                    chk.checked = isChecked;
+                    const row = chk.closest('.fake-email');
+                    if(isChecked) row.classList.add('row-checked');
+                    else row.classList.remove('row-checked');
+                });
+            });
+
+            // 2. BOTÓN ELIMINAR
+            document.getElementById('deleteSelected').onclick = async () => {
+                const checkedBoxes = document.querySelectorAll('.email-check:checked');
+                const ids = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+                if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Selecciona al menos un correo', timer: 2000 });
+
+                const confirm = await Swal.fire({ title: `¿Eliminar ${ids.length} correos?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' });
+
+                if (confirm.isConfirmed) {
+                    try {
+                        await Promise.all(ids.map(id => fetch(`${API_URL}/emails/${id}`, { method: 'DELETE' })));
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Eliminados', timer: 1000 });
+                        initData();
+                        document.getElementById('selectAll').checked = false;
+                    } catch (e) { console.error(e); Swal.fire('Error al eliminar'); }
+                }
+            };
+
+            // 3. BOTÓN MARCAR COMO LEÍDO
+            document.getElementById('markRead').onclick = async () => {
+                const checkedBoxes = document.querySelectorAll('.email-check:checked');
+                const ids = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+                if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: 'Selecciona correos', timer: 2000 });
+
+                try {
+                    await Promise.all(ids.map(id => fetch(`${API_URL}/emails/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ unread: false }) })));
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Marcados como leídos', timer: 1000 });
+                    initData();
+                    document.getElementById('selectAll').checked = false;
+                } catch (e) { console.error(e); }
+            };
+
+            // INPUT BÚSQUEDA EN TIEMPO REAL
+            document.getElementById('searchInput').addEventListener('keyup', () => {
+                renderEmails(document.querySelector('.nav-item.active').dataset.target);
+            });
         });
 
-        // FUNCIONES DE APOYO
+        // ================== FUNCIONES DE USUARIOS ==================
         async function loadUsersTable() {
             try {
                 const res = await fetch(`${API_URL}/users`); const users = await res.json();
@@ -467,7 +540,7 @@
             const badge = document.getElementById('roleBadge');
             const roleSelect = document.getElementById('roleSelectContainer');
             
-            document.getElementById('accEmail').disabled = !isCreatingUser; // Solo editable al crear
+            document.getElementById('accEmail').disabled = !isCreatingUser; 
             
             if(isCreatingUser) {
                 document.getElementById('accTitle').innerText = "Nuevo Usuario";
@@ -480,7 +553,6 @@
                 if(IS_ADMIN) { badge.innerText = "ADMIN"; badge.className="role-badge role-admin"; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } 
                 else { badge.innerText = "USUARIO"; badge.className="role-badge role-user"; document.getElementById('accName').disabled = true; document.getElementById('accPass').disabled = true; document.getElementById('saveAcc').style.display = 'none'; }
             } else {
-                // Editando a otro (Admin mode)
                 document.getElementById('accTitle').innerText = "Editar Usuario";
                 badge.style.display = 'none'; roleSelect.style.display = 'block';
                 document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false;
@@ -488,28 +560,112 @@
             }
         }
 
-        // FUNCIONES CORREO (IGUAL QUE ANTES)
-        async function initData() { try{ const res = await fetch(`${API_URL}/emails`); emailsData = await res.json(); renderEmails(document.querySelector('.nav-item.active').dataset.target); } catch(e){} }
+        // ================== FUNCIONES DE CORREO ==================
+        async function initData() { 
+            try { 
+                const res = await fetch(`${API_URL}/emails?userEmail=${user.email}`); 
+                emailsData = await res.json(); 
+                renderEmails(document.querySelector('.nav-item.active').dataset.target); 
+            } catch(e){ console.error(e); } 
+        }
+
         function renderEmails(folder) {
             const container = document.getElementById('emailContainer'); container.innerHTML = '';
             let filtered = emailsData.filter(e => e.folder === folder);
+
+            // FILTRO BÚSQUEDA
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            if(term) filtered = filtered.filter(e => e.subject.toLowerCase().includes(term) || e.sender.toLowerCase().includes(term));
+
             if(filtered.length === 0) { container.innerHTML = '<div style="padding:40px;text-align:center;color:#999">Vacío</div>'; return; }
+            
             filtered.forEach(email => {
-                const el = document.createElement('div'); el.className = `fake-email ${email.unread?'unread':''}`;
+                const el = document.createElement('div'); 
+                el.id = `email-row-${email.id}`;
+                el.className = `fake-email ${email.unread?'unread':''}`;
+                
                 const fromLabel = email.sender.split('<')[0].replace(/"/g, '');
                 el.innerHTML = `<input type="checkbox" class="email-check" data-id="${email.id}"><div class="email-content"><div class="email-row-top"><div class="email-from">${fromLabel}</div><span class="email-date">${new Date(email.date).toLocaleDateString()}</span></div><div class="email-to">Para: ${email.to_address || 'Mí'}</div><div class="email-subject">${email.subject}</div><div class="email-snippet">${email.preview.replace('Para: ? -','')}</div></div>`;
+                
                 el.querySelector('.email-content').onclick = () => viewEmail(email);
+                
+                // Evento checkbox individual para pintar fila
+                const chk = el.querySelector('.email-check');
+                chk.onclick = (e) => {
+                    e.stopPropagation();
+                    if(chk.checked) el.classList.add('row-checked');
+                    else el.classList.remove('row-checked');
+                };
+
                 container.appendChild(el);
             });
         }
-        function viewEmail(email) {
+
+        async function viewEmail(email) {
+            // 1. GESTIÓN VISUAL SELECCIÓN
+            document.querySelectorAll('.fake-email').forEach(el => el.classList.remove('selected'));
+            const activeRow = document.getElementById(`email-row-${email.id}`);
+            if (activeRow) activeRow.classList.add('selected');
+
+            // 2. MOSTRAR CONTENIDO
             document.getElementById('previewPanel').innerHTML = `<div class="detail-wrapper"><div class="detail-header"><h2 class="detail-subject">${email.subject}</h2><div class="meta-container"><div class="sender-info"><div class="sender-avatar">${email.sender.charAt(0)}</div><div class="meta-text"><div class="from-line"><strong>De:</strong> ${email.sender}</div><div class="to-line"><strong>Para:</strong> ${email.to_address || 'Mí'}</div></div></div></div></div><div class="detail-body">${email.body}</div></div>`;
+            
+            // 3. MARCAR LEÍDO
+            if (email.unread) {
+                if (activeRow) activeRow.classList.remove('unread');
+                email.unread = false; 
+                try {
+                    await fetch(`${API_URL}/emails/${email.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ unread: false })
+                    });
+                } catch (e) { console.error("Error marcando leído", e); }
+            }
         }
+
         function setupChipInput(type, arr) { document.getElementById(`${type}-input`).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addChip(e.target.value, type, arr); } }); }
         function addChip(val, type, arr) { if(val){ arr.push(val); renderChips(type, arr); document.getElementById(`${type}-input`).value=''; } }
         function renderChips(type, arr) { const c = document.getElementById(`${type}-chips-container`); const i = document.getElementById(`${type}-input`); Array.from(c.getElementsByClassName('email-chip')).forEach(e=>e.remove()); arr.forEach(e => { const d=document.createElement('div'); d.className='email-chip'; d.innerText=e; c.insertBefore(d, i); }); }
-        function resetForm() { document.getElementById('subject').value=''; quill.setText(''); document.getElementById('from').value = user.email; }
-        async function sendEmail(isDraft) { Swal.fire('Enviado'); document.getElementById('composeModal').classList.remove('active'); }
+        
+        function resetForm() { document.getElementById('subject').value=''; quill.setText(''); document.getElementById('from').value = user.email; selectedTo=[]; selectedCc=[]; selectedBcc=[]; renderChips('to', selectedTo); }
+        
+        async function sendEmail(isDraft) {
+            const to = document.getElementById('to-input').value || selectedTo.join(','); 
+            const subject = document.getElementById('subject').value;
+            const body = quill.root.innerHTML;
+            
+            if(!isDraft && !to) return Swal.fire('Falta el destinatario');
+
+            const payload = {
+                from: user.email, 
+                to: to,
+                cc: selectedCc.join(','),
+                bcc: selectedBcc.join(','),
+                subject: subject,
+                body: body,
+                isDraft: isDraft,
+                attachments: [] 
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/emails`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) {
+                    Swal.fire({icon:'success', title: isDraft ? 'Guardado' : 'Enviado'});
+                    document.getElementById('composeModal').classList.remove('active');
+                    resetForm();
+                    setTimeout(initData, 500); 
+                } else {
+                    Swal.fire('Error al enviar');
+                }
+            } catch(e) { console.error(e); }
+        }
+        
         function handleFiles(files) {}
     </script>
 </body>

@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2/promise'); // <--- CAMBIO IMPORTANTE: Promesas
+const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 const GMAIL_USER = 'mcskipper16@gmail.com'; 
 const GMAIL_PASS = 'vzok rdpj syjt fjut'; 
 
-// --- CONEXIÓN BD (MODERNA) ---
+// --- CONEXIÓN BD ---
 const dbConfig = {
     host: 'localhost', port: 3307, user: 'root', password: '1234', database: 'alhmail_security'
 };
@@ -33,12 +33,21 @@ connectDB();
 
 const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: GMAIL_USER, pass: GMAIL_PASS } });
 
-// ================= RUTAS (MODERNIZADAS) =================
+// ================= RUTAS =================
 
-// 1. GET EMAILS
+// 1. GET EMAILS (FILTRADO POR DUEÑO)
+// Ahora recibe ?userEmail=... para mostrar solo los correos de ese usuario
 app.get('/emails', async (req, res) => {
+    const userEmail = req.query.userEmail;
+    if (!userEmail) return res.json([]); 
+
     try {
-        const [rows] = await db.query('SELECT * FROM emails ORDER BY date DESC, id DESC');
+        // BUSCAMOS SOLO DONDE owner_email SEA EL USUARIO ACTUAL
+        const [rows] = await db.query(
+            'SELECT * FROM emails WHERE owner_email = ? ORDER BY date DESC, id DESC', 
+            [userEmail]
+        );
+        
         const parsed = rows.map(row => ({
             ...row,
             unread: Boolean(row.unread),
@@ -78,36 +87,22 @@ app.get('/users', async (req, res) => {
     } catch (e) { res.status(500).send(e.message); }
 });
 
-// 4.5. CREATE USER (CREAR USUARIO NUEVO)
+// 4.5 CREATE USER
 app.post('/users', async (req, res) => {
     const { name, email, password, role } = req.body;
-
-    // Validación básica
-    if (!name || !email || !password) {
-        return res.status(400).json({ success: false, message: "Faltan datos" });
-    }
+    if (!name || !email || !password) return res.status(400).json({ success: false, message: "Faltan datos" });
 
     try {
-        // 1. Verificar si el email ya existe para evitar duplicados
         const [exists] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
-        if (exists.length > 0) {
-            return res.status(409).json({ success: false, message: "El email ya existe" });
-        }
+        if (exists.length > 0) return res.status(409).json({ success: false, message: "El email ya existe" });
 
-        // 2. Insertar el usuario
-        // Nota: En un entorno real, la contraseña debería encriptarse (ej. bcrypt)
         const sql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
         await db.query(sql, [name, email, password, role || 'user']);
-
         res.json({ success: true });
-
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: e.message });
-    }
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 5. UPDATE USER / PASSWORD / ROLE
+// 5. UPDATE USER
 app.put('/users/:id', async (req, res) => {
     const { name, password, role } = req.body;
     let sql = "UPDATE users SET name = ?, role = ? WHERE id = ?";
@@ -127,7 +122,7 @@ app.delete('/users/:id', async (req, res) => {
     } catch (e) { res.status(500).send(e.message); }
 });
 
-// 7. EMAILS ACTIONS (DELETE / MARK READ)
+// 7. EMAILS ACTIONS
 app.delete('/emails/:id', async (req, res) => {
     try { await db.query('DELETE FROM emails WHERE id = ?', [req.params.id]); res.json({success:true}); } catch(e){res.status(500).send(e.message);}
 });
@@ -135,46 +130,87 @@ app.put('/emails/:id', async (req, res) => {
     try { await db.query('UPDATE emails SET unread = ? WHERE id = ?', [req.body.unread, req.params.id]); res.json({success:true}); } catch(e){res.status(500).send(e.message);}
 });
 
-// 8. ENVIAR / GUARDAR (POST)
+// 8. ENVIAR CORREO (LÓGICA DE DOBLE COPIA)
 app.post('/emails', async (req, res) => {
-    const { to, cc, bcc, subject, body, isDraft, attachments, idToDelete } = req.body;
+    // Recibimos 'from' (quien envía)
+    const { from, to, cc, bcc, subject, body, isDraft, attachments, idToDelete } = req.body;
     
+    // Usamos una conexión dedicada para transacción
+    const connection = await db.getConnection(); 
     try {
-        if (idToDelete) await db.query('DELETE FROM emails WHERE id = ?', [idToDelete]);
-        
-        let folder = 'sent';
-        if (!isDraft) {
-            if(!to) return res.status(400).send("Falta destino");
-            await transporter.sendMail({ from: GMAIL_USER, to, cc, bcc, subject, html: body, attachments });
-            console.log(`📨 Enviado a ${to}`);
-        } else {
-            folder = 'drafts';
-            console.log(`💾 Guardado Borrador`);
-        }
+        await connection.beginTransaction();
 
-        const sql = `INSERT INTO emails SET ?`;
-        const emailData = {
-            folder, sender: isDraft ? 'Borrador' : 'Yo', to_address: to, 
+        if (idToDelete) await connection.query('DELETE FROM emails WHERE id = ?', [idToDelete]);
+
+        const dateNow = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const cleanBody = body || '';
+        const previewText = `Para: ${to || '?'} - ${cleanBody.replace(/<[^>]*>?/gm, '').substring(0, 30)}...`;
+        const attachStr = JSON.stringify(attachments || []);
+        const hasAttach = attachments && attachments.length > 0 ? 1 : 0;
+
+        // 
+        // Esta imagen representaría cómo el servidor divide el mensaje en dos rutas: base de datos interna y SMTP externo.
+
+        // --- COPIA 1: PARA EL REMITENTE (TÚ) ---
+        // Se guarda en 'sent' y el dueño eres TÚ (from)
+        const emailSenderData = {
+            owner_email: from, 
+            folder: isDraft ? 'drafts' : 'sent',
+            sender: 'Yo',
+            to_address: to, 
             subject: subject || '(Sin Asunto)',
-            preview: `Para: ${to || '?'} - ${body.replace(/<[^>]*>?/gm, '').substring(0, 30)}...`,
-            body: body || '',
-            date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            preview: previewText,
+            body: cleanBody,
+            date: dateNow,
             unread: 0,
-            hasAttachments: attachments && attachments.length > 0 ? 1 : 0,
-            attachments: JSON.stringify(attachments || []),
+            hasAttachments: hasAttach,
+            attachments: attachStr,
             securityAnalysis: JSON.stringify({ status: "clean" })
         };
+        await connection.query('INSERT INTO emails SET ?', emailSenderData);
 
-        await db.query(sql, emailData);
+        // --- COPIA 2: PARA EL DESTINATARIO (INTERNO) ---
+        if (!isDraft && to) {
+            // A. Intentar enviar por Gmail real (para correos externos)
+            transporter.sendMail({ from: GMAIL_USER, to, cc, bcc, subject, html: body, attachments }).catch(err => console.log("SMTP externo omitido o fallido (OK si es local)"));
+
+            // B. Verificar si es usuario interno
+            const [users] = await connection.query("SELECT email FROM users WHERE email = ?", [to]);
+            
+            if (users.length > 0) {
+                // Es usuario interno -> LE PONEMOS EL EMAIL EN SU INBOX
+                const emailRecipientData = {
+                    owner_email: to, // El dueño es EL DESTINATARIO
+                    folder: 'inbox',
+                    sender: from,    // El remitente eres TÚ
+                    to_address: 'Mí',
+                    subject: subject || '(Sin Asunto)',
+                    preview: cleanBody.replace(/<[^>]*>?/gm, '').substring(0, 30) + '...',
+                    body: cleanBody,
+                    date: dateNow,
+                    unread: 1, // Nuevo para él
+                    hasAttachments: hasAttach,
+                    attachments: attachStr,
+                    securityAnalysis: JSON.stringify({ status: "clean" })
+                };
+                await connection.query('INSERT INTO emails SET ?', emailRecipientData);
+                console.log(`🔀 Entrega interna exitosa a ${to}`);
+            }
+        }
+
+        await connection.commit();
         res.json({ success: true });
 
     } catch (error) {
+        await connection.rollback();
         console.error(error);
         res.status(500).json({ error: error.message });
+    } finally {
+        connection.release();
     }
 });
 
-// --- SYNC GMAIL ---
+// --- SYNC GMAIL (ACTUALIZADO) ---
 async function syncGmailInbox() {
     const config = { imap: { user: GMAIL_USER, password: GMAIL_PASS, host: 'imap.gmail.com', port: 993, tls: true, tlsOptions: { rejectUnauthorized: false } } };
     try {
@@ -189,29 +225,35 @@ async function syncGmailInbox() {
                 const sender = parsed.from ? parsed.from.text : "Desconocido";
                 const subject = parsed.subject || "(Sin Asunto)";
                 
-                // Detectar SPAM simple
                 let folder = 'inbox';
                 const content = (subject + " " + parsed.text).toLowerCase();
-                if (content.includes('oferta') || content.includes('premio') || content.includes('urgente')) folder = 'spam';
+                if (content.includes('oferta') || content.includes('premio')) folder = 'spam';
 
-                // Check duplicados
-                const [exists] = await db.query("SELECT id FROM emails WHERE subject = ? AND sender = ? AND date > DATE_SUB(NOW(), INTERVAL 1 DAY) LIMIT 1", [subject, sender]);
+                // Evitar duplicados (Ahora revisamos owner_email también)
+                const [exists] = await db.query("SELECT id FROM emails WHERE owner_email = ? AND subject = ? AND sender = ? AND date > DATE_SUB(NOW(), INTERVAL 1 DAY) LIMIT 1", [GMAIL_USER, subject, sender]);
                 
                 if (exists.length === 0) {
                     const newEmail = {
-                        folder, sender, subject, preview: parsed.text ? parsed.text.substring(0, 60) : "...",
+                        owner_email: GMAIL_USER, // <--- ESTO ASIGNA EL CORREO AL ADMIN (O AL DUEÑO DE LA CUENTA GMAIL)
+                        folder, 
+                        sender, 
+                        subject, 
+                        preview: parsed.text ? parsed.text.substring(0, 60) : "...",
                         body: parsed.html || parsed.textAsHtml || "",
                         date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                        unread: 1, hasAttachments: parsed.attachments.length > 0 ? 1 : 0
+                        unread: 1, 
+                        hasAttachments: parsed.attachments.length > 0 ? 1 : 0,
+                        attachments: '[]', // Simplificado para IMAP
+                        securityAnalysis: JSON.stringify({ status: "clean" })
                     };
                     await db.query(`INSERT INTO emails SET ?`, newEmail);
-                    console.log(`📥 Recibido: ${subject}`);
+                    console.log(`📥 IMAP Recibido para Admin: ${subject}`);
                 }
             }
         }
         connection.end();
-    } catch (e) { if(e.message !== 'Nothing to fetch') console.log("IMAP:", e.message); }
+    } catch (e) { if(e.message !== 'Nothing to fetch') console.log("IMAP Info:", e.message); }
 }
 
 setInterval(syncGmailInbox, 20000);
-app.listen(3001, () => console.log('🚀 Servidor Listo (v2.0 Promesas)'));
+app.listen(3001, () => console.log('🚀 Servidor Listo (Doble Copia + OwnerID)'));
