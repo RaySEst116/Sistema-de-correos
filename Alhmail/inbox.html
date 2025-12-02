@@ -12,7 +12,7 @@
 
     <style>
         /* --- VARIABLES --- */
-        :root { --primary-red: #D50032; --bg-color: #f9fafb; --text-color: #374151; }
+        :root { --primary-red: #D50032; --bg-color: #f9fafb; --text-color: #374151; --chip-bg: #e8f0fe; --chip-text: #1967d2; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
         body { display: flex; height: 100vh; background-color: var(--bg-color); overflow: hidden; padding-right: 0 !important; }
@@ -22,8 +22,7 @@
         .sidebar { 
             width: 250px; background: white; display: flex; flex-direction: column; 
             padding: 20px 10px; border-right: 1px solid #e5e7eb; transition: width 0.3s ease; 
-            z-index: 200; /* Z-Index alto para asegurar clic */
-            flex-shrink: 0; 
+            z-index: 200; flex-shrink: 0; 
         }
         .sidebar.collapsed { width: 80px; padding: 20px 5px; }
         
@@ -33,7 +32,7 @@
         
         .toggle-btn { background: none; border: none; cursor: pointer; font-size: 1.4rem; color: #555; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.2s; }
         .toggle-btn:hover { background: #f3f4f6; color: var(--primary-red); }
-        .sidebar.collapsed .toggle-btn { margin: 0 auto; } /* Centrado cuando colapsa */
+        .sidebar.collapsed .toggle-btn { margin: 0 auto; }
 
         /* Botón Redactar */
         .compose-btn { 
@@ -76,7 +75,6 @@
         .footer-item.logout { color: #ef4444; background: #fff1f1; border: 1px solid #fecaca; }
         .footer-item.logout:hover { background: #ef4444; color: white; border-color: #ef4444; }
         .footer-item i { margin-right: 8px; font-size: 1.1rem; }
-        
         .sidebar.collapsed .footer-item { width: 45px; height: 45px; padding: 0; border-radius: 50%; }
         .sidebar.collapsed .footer-item span { display: none; }
         .sidebar.collapsed .footer-item i { margin: 0; }
@@ -130,7 +128,6 @@
         .compose-modal.minimized { height: 45px; width: 250px; overflow: hidden; }
         .compose-modal.maximized { width: 100%; height: 100%; right: 0; bottom: 0; border-radius: 0; }
         .compose-header { background: #f3f4f6; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; cursor: pointer; }
-        .window-actions { display: flex; gap: 5px; }
         .window-btn { background: none; border: none; cursor: pointer; padding: 6px; color: #666; border-radius: 4px; }
         .window-btn:hover { background: rgba(0,0,0,0.1); color: var(--primary-red); }
         .window-btn.close-btn:hover { background-color: #e81123; color: white; }
@@ -138,11 +135,35 @@
         .input-group { display: flex; border-bottom: 1px solid #eee; margin-bottom: 5px; align-items: center; position: relative; }
         .input-group label { color: #666; font-weight: 600; font-size: 0.9rem; margin-right: 10px; min-width: 35px; }
         .input-group input { flex-grow: 1; border: none; padding: 12px 10px; outline: none; font-family: inherit; }
-        .cc-link { font-size: 0.8rem; color: #666; cursor: pointer; margin-left: 10px; font-weight: 600; padding: 5px; }
-        .cc-link:hover { color: var(--primary-red); background: #f3f4f6; border-radius: 4px; }
-        .hidden-field { display: none; }
-        .remove-field-btn { background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0 10px; font-size: 0.9rem; }
-        .remove-field-btn:hover { color: var(--primary-red); }
+        
+        /* --- NUEVOS ESTILOS PARA CHIPS DE EMAIL --- */
+        .chip-container {
+            flex-grow: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
+            border: 1px solid transparent; padding: 5px; min-height: 45px;
+        }
+        .chip-container:focus-within { border-bottom: 1px solid var(--primary-red); }
+        .email-chip {
+            display: flex; align-items: center; background: var(--chip-bg); color: var(--chip-text);
+            padding: 4px 8px; border-radius: 16px; font-size: 0.9rem; font-weight: 500;
+        }
+        .chip-close { margin-left: 6px; cursor: pointer; font-size: 1rem; opacity: 0.6; }
+        .chip-close:hover { opacity: 1; color: #d93025; }
+        .chip-input { flex-grow: 1; border: none; outline: none; padding: 8px; min-width: 120px; font-family: inherit; }
+
+        /* Autocomplete styles */
+        .autocomplete-list { 
+            position: absolute; top: 100%; left: 50px; right: 0; background: white; 
+            border: 1px solid #ddd; border-top: none; z-index: 100; max-height: 200px; 
+            overflow-y: auto; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .autocomplete-list.visible { display: block; }
+        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .suggestion-item:hover { background: #f9fafb; }
+
+        .cc-bcc-container { position: absolute; right: 0; top: 15px; background: white; padding-left: 10px; }
+        .toggle-link { font-size: 0.9rem; color: #6b7280; cursor: pointer; margin-left: 8px; font-weight: 500; }
+        .toggle-link:hover { color: var(--primary-red); text-decoration: underline; }
+        .hidden-field { display: none !important; }
         #editor-container { height: 100%; border: none !important; }
         .compose-footer { padding: 15px; display: flex; justify-content: space-between; border-top: 1px solid #eee; background: #f9fafb; border-radius: 0 0 10px 10px; }
         .footer-left, .footer-right { display: flex; gap: 10px; align-items: center; }
@@ -245,16 +266,31 @@
                 <input type="text" id="from" disabled style="background:white; color:#333; font-weight:600;">
             </div>
 
-            <div class="input-group">
-                <label>Para:</label>
-                <input type="text" id="to" placeholder="">
-                <div class="cc-bcc-container" style="position:absolute; right:10px; background:white;">
-                    <span class="cc-link" id="btnCc">Cc</span><span class="cc-link" id="btnBcc">Cco</span>
+            <div class="input-group" style="align-items: flex-start; padding-top: 5px;">
+                <label style="margin-top: 8px;">Para:</label>
+                <div class="chip-container" id="to-chips-container" onclick="document.getElementById('to-input').focus()">
+                    <input type="text" id="to-input" class="chip-input" placeholder="">
+                </div>
+                 <div class="cc-bcc-container" style="position:absolute; right:10px; background:white;">
+                    <span class="toggle-link" id="btnCc">Cc</span><span class="toggle-link" id="btnBcc">Cco</span>
                 </div>
                 <div class="autocomplete-list" id="autocompleteList"></div>
             </div>
-            <div class="input-group hidden-field" id="ccField"><label>Cc:</label><input type="text" id="cc"><span class="remove-field-btn" onclick="closeField('cc')"><i class="fas fa-times"></i></span></div>
-            <div class="input-group hidden-field" id="bccField"><label>Cco:</label><input type="text" id="bcc"><span class="remove-field-btn" onclick="closeField('bcc')"><i class="fas fa-times"></i></span></div>
+
+            <div class="input-group hidden-field" id="ccField" style="align-items: flex-start; padding-top: 5px;">
+                <label style="margin-top: 8px;">Cc:</label>
+                <div class="chip-container" id="cc-chips-container" onclick="document.getElementById('cc-input').focus()">
+                     <input type="text" id="cc-input" class="chip-input" placeholder="">
+                </div>
+            </div>
+
+            <div class="input-group hidden-field" id="bccField" style="align-items: flex-start; padding-top: 5px;">
+                <label style="margin-top: 8px;">Cco:</label>
+                <div class="chip-container" id="bcc-chips-container" onclick="document.getElementById('bcc-input').focus()">
+                     <input type="text" id="bcc-input" class="chip-input" placeholder="">
+                </div>
+            </div>
+
             <div class="input-group"><input type="text" id="subject" placeholder="Asunto"></div>
             
             <div id="editor-container"></div>
@@ -302,7 +338,11 @@
         let emailsData = [], contactsData = [], attachedFiles = [], editingDraftId = null;
         let searchTerm = "", sortOrder = "desc";
         
-        // RECUPERAR USUARIO DE FORMA SEGURA
+        // ESTADOS PARA LOS CHIPS DE EMAIL
+        let selectedTo = [];
+        let selectedCc = [];
+        let selectedBcc = [];
+
         let user = {};
         try { user = JSON.parse(localStorage.getItem('alhmail_user')) || {}; } catch(e) { user = {}; }
         const ADMIN = 'mcskipper16@gmail.com';
@@ -313,65 +353,42 @@
             initData();
             setInterval(initData, 20000);
 
-            // --- LÓGICA UI PRIORITARIA (Menú, Cuenta, Salir) ---
-            
-            // MENU HAMBURGUESA
+            // --- LÓGICA UI PRIORITARIA ---
             const toggleBtn = document.getElementById('toggleBtn');
             const sidebar = document.getElementById('sidebar');
             if(toggleBtn) toggleBtn.onclick = () => sidebar.classList.toggle('collapsed');
 
-            // BOTÓN SALIR
             const logoutBtn = document.getElementById('logoutBtn');
             if(logoutBtn) {
                 logoutBtn.onclick = () => {
-                    Swal.fire({
-                        title: '¿Cerrar Sesión?', icon: 'warning', showCancelButton: true,
-                        confirmButtonColor: '#D50032', confirmButtonText: 'Sí, salir'
-                    }).then((result) => {
-                        if (result.isConfirmed) { localStorage.removeItem('alhmail_token'); window.location.href='index.html'; }
-                    });
+                    Swal.fire({ title: '¿Cerrar Sesión?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: 'Sí, salir' })
+                    .then((result) => { if (result.isConfirmed) { localStorage.removeItem('alhmail_token'); window.location.href='index.html'; } });
                 };
             }
 
-            // BOTÓN MI CUENTA
             const accountBtn = document.getElementById('accountBtn');
             const accountModal = document.getElementById('accountModal');
             if(accountBtn) {
                 accountBtn.onclick = () => {
                     document.getElementById('accName').value = user.name || 'Usuario';
                     document.getElementById('accEmail').value = user.email || 'correo@ejemplo.com';
-                    
-                    const roleBadge = document.getElementById('roleBadge');
-                    const saveBtn = document.getElementById('saveAcc');
-                    const accName = document.getElementById('accName');
-                    const accPass = document.getElementById('accPass');
-
-                    if(user.email === ADMIN) {
-                        roleBadge.textContent = "ADMINISTRADOR"; roleBadge.className = "role-badge role-admin";
-                        accName.disabled = false; accPass.disabled = false; saveBtn.style.display = 'inline-block';
-                    } else {
-                        roleBadge.textContent = "USUARIO ESTÁNDAR"; roleBadge.className = "role-badge role-user";
-                        accName.disabled = true; accPass.disabled = true; saveBtn.style.display = 'none';
-                    }
+                    const roleBadge = document.getElementById('roleBadge'), saveBtn = document.getElementById('saveAcc'), accName = document.getElementById('accName'), accPass = document.getElementById('accPass');
+                    if(user.email === ADMIN) { roleBadge.textContent = "ADMINISTRADOR"; roleBadge.className = "role-badge role-admin"; accName.disabled = false; accPass.disabled = false; saveBtn.style.display = 'inline-block'; } 
+                    else { roleBadge.textContent = "USUARIO ESTÁNDAR"; roleBadge.className = "role-badge role-user"; accName.disabled = true; accPass.disabled = true; saveBtn.style.display = 'none'; }
                     accountModal.classList.add('active');
                 };
             }
-            
             document.getElementById('closeAcc').onclick = () => accountModal.classList.remove('active');
             document.getElementById('saveAcc').onclick = async () => {
                 await fetch(`${API_URL}/users/${user.id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:document.getElementById('accName').value, password:document.getElementById('accPass').value})});
-                Swal.fire({icon:'success', title:'Guardado', timer:1500, showConfirmButton:false});
-                accountModal.classList.remove('active');
+                Swal.fire({icon:'success', title:'Guardado', timer:1500, showConfirmButton:false}); accountModal.classList.remove('active');
             };
 
             // NAVEGACIÓN
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.onclick = (e) => {
-                    e.preventDefault();
-                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                    item.classList.add('active');
-                    searchTerm = ""; document.getElementById('searchInput').value = ""; document.getElementById('selectAll').checked = false;
-                    renderEmails(item.dataset.target);
+                    e.preventDefault(); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); item.classList.add('active');
+                    searchTerm = ""; document.getElementById('searchInput').value = ""; document.getElementById('selectAll').checked = false; renderEmails(item.dataset.target);
                 }
             });
 
@@ -379,27 +396,11 @@
             document.getElementById('refreshBtn').onclick = () => { initData(); Swal.fire({toast:true, position:'top-end', icon:'info', title:'Actualizado', showConfirmButton:false, timer:1000}); };
             document.getElementById('searchInput').addEventListener('input', (e) => { searchTerm = e.target.value.toLowerCase(); renderEmails(document.querySelector('.nav-item.active').dataset.target); });
             document.getElementById('sortBtn').onclick = () => { sortOrder = sortOrder === 'desc' ? 'asc' : 'desc'; renderEmails(document.querySelector('.nav-item.active').dataset.target); };
+            document.getElementById('selectAll').onclick = (e) => { document.querySelectorAll('.email-check').forEach(cb => { cb.checked = e.target.checked; if(e.target.checked) cb.closest('.fake-email').classList.add('row-checked'); else cb.closest('.fake-email').classList.remove('row-checked'); }); };
+            document.getElementById('deleteSelected').onclick = async () => { const checked = document.querySelectorAll('.email-check:checked'); if(checked.length === 0) return; if(await Swal.fire({title:`¿Eliminar ${checked.length}?`, icon:'warning', showCancelButton:true, confirmButtonColor:'#D50032'}).then(r=>r.isConfirmed)) { for(const cb of checked) await fetch(`${API_URL}/emails/${cb.dataset.id}`, {method:'DELETE'}); initData(); document.getElementById('selectAll').checked = false; } };
+            document.getElementById('markRead').onclick = async () => { const checked = document.querySelectorAll('.email-check:checked'); for(const cb of checked) await fetch(`${API_URL}/emails/${cb.dataset.id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({unread:0})}); initData(); };
 
-            document.getElementById('selectAll').onclick = (e) => {
-                document.querySelectorAll('.email-check').forEach(cb => { cb.checked = e.target.checked; if(e.target.checked) cb.closest('.fake-email').classList.add('row-checked'); else cb.closest('.fake-email').classList.remove('row-checked'); });
-            };
-            
-            // ELIMINAR Y MARCAR LEÍDO
-            document.getElementById('deleteSelected').onclick = async () => {
-                const checked = document.querySelectorAll('.email-check:checked');
-                if(checked.length === 0) return;
-                if(await Swal.fire({title:`¿Eliminar ${checked.length}?`, icon:'warning', showCancelButton:true, confirmButtonColor:'#D50032'}).then(r=>r.isConfirmed)) {
-                    for(const cb of checked) await fetch(`${API_URL}/emails/${cb.dataset.id}`, {method:'DELETE'});
-                    initData(); document.getElementById('selectAll').checked = false;
-                }
-            };
-            document.getElementById('markRead').onclick = async () => {
-                const checked = document.querySelectorAll('.email-check:checked');
-                for(const cb of checked) await fetch(`${API_URL}/emails/${cb.dataset.id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({unread:0})});
-                initData();
-            };
-
-            // COMPOSER
+            // --- COMPOSER LOGIC (NUEVA LÓGICA DE CHIPS) ---
             const modal = document.getElementById('composeModal');
             document.getElementById('composeBtn').onclick = () => { resetForm(); modal.classList.remove('hidden'); };
             document.getElementById('btnCloseX').onclick = () => closeModal();
@@ -409,47 +410,100 @@
             document.getElementById('sendBtn').onclick = () => sendEmail(false);
             document.getElementById('discardBtn').onclick = () => { if(confirm("¿Descartar?")) { resetForm(); modal.classList.add('hidden'); }};
 
-            // IA
-            document.getElementById('aiBtn').onclick = async () => {
-                const { value: prompt } = await Swal.fire({ title: '✨ IA Redactora', input: 'text', inputPlaceholder: 'Ej: Pedir vacaciones...', showCancelButton: true, confirmButtonColor: '#8b5cf6' });
-                if (prompt) {
-                    Swal.showLoading();
-                    setTimeout(() => {
-                        let subject = "Consulta", body = "<p>Hola,</p>";
-                        if(prompt.includes("vacaciones")) { subject="Vacaciones"; body+="<p>Solicito vacaciones.</p>"; }
-                        else { subject = prompt; body+=`<p>Sobre: ${prompt}</p>`; }
-                        document.getElementById('subject').value = subject; quill.root.innerHTML = body; Swal.close();
-                    }, 1000);
-                }
-            };
+            // CC/BCC toggles
+            const btnCc = document.getElementById('btnCc'), btnBcc = document.getElementById('btnBcc');
+            btnCc.onclick = () => { document.getElementById('ccField').classList.remove('hidden-field'); btnCc.style.display='none'; document.getElementById('cc-input').focus(); };
+            btnBcc.onclick = () => { document.getElementById('bccField').classList.remove('hidden-field'); btnBcc.style.display='none'; document.getElementById('bcc-input').focus(); };
 
-            // FILES
+            // Configurar Inputs de Chips
+            setupChipInput('to', selectedTo);
+            setupChipInput('cc', selectedCc);
+            setupChipInput('bcc', selectedBcc);
+
+            // IA y Archivos
+            document.getElementById('aiBtn').onclick = async () => { const { value: prompt } = await Swal.fire({ title: '✨ IA Redactora', input: 'text', inputPlaceholder: 'Ej: Pedir vacaciones...', showCancelButton: true, confirmButtonColor: '#8b5cf6' }); if (prompt) { Swal.showLoading(); setTimeout(() => { let subject = "Consulta", body = "<p>Hola,</p>"; if(prompt.includes("vacaciones")) { subject="Vacaciones"; body+="<p>Solicito vacaciones.</p>"; } else { subject = prompt; body+=`<p>Sobre: ${prompt}</p>`; } document.getElementById('subject').value = subject; quill.root.innerHTML = body; Swal.close(); }, 1000); } };
             document.getElementById('attachBtn').onclick = () => document.getElementById('fileInput').click();
             document.getElementById('fileInput').onchange = (e) => handleFiles(Array.from(e.target.files));
             const dropZone = document.getElementById('dropZone'), overlay = document.getElementById('drag-overlay');
             window.addEventListener('dragover', e => e.preventDefault()); window.addEventListener('drop', e => e.preventDefault());
-            dropZone.addEventListener('dragenter', () => overlay.style.display='flex');
-            overlay.addEventListener('dragleave', () => overlay.style.display='none');
+            dropZone.addEventListener('dragenter', () => overlay.style.display='flex'); overlay.addEventListener('dragleave', () => overlay.style.display='none');
             overlay.addEventListener('drop', (e) => { e.preventDefault(); overlay.style.display='none'; handleFiles(Array.from(e.dataTransfer.files)); });
-
-            // CC/BCC
-            const btnCc = document.getElementById('btnCc'), btnBcc = document.getElementById('btnBcc');
-            btnCc.onclick = () => { document.getElementById('ccField').style.display='flex'; btnCc.style.display='none'; document.getElementById('cc').focus(); };
-            window.closeField = (type) => { document.getElementById(type+'Field').style.display='none'; document.getElementById('btn'+type.charAt(0).toUpperCase()+type.slice(1)).style.display='inline'; };
-            btnBcc.onclick = () => { document.getElementById('bccField').style.display='flex'; btnBcc.style.display='none'; };
-
-            // AUTOCOMPLETE
-            const inputTo = document.getElementById('to'), list = document.getElementById('autocompleteList');
-            inputTo.addEventListener('input', () => {
-                const val = inputTo.value.toLowerCase(); list.innerHTML=''; if(!val){ list.classList.remove('visible'); return;}
-                const matches = contactsData.filter(c => c.name.toLowerCase().includes(val) || c.email.toLowerCase().includes(val));
-                if(matches.length>0) { list.classList.add('visible'); matches.forEach(c => { const d=document.createElement('div'); d.className='suggestion-item'; d.innerText=`${c.name} (${c.email})`; d.onclick=()=>{inputTo.value=c.email; list.classList.remove('visible');}; list.appendChild(d); }); }
-                else list.classList.remove('visible');
-            });
-            document.addEventListener('click', (e) => { if(!e.target.closest('.input-group')) list.classList.remove('visible'); });
         });
 
-        // --- FUNCIONES ---
+        // --- FUNCIONES DEL SISTEMA DE CHIPS ---
+        function setupChipInput(type, storageArray) {
+            const input = document.getElementById(`${type}-input`);
+            const container = document.getElementById(`${type}-chips-container`);
+            const list = document.getElementById('autocompleteList');
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === 'Tab' || e.key === ',') {
+                    e.preventDefault();
+                    addChip(input.value, type, storageArray);
+                }
+                if (e.key === 'Backspace' && input.value === '' && storageArray.length > 0) {
+                    removeChip(storageArray.length - 1, type, storageArray);
+                }
+            });
+
+            input.addEventListener('blur', () => { if (input.value) addChip(input.value, type, storageArray); });
+            
+            // Autocomplete específico para 'to' (podría extenderse a cc/bcc si se desea)
+            if(type === 'to') {
+                 input.addEventListener('input', () => {
+                    const val = input.value.toLowerCase(); list.innerHTML='';
+                    if(!val){ list.classList.remove('visible'); return;}
+                    const matches = contactsData.filter(c => c.name.toLowerCase().includes(val) || c.email.toLowerCase().includes(val));
+                    if(matches.length>0) {
+                        list.classList.add('visible');
+                        matches.forEach(c => {
+                            const d=document.createElement('div'); d.className='suggestion-item'; d.innerText=`${c.name} (${c.email})`;
+                            d.onclick=()=>{ addChip(c.email, 'to', selectedTo); list.classList.remove('visible'); };
+                            list.appendChild(d);
+                        });
+                    } else list.classList.remove('visible');
+                });
+                document.addEventListener('click', (e) => { if(!e.target.closest('.input-group')) list.classList.remove('visible'); });
+            }
+        }
+
+        function addChip(email, type, storageArray) {
+            email = email.trim().replace(',', '');
+            if (!email) return;
+            // Validación simple de email
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                 Swal.fire({toast:true, icon: 'error', title: 'Email inválido', position: 'top-end', showConfirmButton: false, timer: 1500});
+                 return;
+            }
+            if (storageArray.includes(email)) { document.getElementById(`${type}-input`).value = ''; return; } // Evitar duplicados
+            
+            storageArray.push(email);
+            renderChips(type, storageArray);
+            document.getElementById(`${type}-input`).value = '';
+        }
+
+        function removeChip(index, type, storageArray) {
+            storageArray.splice(index, 1);
+            renderChips(type, storageArray);
+        }
+
+        function renderChips(type, storageArray) {
+            const container = document.getElementById(`${type}-chips-container`);
+            const input = document.getElementById(`${type}-input`);
+            // Limpiar chips existentes antes del input
+            Array.from(container.getElementsByClassName('email-chip')).forEach(el => el.remove());
+            
+            storageArray.forEach((email, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'email-chip';
+                chip.innerHTML = `${email} <i class="fas fa-times chip-close"></i>`;
+                chip.querySelector('.chip-close').onclick = (e) => { e.stopPropagation(); removeChip(index, type, storageArray); };
+                container.insertBefore(chip, input);
+            });
+        }
+
+
+        // --- FUNCIONES GENERALES ---
         async function initData() {
             try {
                 const res = await fetch(`${API_URL}/emails`); emailsData = await res.json();
@@ -477,55 +531,59 @@
 
         function viewEmail(email) {
             if(email.unread) fetch(`${API_URL}/emails/${email.id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({unread:0})});
-            let attachHTML = '';
-            if(email.attachments && email.attachments.length > 0) attachHTML = `<div style="border-top:1px solid #eee; margin-top:20px; padding-top:10px;"><b>Adjuntos:</b><br>${email.attachments.length} archivos</div>`;
+            let attachHTML = ''; if(email.attachments && email.attachments.length > 0) attachHTML = `<div style="border-top:1px solid #eee; margin-top:20px; padding-top:10px;"><b>Adjuntos:</b><br>${email.attachments.length} archivos</div>`;
             const initial = email.sender.charAt(0).toUpperCase();
-            
-            // --- DETALLE CON DE Y PARA ---
-            document.getElementById('previewPanel').innerHTML = `
-                <div class="detail-wrapper">
-                    <div class="detail-header">
-                        <h2 class="detail-subject">${email.subject}</h2>
-                        <div class="meta-container">
-                            <div class="sender-info">
-                                <div class="sender-avatar">${initial}</div>
-                                <div class="meta-text">
-                                    <div class="from-line"><strong>De:</strong> ${email.sender} <span class="email-date-right">${new Date(email.date).toLocaleString()}</span></div>
-                                    <div class="to-line"><strong>Para:</strong> ${email.to_address || 'Mí'}</div>
-                                </div>
-                            </div>
-                            <div class="action-bar-top">
-                                <button class="action-btn" onclick="forwardEmail(${email.id})" title="Reenviar"><i class="fas fa-share"></i></button>
-                                <button class="action-btn" onclick="deleteSingle(${email.id})" title="Eliminar" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="detail-body">${email.body}</div>${attachHTML}
-                </div>`;
+            document.getElementById('previewPanel').innerHTML = `<div class="detail-wrapper"><div class="detail-header"><h2 class="detail-subject">${email.subject}</h2><div class="meta-container"><div class="sender-info"><div class="sender-avatar">${initial}</div><div class="meta-text"><div class="from-line"><strong>De:</strong> ${email.sender} <span class="email-date-right">${new Date(email.date).toLocaleString()}</span></div><div class="to-line"><strong>Para:</strong> ${email.to_address || 'Mí'}</div></div></div><div class="action-bar-top"><button class="action-btn" onclick="forwardEmail(${email.id})" title="Reenviar"><i class="fas fa-share"></i></button><button class="action-btn" onclick="deleteSingle(${email.id})" title="Eliminar" style="color:#ef4444;"><i class="fas fa-trash"></i></button></div></div></div><div class="detail-body">${email.body}</div>${attachHTML}</div>`;
         }
 
-        function openDraft(email) { editingDraftId = email.id; document.getElementById('to').value = email.to_address||''; document.getElementById('subject').value = email.subject; quill.root.innerHTML = email.body; document.getElementById('modalTitle').innerText = "Editar Borrador"; document.getElementById('composeModal').classList.remove('hidden'); }
+        function openDraft(email) { 
+            editingDraftId = email.id; 
+            resetForm(); // Limpia primero
+            // Cargar chips si existen (suponiendo que se guardaron separados por comas)
+            if(email.to_address) email.to_address.split(',').forEach(e => addChip(e, 'to', selectedTo));
+            if(email.cc_address) email.cc_address.split(',').forEach(e => addChip(e, 'cc', selectedCc));
+            if(email.bcc_address) email.bcc_address.split(',').forEach(e => addChip(e, 'bcc', selectedBcc));
+
+            document.getElementById('subject').value = email.subject; quill.root.innerHTML = email.body; document.getElementById('modalTitle').innerText = "Editar Borrador"; document.getElementById('composeModal').classList.remove('hidden'); 
+            if(selectedCc.length > 0) document.getElementById('btnCc').click();
+            if(selectedBcc.length > 0) document.getElementById('btnBcc').click();
+        }
+
         window.forwardEmail = (id) => { const e = emailsData.find(x => x.id === id); resetForm(); document.getElementById('subject').value = `Fwd: ${e.subject}`; quill.root.innerHTML = `<br><br>--- Reenviado ---<br>De: ${e.sender}<br>${e.body}`; document.getElementById('composeModal').classList.remove('hidden'); };
         window.deleteSingle = async (id) => { if(confirm("¿Eliminar?")) { await fetch(`${API_URL}/emails/${id}`, {method:'DELETE'}); initData(); document.getElementById('previewPanel').innerHTML=''; } };
-        function closeModal() { const c = document.getElementById('to').value || document.getElementById('subject').value || quill.getLength()>1; if(c && !editingDraftId) { if(confirm("¿Guardar borrador?")) sendEmail(true); } document.getElementById('composeModal').classList.add('hidden'); resetForm(); }
+        function closeModal() { const c = selectedTo.length > 0 || document.getElementById('subject').value || quill.getLength()>1; if(c && !editingDraftId) { if(confirm("¿Guardar borrador?")) sendEmail(true); } document.getElementById('composeModal').classList.add('hidden'); resetForm(); }
 
         async function sendEmail(isDraft) {
-            const to = document.getElementById('to').value; if(!isDraft && !to) return Swal.fire('Falta destinatario');
+            // Usar los arrays de chips para el envío
+            const to = selectedTo.join(',');
+            const cc = selectedCc.join(',');
+            const bcc = selectedBcc.join(',');
+
+            if(!isDraft && !to) return Swal.fire('Falta destinatario');
             const btn = document.getElementById('sendBtn'); if(!isDraft) { btn.innerText='Enviando...'; btn.disabled=true; }
             try {
                 const attachments = await Promise.all(attachedFiles.map(async f => ({ filename: f.name, content: await toBase64(f), encoding: 'base64' })));
-                const payload = { to, cc:document.getElementById('cc').value, bcc:document.getElementById('bcc').value, subject:document.getElementById('subject').value, body:quill.root.innerHTML, isDraft, attachments, idToDelete: editingDraftId };
+                const payload = { to, cc, bcc, subject:document.getElementById('subject').value, body:quill.root.innerHTML, isDraft, attachments, idToDelete: editingDraftId };
                 const res = await fetch(`${API_URL}/emails`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
                 if(res.ok) { if(!isDraft) { Swal.fire({toast:true, icon:'success', title:'Enviado'}); document.getElementById('composeModal').classList.add('hidden'); resetForm(); } else Swal.fire({toast:true, icon:'info', title:'Borrador'}); initData(); }
-            } catch(e) { Swal.fire('Error'); } finally { btn.innerText='Enviar'; btn.disabled=false; }
+            } catch(e) { Swal.fire('Error al enviar'); } finally { btn.innerText='Enviar'; btn.disabled=false; }
         }
 
         function handleFiles(files) { const t = attachedFiles.reduce((a,b)=>a+b.size,0); files.forEach(f => { if(t+f.size > 25*1024*1024) Swal.fire('Excede 25MB'); else attachedFiles.push(f); }); renderFiles(); }
         function renderFiles() { const l = document.getElementById('fileList'); l.innerHTML=''; let s = 0; attachedFiles.forEach((f, i) => { s+=f.size; l.innerHTML+=`<span class="file-chip"><i class="fas fa-file"></i> ${f.name} <i class="fas fa-times file-remove" onclick="removeFile(${i})"></i></span>`; }); document.getElementById('progBar').style.display=s>0?'block':'none'; document.getElementById('progFill').style.width=(s/(25*1024*1024)*100)+'%'; }
         window.removeFile = (i) => { attachedFiles.splice(i,1); renderFiles(); };
+        
         function resetForm() { 
-            editingDraftId=null; document.getElementById('to').value=''; document.getElementById('cc').value=''; document.getElementById('bcc').value=''; document.getElementById('subject').value=''; quill.setText(''); attachedFiles=[]; renderFiles(); document.getElementById('modalTitle').innerText="Mensaje Nuevo";
+            editingDraftId=null; 
+            // Limpiar arrays y visuales de chips
+            selectedTo = []; selectedCc = []; selectedBcc = [];
+            renderChips('to', selectedTo); renderChips('cc', selectedCc); renderChips('bcc', selectedBcc);
+            document.getElementById('to-input').value=''; document.getElementById('cc-input').value=''; document.getElementById('bcc-input').value='';
+            
+            document.getElementById('subject').value=''; quill.setText(''); attachedFiles=[]; renderFiles(); document.getElementById('modalTitle').innerText="Mensaje Nuevo";
             document.getElementById('from').value = user.email || 'correo@ejemplo.com';
+            document.getElementById('ccField').classList.add('hidden-field'); document.getElementById('btnCc').style.display='inline';
+            document.getElementById('bccField').classList.add('hidden-field'); document.getElementById('btnBcc').style.display='inline';
         }
         const toBase64 = file => new Promise((r, j) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => r(reader.result.split(',')[1]); reader.onerror = e => j(e); });
     </script>
