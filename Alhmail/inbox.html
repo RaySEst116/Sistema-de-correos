@@ -363,6 +363,7 @@
         
         const STORAGE_KEY = `alhmail_data_${user.email}`;
 
+        // I18N
         const translations = {
             es: { compose: "Redactar", inbox: "Entrada", sent: "Enviados", drafts: "Borradores", spam: "Spam", users: "Usuarios", account: "Mi Cuenta", logout: "Cerrar Sesión", my_account: "Mi Cuenta", search: "Buscar...", new_message: "Mensaje Nuevo", from: "De:", to: "Para:", subject: "Asunto", send: "Enviar", save_changes: "Guardar Cambios", name: "Nombre", password: "Contraseña", role: "Rol", user_management: "Gestión de Usuarios", new: "Nuevo", actions: "Acciones", loading: "Cargando...", select_email: "Selecciona un correo para leer", drop_files: "Suelta archivos aquí", delete_confirm_title: "¿Eliminar {n} correos?", delete_confirm_btn: "Sí, eliminar", cancel: "Cancelar", deleted: "Eliminados", marked_read: "Marcados como leídos", sent_success: "Enviado", saved_success: "Guardado", error_send: "Error al enviar", missing_dest: "Falta el destinatario", empty: "Vacío" },
             en: { compose: "Compose", inbox: "Inbox", sent: "Sent", drafts: "Drafts", spam: "Spam", users: "Users", account: "My Account", logout: "Logout", my_account: "My Account", search: "Search...", new_message: "New Message", from: "From:", to: "To:", subject: "Subject", send: "Send", save_changes: "Save Changes", name: "Name", password: "Password", role: "Role", user_management: "User Management", new: "New", actions: "Actions", loading: "Loading...", select_email: "Select an email to read", drop_files: "Drop files here", delete_confirm_title: "Delete {n} emails?", delete_confirm_btn: "Yes, delete", cancel: "Cancel", deleted: "Deleted", marked_read: "Marked as read", sent_success: "Sent", saved_success: "Saved", error_send: "Error sending", missing_dest: "Missing recipient", empty: "Empty" }
@@ -389,6 +390,46 @@
             initData(); setInterval(initData, 20000);
             loadContacts();
 
+            // LOGICA BOTÓN IA (GEMINI)
+            document.getElementById('aiBtn').onclick = async () => {
+                const subject = document.getElementById('subject').value;
+                const { value: prompt } = await Swal.fire({
+                    title: '✨ Asistente de IA',
+                    input: 'textarea',
+                    inputLabel: '¿Sobre qué quieres escribir el correo?',
+                    inputPlaceholder: 'Ej: Escribe un recordatorio amable para pagar la factura pendiente...',
+                    showCancelButton: true,
+                    confirmButtonColor: 'linear-gradient(135deg, #8b5cf6, #d946ef)', 
+                    confirmButtonText: 'Generar',
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: (value) => { if (!value) return '¡Necesitas escribir una instrucción!'; }
+                });
+
+                if (prompt) {
+                    Swal.fire({
+                        title: 'Pensando...',
+                        html: 'La IA está redactando tu correo',
+                        timerProgressBar: true,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    try {
+                        const res = await fetch(`${API_URL}/ai/draft`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ prompt, subject })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            quill.clipboard.dangerouslyPasteHTML(data.text);
+                            Swal.close();
+                        } else { throw new Error(data.error); }
+                    } catch (e) {
+                        Swal.fire({ icon: 'error', title: 'Error IA', text: 'No se pudo generar el texto. Verifica tu API Key.' });
+                    }
+                }
+            };
+
             document.getElementById('themeBtn').onclick = () => { currentTheme = currentTheme === 'light' ? 'dark' : 'light'; localStorage.setItem('alhmail_theme', currentTheme); applyTheme(); };
             document.getElementById('langBtn').onclick = () => { currentLang = currentLang === 'es' ? 'en' : 'es'; localStorage.setItem('alhmail_lang', currentLang); applyLanguage(); renderEmails(document.querySelector('.nav-item.active').dataset.target); };
 
@@ -412,12 +453,8 @@
             document.getElementById('btnCloseX').onclick = () => modal.classList.remove('active');
             document.getElementById('sendBtn').onclick = () => sendEmail(false);
             document.getElementById('discardBtn').onclick = () => { if(confirm(currentLang==='es'?"¿Descartar?":"Discard?")) { resetForm(); modal.classList.remove('active'); }};
-            
-            // INICIALIZAR CHIPS Y AUTOCOMPLETE
-            setupChipInput('to', selectedTo); 
-            setupChipInput('cc', selectedCc); 
-            setupChipInput('bcc', selectedBcc); 
-            setupAutocomplete(); // <--- Aquí activamos la escucha
+            setupChipInput('to', selectedTo); setupChipInput('cc', selectedCc); setupChipInput('bcc', selectedBcc); 
+            setupAutocomplete();
 
             const btnCc = document.getElementById('btnCc'), btnBcc = document.getElementById('btnBcc');
             btnCc.onclick = () => { document.getElementById('ccField').classList.remove('hidden-field'); btnCc.style.display='none'; document.getElementById('cc-input').focus(); };
@@ -450,26 +487,11 @@
             };
             
             document.getElementById('searchInput').addEventListener('keyup', () => { renderEmails(document.querySelector('.nav-item.active').dataset.target); });
-            // CERRAR LA LISTA AL HACER CLICK FUERA
-            document.addEventListener('click', (e) => { 
-                if (!e.target.closest('#to-chips-container')) { 
-                    document.getElementById('autocompleteList').classList.remove('visible'); 
-                } 
-            });
+            document.addEventListener('click', (e) => { if (!e.target.closest('#to-chips-container')) { document.getElementById('autocompleteList').classList.remove('visible'); } });
         });
 
-        // FUNCIONES DE CARGA Y GESTIÓN
-        async function loadContacts() {
-            try {
-                const resUsers = await fetch(`${API_URL}/users`);
-                const users = await resUsers.json();
-                const resContacts = await fetch(`${API_URL}/contacts`);
-                const contacts = await resContacts.json();
-                // Combinar listas para autocompletado
-                contactsData = [...users, ...contacts];
-            } catch(e) { console.log("Error loading contacts", e); }
-        }
-
+        // FUNCIONES
+        async function loadContacts() { try { const resUsers = await fetch(`${API_URL}/users`); const users = await resUsers.json(); const resContacts = await fetch(`${API_URL}/contacts`); const contacts = await resContacts.json(); contactsData = [...users, ...contacts]; } catch(e) { console.log("Error loading contacts", e); } }
         async function loadUsersTable() { try { const res = await fetch(`${API_URL}/users`); const users = await res.json(); const tbody = document.getElementById('usersTableBody'); tbody.innerHTML = ''; users.forEach(u => { tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.email}</td><td><span class="role-tag ${u.role}">${u.role}</span></td><td><button class="btn-action btn-edit" onclick="editUser('${u.id}','${u.name}','${u.email}','${u.role}')"><i class="fas fa-pencil-alt"></i></button>${u.id!==user.id ? `<button class="btn-action btn-delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; }); } catch(e){ console.log(e); } }
         window.editUser = (id, name, email, role) => { selectedUserId = id; isCreatingUser = false; document.getElementById('usersModal').classList.remove('active'); fillAccountForm({name, email, role}, false); document.getElementById('accountModal').classList.add('active'); };
         window.deleteUser = async (id) => { if(confirm("¿Borrar?")) { await fetch(`${API_URL}/users/${id}`, {method:'DELETE'}); loadUsersTable(); } };
@@ -499,7 +521,9 @@
             let filtered = emailsData.filter(e => e.folder === folder);
             const term = document.getElementById('searchInput').value.toLowerCase();
             if(term) filtered = filtered.filter(e => e.subject.toLowerCase().includes(term) || e.sender.toLowerCase().includes(term));
+            
             if(filtered.length === 0) { container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted)">${translations[currentLang].empty}</div>`; return; }
+            
             filtered.forEach(email => {
                 const el = document.createElement('div'); el.id = `email-row-${email.id}`; el.className = `fake-email ${email.unread?'unread':''}`;
                 const fromLabel = email.sender.split('<')[0].replace(/"/g, '');
@@ -525,122 +549,36 @@
             }
         }
 
-        // ================== LOGICA DE CHIPS Y SUGERENCIAS (FIXED) ==================
         function setupAutocomplete() {
-            const input = document.getElementById('to-input');
-            const list = document.getElementById('autocompleteList');
-
+            const input = document.getElementById('to-input'); const list = document.getElementById('autocompleteList');
             input.addEventListener('input', function() {
-                const val = this.value.toLowerCase();
-                list.innerHTML = '';
-                
-                if (!val) {
-                    list.classList.remove('visible');
-                    return;
-                }
-
-                const matches = contactsData.filter(c => 
-                    (c.name && c.name.toLowerCase().includes(val)) || 
-                    (c.email && c.email.toLowerCase().includes(val))
-                );
-
+                const val = this.value.toLowerCase(); list.innerHTML = '';
+                if (!val) { list.classList.remove('visible'); return; }
+                const matches = contactsData.filter(c => (c.name && c.name.toLowerCase().includes(val)) || (c.email && c.email.toLowerCase().includes(val)));
                 matches.forEach(match => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
+                    const item = document.createElement('div'); item.className = 'suggestion-item';
                     item.innerHTML = `<strong>${match.name}</strong> <small>${match.email}</small>`;
-                    item.onclick = () => {
-                        addChip(match.email, 'to', selectedTo);
-                        input.value = '';
-                        list.classList.remove('visible');
-                        input.focus();
-                    };
+                    item.onclick = () => { addChip(match.email, 'to', selectedTo); input.value = ''; list.classList.remove('visible'); input.focus(); };
                     list.appendChild(item);
                 });
-
-                if (matches.length > 0) list.classList.add('visible');
-                else list.classList.remove('visible');
+                if (matches.length > 0) list.classList.add('visible'); else list.classList.remove('visible');
             });
         }
-
-        function setupChipInput(type, arr) {
-            document.getElementById(`${type}-input`).addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
-                    e.preventDefault();
-                    addChip(e.target.value.trim(), type, arr);
-                    document.getElementById('autocompleteList').classList.remove('visible');
-                }
-            });
-            document.getElementById(`${type}-input`).addEventListener('blur', (e) => {
-                const val = e.target.value.trim();
-                if(val) addChip(val, type, arr);
-            });
-        }
-        function addChip(val, type, arr) {
-            if(val && !arr.includes(val)){ 
-                arr.push(val); 
-                renderChips(type, arr); 
-                document.getElementById(`${type}-input`).value=''; 
-            }
-        }
-        function renderChips(type, arr) {
-            const container = document.getElementById(`${type}-chips-container`);
-            const input = document.getElementById(`${type}-input`);
-            Array.from(container.getElementsByClassName('email-chip')).forEach(e => e.remove());
-            
-            arr.forEach((email, index) => {
-                const chip = document.createElement('div');
-                chip.className = 'email-chip';
-                chip.innerHTML = `${email} <i class="fas fa-times chip-close"></i>`;
-                chip.querySelector('.chip-close').onclick = (e) => {
-                    e.stopPropagation();
-                    arr.splice(index, 1);
-                    renderChips(type, arr);
-                };
-                container.insertBefore(chip, input);
-            });
-        }
+        function setupChipInput(type, arr) { document.getElementById(`${type}-input`).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') { e.preventDefault(); addChip(e.target.value.trim(), type, arr); document.getElementById('autocompleteList').classList.remove('visible'); } }); document.getElementById(`${type}-input`).addEventListener('blur', (e) => { const val = e.target.value.trim(); if(val) addChip(val, type, arr); }); }
+        function addChip(val, type, arr) { if(val && !arr.includes(val)){ arr.push(val); renderChips(type, arr); document.getElementById(`${type}-input`).value=''; } }
+        function renderChips(type, arr) { const container = document.getElementById(`${type}-chips-container`); const input = document.getElementById(`${type}-input`); Array.from(container.getElementsByClassName('email-chip')).forEach(e => e.remove()); arr.forEach((email, index) => { const chip = document.createElement('div'); chip.className = 'email-chip'; chip.innerHTML = `${email} <i class="fas fa-times chip-close"></i>`; chip.querySelector('.chip-close').onclick = (e) => { e.stopPropagation(); arr.splice(index, 1); renderChips(type, arr); }; container.insertBefore(chip, input); }); }
         window.hideField = (type) => { document.getElementById(`${type}Field`).classList.add('hidden-field'); if(type === 'cc') { document.getElementById('btnCc').style.display = 'inline-block'; selectedCc = []; renderChips('cc', selectedCc); } else { document.getElementById('btnBcc').style.display = 'inline-block'; selectedBcc = []; renderChips('bcc', selectedBcc); } };
         function resetForm() { document.getElementById('subject').value=''; quill.setText(''); document.getElementById('from').value = user.email; selectedTo=[]; selectedCc=[]; selectedBcc=[]; renderChips('to', selectedTo); renderChips('cc', selectedCc); renderChips('bcc', selectedBcc); hideField('cc'); hideField('bcc'); }
         
         async function sendEmail(isDraft) {
-            // FIX: CAPTURAR TEXTO PENDIENTE EN INPUTS ANTES DE ENVIAR
             const inputTo = document.getElementById('to-input'); if(inputTo.value.trim()) addChip(inputTo.value.trim(), 'to', selectedTo);
             const inputCc = document.getElementById('cc-input'); if(inputCc.value.trim()) addChip(inputCc.value.trim(), 'cc', selectedCc);
             const inputBcc = document.getElementById('bcc-input'); if(inputBcc.value.trim()) addChip(inputBcc.value.trim(), 'bcc', selectedBcc);
 
-            const to = selectedTo.join(','); 
-            const subject = document.getElementById('subject').value;
-            const body = quill.root.innerHTML;
-            
+            const to = selectedTo.join(','); const subject = document.getElementById('subject').value; const body = quill.root.innerHTML;
             if(!isDraft && !to) return Swal.fire(translations[currentLang].missing_dest);
-
-            const payload = {
-                from: user.email, 
-                to: to,
-                cc: selectedCc.join(','),
-                bcc: selectedBcc.join(','),
-                subject: subject,
-                body: body,
-                isDraft: isDraft,
-                attachments: [] 
-            };
-
-            try {
-                const res = await fetch(`${API_URL}/emails`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-                
-                if(res.ok) {
-                    Swal.fire({icon:'success', title: isDraft ? translations[currentLang].saved_success : translations[currentLang].sent_success});
-                    document.getElementById('composeModal').classList.remove('active');
-                    resetForm();
-                    setTimeout(initData, 500); 
-                } else {
-                    Swal.fire(translations[currentLang].error_send);
-                }
-            } catch(e) { console.error(e); }
+            const payload = { from: user.email, to: to, cc: selectedCc.join(','), bcc: selectedBcc.join(','), subject: subject, body: body, isDraft: isDraft, attachments: [] };
+            try { const res = await fetch(`${API_URL}/emails`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); if(res.ok) { Swal.fire({icon:'success', title: isDraft ? translations[currentLang].saved_success : translations[currentLang].sent_success}); document.getElementById('composeModal').classList.remove('active'); resetForm(); setTimeout(initData, 500); } else { Swal.fire(translations[currentLang].error_send); } } catch(e) { console.error(e); }
         }
     </script>
 </body>
