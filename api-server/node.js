@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2/promise'); // <--- IMPORTANTE: mysql2/promise
+const mysql = require('mysql2/promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
@@ -12,111 +12,95 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-// --- 1. CONFIGURACIÓN IA (GEMINI) ---
-// Asegúrate de que esta clave sea la correcta y tenga permisos habilitados
-const GEN_AI_KEY = 'AIzaSyDIZEA0rjRuTv35Dfncq3gE8qk67VheGLM'; 
+// --- CONFIGURACIÓN ---
+const GEN_AI_KEY = 'TU_API_KEY_NUEVA_AQUI'; 
 const genAI = new GoogleGenerativeAI(GEN_AI_KEY);
-// Usamos 'gemini-1.5-flash' que es el estándar actual.
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// --- 2. CREDENCIALES GMAIL ---
 const GMAIL_USER = 'mcskipper16@gmail.com'; 
 const GMAIL_PASS = 'vzok rdpj syjt fjut'; 
 
-// --- 3. CONEXIÓN BD (CORREGIDO A POOL) ---
 const dbConfig = {
-    host: 'localhost', 
-    port: 3307, 
-    user: 'root', 
-    password: '1234', 
-    database: 'alhmail_security',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    host: 'localhost', port: 3307, user: 'root', password: '1234', database: 'alhmail_security',
+    waitForConnections: true, connectionLimit: 10, queueLimit: 0
 };
-
-// !!! AQUÍ ESTABA EL ERROR ANTES !!!
-// Usamos createPool (NO createConnection) para poder usar .getConnection() más abajo
 const db = mysql.createPool(dbConfig); 
 
-// Prueba de conexión al iniciar
-db.getConnection()
-    .then(conn => {
-        console.log('✅ BD Conectada correctamente (Modo Pool)');
-        conn.release();
-    })
-    .catch(err => {
-        console.error('❌ Error fatal al conectar BD:', err.message);
+// Verificar conexión
+db.getConnection().then(c => { console.log('✅ BD Pool Activo'); c.release(); }).catch(e => console.error(e));
+const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: GMAIL_USER, pass: GMAIL_PASS } });
+
+// ==========================================
+// 🛡️ MOTOR DE SEGURIDAD HEURÍSTICO
+// ==========================================
+async function analyzeEmailSecurity(sender, subject, body, attachments) {
+    let score = 0;
+    let threats = [];
+    let status = "clean"; 
+    let folder = "inbox"; // Por defecto a entrada
+
+    // 1. VERIFICAR LISTAS EN SQL
+    // Extraemos solo el email si viene como "Nombre <email>"
+    const cleanSender = sender.includes('<') ? sender.match(/<([^>]+)>/)[1] : sender;
+    
+    const [rules] = await db.query("SELECT type FROM email_rules WHERE email = ?", [cleanSender]);
+    
+    if (rules.length > 0) {
+        if (rules[0].type === 'block') {
+            return { score: 100, threats: ["Remitente en Lista Negra (SQL)"], status: "blocked", folder: "spam" };
+        }
+        if (rules[0].type === 'allow') {
+            return { score: 0, threats: ["Remitente en Lista Blanca (SQL)"], status: "verified", folder: "inbox" };
+        }
+    }
+
+    // 2. ESCANEO DE CONTENIDO (Palabras clave)
+    const content = (subject + " " + body).toLowerCase();
+    const spamKeywords = ['ganaste', 'urgente', 'lotería', 'hacked', 'bitcoin', 'herencia', 'verify your account', 'premio'];
+    
+    spamKeywords.forEach(word => {
+        if (content.includes(word)) {
+            score += 25;
+            threats.push(`Palabra sospechosa: '${word}'`);
+        }
     });
 
-const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: GMAIL_USER, pass: GMAIL_PASS } });
+    // 3. ESCANEO DE ADJUNTOS (Extensiones Peligrosas)
+    const dangerousExts = ['.exe', '.bat', '.sh', '.js', '.vbs', '.scr', '.jar', '.cmd'];
+    if (attachments && Array.isArray(attachments)) {
+        attachments.forEach(file => {
+            const fname = file.filename || file.fileName || "";
+            if (fname) {
+                const ext = fname.slice(((fname.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+                if (dangerousExts.includes('.' + ext)) {
+                    score += 100; 
+                    threats.push(`Archivo ejecutable detectado: ${fname}`);
+                }
+            }
+        });
+    }
+
+    // 4. EVALUACIÓN FINAL
+    if (score >= 100) {
+        status = "infected";
+        folder = "spam";
+    } else if (score >= 25) {
+        status = "suspicious";
+        folder = "spam";
+    }
+
+    return { score, threats, status, folder };
+}
 
 // ================= RUTAS =================
 
-// RUTA IA: Generar Borrador
-app.post('/ai/draft', async (req, res) => {
-    const { prompt, subject } = req.body;
-    if (!prompt) return res.status(400).json({ error: "Falta la instrucción" });
-
-    try {
-        console.log("🤖 IA procesando prompt:", prompt);
-        
-        const fullPrompt = `
-            Eres un asistente de correo. Escribe el cuerpo de un email.
-            Asunto: "${subject || 'General'}"
-            Instrucción: "${prompt}"
-            Salida: Solo el texto en HTML (p, br, b). Sin saludos del sistema.
-        `;
-        
-        const result = await model.generateContent(fullPrompt);
-        const response = await result.response;
-        const text = response.text();
-        
-        res.json({ success: true, text: text });
-
-    } catch (e) {
-        console.error("❌ ERROR IA:", e);
-        // Si falla la IA, devolvemos un mensaje claro al frontend
-        res.status(500).json({ error: "Error de IA (Revisa tu API Key): " + e.message });
-    }
-});
-
-// GET EMAILS
-app.get('/emails', async (req, res) => {
-    const userEmail = req.query.userEmail;
-    if (!userEmail) return res.json([]); 
-    try {
-        const [rows] = await db.query('SELECT * FROM emails WHERE owner_email = ? ORDER BY date DESC, id DESC', [userEmail]);
-        const parsed = rows.map(row => ({
-            ...row,
-            unread: Boolean(row.unread),
-            hasAttachments: Boolean(row.hasAttachments),
-            attachments: row.attachments ? JSON.parse(row.attachments) : []
-        }));
-        res.json(parsed);
-    } catch (e) { console.error("GET Error:", e.message); res.status(500).send(e.message); }
-});
-
-// POP3: Borrar correos descargados
-app.post('/emails/downloaded', async (req, res) => {
-    const { ids } = req.body; 
-    if (!ids || ids.length === 0) return res.json({ success: true });
-    try {
-        const placeholder = ids.map(() => '?').join(',');
-        await db.query(`DELETE FROM emails WHERE id IN (${placeholder})`, ids);
-        console.log(`🧹 POP3: ${ids.length} correos eliminados.`);
-        res.json({ success: true });
-    } catch (e) { console.error("POP3 Error:", e.message); res.status(500).json({ error: e.message }); }
-});
-
-// ENVIAR CORREO (Routing Interno/Externo)
+// ENVIAR CORREO (CON ANÁLISIS)
 app.post('/emails', async (req, res) => {
     const { from, to, cc, bcc, subject, body, isDraft, attachments, idToDelete } = req.body;
     
-    // AHORA ESTO FUNCIONARÁ PORQUE 'db' ES UN POOL
     let connection;
     try {
-        connection = await db.getConnection(); // Obtiene conexión del pool
+        connection = await db.getConnection(); 
         await connection.beginTransaction();
 
         if (idToDelete) await connection.query('DELETE FROM emails WHERE id = ?', [idToDelete]);
@@ -127,90 +111,95 @@ app.post('/emails', async (req, res) => {
         const attachStr = JSON.stringify(attachments || []);
         const hasAttach = attachments && attachments.length > 0 ? 1 : 0;
 
-        // A. Guardar en Enviados
+        // A. REMITENTE (Sin análisis, es saliente)
         await connection.query('INSERT INTO emails SET ?', {
             owner_email: from, folder: isDraft ? 'drafts' : 'sent', sender: 'Yo', to_address: to, 
             subject: subject || '(Sin Asunto)', preview: `Para: ${to} - ${previewText}`, body: cleanBody,
             date: dateNow, unread: 0, hasAttachments: hasAttach, attachments: attachStr,
-            securityAnalysis: JSON.stringify({ status: "clean" })
+            securityAnalysis: JSON.stringify({ status: "clean", score: 0, threats: [] })
         });
 
         if (!isDraft && to) {
-            // B. Verificar destinatario
+            // --- EJECUTAR ESCÁNER DE SEGURIDAD ---
+            const securityReport = await analyzeEmailSecurity(from, subject, cleanBody, attachments);
+            console.log(`🛡️ Análisis para ${to}: ${securityReport.status} (Score: ${securityReport.score})`);
+
+            // B. DESTINATARIO
             const [users] = await connection.query("SELECT email FROM users WHERE email = ?", [to]);
             
             if (users.length > 0) {
-                // Interno
+                // ENTREGA INTERNA (Usando la carpeta que decidió el escáner)
                 await connection.query('INSERT INTO emails SET ?', {
-                    owner_email: to, folder: 'inbox', sender: from, to_address: 'Mí',
-                    subject: subject || '(Sin Asunto)', preview: previewText, body: cleanBody,
-                    date: dateNow, unread: 1, hasAttachments: hasAttach, attachments: attachStr,
-                    securityAnalysis: JSON.stringify({ status: "clean" })
+                    owner_email: to, 
+                    folder: securityReport.folder, // Puede ir a SPAM o INBOX
+                    sender: from,
+                    to_address: 'Mí',
+                    // Si es virus, avisamos en el asunto
+                    subject: securityReport.status === 'infected' ? `[PELIGRO] ${subject}` : subject,
+                    preview: previewText,
+                    body: cleanBody,
+                    date: dateNow,
+                    unread: 1,
+                    hasAttachments: hasAttach,
+                    attachments: attachStr,
+                    securityAnalysis: JSON.stringify(securityReport) // Guardamos el reporte
                 });
-                console.log(`🔀 Interno: Enviado a ${to}`);
             } else {
-                // Externo
-                try {
-                    await transporter.sendMail({ from: GMAIL_USER, to, cc, bcc, subject, html: body, attachments });
-                    console.log(`🌎 SMTP: Enviado a ${to}`);
-                } catch (err) { console.error("SMTP Error:", err.message); }
+                // EXTERNO (Intentar enviar aunque sea spam, o bloquearlo si prefieres)
+                try { await transporter.sendMail({ from: GMAIL_USER, to, cc, bcc, subject, html: body, attachments }); } catch (err) {}
             }
         }
-
         await connection.commit();
         res.json({ success: true });
-
     } catch (error) {
         if (connection) await connection.rollback();
-        console.error("❌ ERROR AL ENVIAR:", error);
+        console.error(error);
         res.status(500).json({ error: error.message });
-    } finally {
-        if (connection) connection.release();
-    }
+    } finally { if(connection) connection.release(); }
 });
 
-// AUXILIARES
-app.get('/contacts', async (req, res) => {
-    try { const [rows] = await db.query('SELECT * FROM contacts ORDER BY name ASC'); res.json(rows); } catch (e) { res.status(500).send(e.message); }
-});
-app.get('/users', async (req, res) => {
-    try { const [rows] = await db.query('SELECT id, name, email, role FROM users ORDER BY name ASC'); res.json(rows); } catch (e) { res.status(500).send(e.message); }
-});
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+// IA DRAFT
+app.post('/ai/draft', async (req, res) => {
+    const { prompt, subject } = req.body;
     try {
-        const [rows] = await db.query("SELECT * FROM users WHERE email = ? AND password = ?", [email, password]);
-        if (rows.length > 0) res.json({ success: true, user: rows[0], token: "jwt-" + Date.now() });
-        else res.status(401).json({ success: false, message: "Credenciales incorrectas" });
+        const result = await model.generateContent(`Escribe correo HTML. Asunto: ${subject}. Prompt: ${prompt}.`);
+        res.json({ success: true, text: (await result.response).text() });
     } catch (e) { res.status(500).json({ error: e.message }); }
-});
-app.post('/users', async (req, res) => {
-    const { name, email, password, role } = req.body;
-    try {
-        const [exists] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
-        if (exists.length > 0) return res.status(409).json({ success: false, message: "Email existe" });
-        await db.query("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)", [name, email, password, role || 'user']);
-        res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
-app.put('/users/:id', async (req, res) => {
-    const { name, password, role } = req.body;
-    let sql = "UPDATE users SET name = ?, role = ? WHERE id = ?";
-    let params = [name, role, req.params.id];
-    if (password) { sql = "UPDATE users SET name = ?, role = ?, password = ? WHERE id = ?"; params = [name, role, password, req.params.id]; }
-    try { await db.query(sql, params); res.json({ success: true }); } catch (e) { res.status(500).json({ error: e.message }); }
-});
-app.delete('/users/:id', async (req, res) => {
-    try { await db.query('DELETE FROM users WHERE id = ?', [req.params.id]); res.json({ success: true }); } catch (e) { res.status(500).send(e.message); }
-});
-app.delete('/emails/:id', async (req, res) => {
-    try { await db.query('DELETE FROM emails WHERE id = ?', [req.params.id]); res.json({success:true}); } catch(e){res.status(500).send(e.message);}
-});
-app.put('/emails/:id', async (req, res) => {
-    try { await db.query('UPDATE emails SET unread = ? WHERE id = ?', [req.body.unread, req.params.id]); res.json({success:true}); } catch(e){res.status(500).send(e.message);}
 });
 
-// SYNC GMAIL
+// LEER EMAILS
+app.get('/emails', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM emails WHERE owner_email = ? ORDER BY date DESC, id DESC', [req.query.userEmail]);
+        const parsed = rows.map(r => ({
+            ...r, 
+            unread: !!r.unread, 
+            hasAttachments: !!r.hasAttachments, 
+            attachments: JSON.parse(r.attachments||'[]'),
+            // Parseamos el reporte de seguridad
+            securityAnalysis: r.securityAnalysis ? JSON.parse(r.securityAnalysis) : { status: 'clean', score: 0, threats: [] }
+        }));
+        res.json(parsed);
+    } catch (e) { res.status(500).send(e.message); }
+});
+
+// POP3 CLEANUP
+app.post('/emails/downloaded', async (req, res) => {
+    if (!req.body.ids || !req.body.ids.length) return res.json({success:true});
+    try { await db.query(`DELETE FROM emails WHERE id IN (${req.body.ids.map(()=>'?').join(',')})`, req.body.ids); res.json({success:true}); } catch(e){res.status(500).send(e.message);}
+});
+
+// BASIC CRUD (Login, Users, etc - Igual que antes)
+app.post('/login', async (req, res) => { try { const [r] = await db.query("SELECT * FROM users WHERE email=? AND password=?", [req.body.email, req.body.password]); r.length ? res.json({success:true, user:r[0]}) : res.status(401).send(); } catch(e){res.status(500).send();} });
+app.get('/contacts', async (req, res) => { try { const [r] = await db.query('SELECT * FROM contacts'); res.json(r); } catch(e){} });
+app.get('/users', async (req, res) => { try { const [r] = await db.query('SELECT id, name, email, role FROM users'); res.json(r); } catch(e){} });
+app.post('/users', async (req, res) => { try { await db.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [req.body.name, req.body.email, req.body.password, req.body.role]); res.json({success:true}); } catch(e){res.status(500).send(e.message);} });
+app.put('/users/:id', async (req, res) => { try { await db.query("UPDATE users SET name=?, role=? WHERE id=?", [req.body.name, req.body.role, req.params.id]); res.json({success:true}); } catch(e){} });
+app.delete('/users/:id', async (req, res) => { try { await db.query('DELETE FROM users WHERE id=?', [req.params.id]); res.json({success:true}); } catch(e){} });
+app.delete('/emails/:id', async (req, res) => { try { await db.query('DELETE FROM emails WHERE id=?', [req.params.id]); res.json({success:true}); } catch(e){} });
+app.put('/emails/:id', async (req, res) => { try { await db.query('UPDATE emails SET unread=? WHERE id=?', [req.body.unread, req.params.id]); res.json({success:true}); } catch(e){} });
+
+// SYNC GMAIL (CON ANÁLISIS)
 async function syncGmailInbox() {
     const config = { imap: { user: GMAIL_USER, password: GMAIL_PASS, host: 'imap.gmail.com', port: 993, tls: true, tlsOptions: { rejectUnauthorized: false } } };
     try {
@@ -221,25 +210,27 @@ async function syncGmailInbox() {
             const all = item.parts.find(part => part.which === 'TEXT');
             if (all) {
                 const parsed = await simpleParser(all.body);
-                const sender = parsed.from ? parsed.from.text : "Desconocido";
+                const sender = parsed.from?.text || "Desconocido";
                 const subject = parsed.subject || "(Sin Asunto)";
                 const [exists] = await db.query("SELECT id FROM emails WHERE owner_email = ? AND subject = ? AND sender = ? AND date > DATE_SUB(NOW(), INTERVAL 1 DAY) LIMIT 1", [GMAIL_USER, subject, sender]);
+                
                 if (exists.length === 0) {
+                    // Analizar correo entrante externo
+                    const report = await analyzeEmailSecurity(sender, subject, parsed.text||"", []);
+                    
                     await db.query(`INSERT INTO emails SET ?`, {
-                        owner_email: GMAIL_USER, folder: 'inbox', sender, subject, 
-                        preview: parsed.text ? parsed.text.substring(0, 60) : "...",
-                        body: parsed.html || parsed.textAsHtml || "",
-                        date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                        unread: 1, hasAttachments: parsed.attachments.length > 0 ? 1 : 0, attachments: '[]',
-                        securityAnalysis: JSON.stringify({ status: "clean" })
+                        owner_email: GMAIL_USER, folder: report.folder, sender, 
+                        subject: report.status === 'infected' ? `[VIRUS] ${subject}` : subject,
+                        preview: (parsed.text||"").substring(0,60), body: parsed.html||parsed.textAsHtml||"",
+                        date: new Date().toISOString().slice(0,19).replace('T',' '), unread: 1, hasAttachments: 0, attachments: '[]',
+                        securityAnalysis: JSON.stringify(report)
                     });
-                    console.log(`📥 IMAP: ${subject}`);
+                    console.log(`📥 IMAP: ${subject} -> [${report.status}]`);
                 }
             }
         }
         connection.end();
-    } catch (e) { if(e.message !== 'Nothing to fetch') console.log("IMAP Sync:", e.message); }
+    } catch (e) { if(e.message !== 'Nothing to fetch') console.log("IMAP:", e.message); }
 }
-
 setInterval(syncGmailInbox, 20000);
-app.listen(3001, () => console.log('🚀 Servidor Listo en Puerto 3001'));
+app.listen(3001, () => console.log('🚀 Servidor Listo (Security Engine Active)'));

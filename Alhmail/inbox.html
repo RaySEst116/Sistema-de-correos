@@ -11,49 +11,23 @@
     <script>if (!localStorage.getItem('alhmail_token')) window.location.href = 'index.html';</script>
 
     <style>
-        /* ================= VARIABLES DE TEMA ================= */
-        :root {
-            --primary-red: #D50032;
-            --bg-body: #f9fafb; --bg-card: #ffffff; --bg-sidebar: #ffffff;
-            --bg-hover: #f3f4f6; --bg-active: #fee2e2;
-            --text-main: #374151; --text-muted: #6b7280;
-            --border-color: #e5e7eb; --input-bg: #f9fafb;
-            --shadow-color: rgba(0,0,0,0.05); --scroll-thumb: #cbd5e1;
-        }
-
-        body.dark {
-            --primary-red: #E00034;
-            --bg-body: #111827; --bg-card: #1f2937; --bg-sidebar: #1f2937;
-            --bg-hover: #374151; --bg-active: #374151;
-            --text-main: #f3f4f6; --text-muted: #9ca3af;
-            --border-color: #374151; --input-bg: #111827;
-            --shadow-color: rgba(0,0,0,0.5); --scroll-thumb: #4b5563;
-        }
-
-        /* RESET & BASE */
+        :root { --primary-red: #D50032; --bg-body: #f9fafb; --bg-card: #ffffff; --bg-sidebar: #ffffff; --bg-hover: #f3f4f6; --bg-active: #fee2e2; --text-main: #374151; --text-muted: #6b7280; --border-color: #e5e7eb; --input-bg: #f9fafb; --shadow-color: rgba(0,0,0,0.05); --scroll-thumb: #cbd5e1; }
+        body.dark { --primary-red: #E00034; --bg-body: #111827; --bg-card: #1f2937; --bg-sidebar: #1f2937; --bg-hover: #374151; --bg-active: #374151; --text-main: #f3f4f6; --text-muted: #9ca3af; --border-color: #374151; --input-bg: #111827; --shadow-color: rgba(0,0,0,0.5); --scroll-thumb: #4b5563; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background-color 0.2s, color 0.1s; }
         body { display: flex; height: 100vh; background-color: var(--bg-body); color: var(--text-main); overflow: hidden; padding-right: 0 !important; }
         body.swal2-shown { height: 100vh !important; overflow-y: hidden !important; }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
-
-        /* SIDEBAR */
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
         .sidebar { width: 250px; background: var(--bg-sidebar); display: flex; flex-direction: column; padding: 20px 10px; border-right: 1px solid var(--border-color); transition: 0.3s; z-index: 100; flex-shrink: 0; }
         .sidebar.collapsed { width: 80px; padding: 20px 5px; }
         .sidebar-header { display: flex; justify-content: space-between; margin-bottom: 30px; padding: 0 10px; align-items: center; height: 40px; }
         .logo-text { font-size: 1.5rem; font-weight: bold; color: var(--primary-red); white-space: nowrap; overflow: hidden; }
         .sidebar.collapsed .logo-text { display: none; }
         .toggle-btn { background: none; border: none; cursor: pointer; font-size: 1.4rem; color: var(--text-muted); width: 40px; }
-        
         .compose-btn { background: var(--primary-red); color: white; border: none; height: 45px; width: 90%; margin: 0 auto 30px auto; border-radius: 50px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap; overflow: hidden; box-shadow: 0 2px 5px rgba(213,0,50,0.3); flex-shrink: 0; }
         .compose-btn:hover { background: #C20049; transform: translateY(-1px); }
         .sidebar.collapsed .compose-btn { width: 45px; padding: 0; border-radius: 50%; gap: 0; }
         .sidebar.collapsed .compose-btn span { display: none; }
         .sidebar.collapsed .compose-btn i { margin: 0; font-size: 1.2rem; }
-
         .nav-list { list-style: none; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
         .nav-item { display: flex; align-items: center; padding: 12px 20px; margin-bottom: 5px; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .nav-item:hover { background: var(--bg-hover); color: var(--primary-red); }
@@ -62,55 +36,42 @@
         .sidebar.collapsed .nav-item { justify-content: center; padding: 12px 0; }
         .sidebar.collapsed .nav-item span { display: none; }
         .sidebar.collapsed .nav-item i { margin: 0; }
-
         .sidebar-footer { border-top: 1px solid var(--border-color); padding-top: 15px; padding-bottom: 10px; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; width: 100%; }
         .footer-item { width: 90%; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; font-size: 0.9rem; font-weight: 600; }
         .footer-item:hover { background: var(--bg-hover); color: var(--primary-red); }
         .footer-item.admin { background: rgba(4, 120, 87, 0.1); color: #047857; border: 1px solid rgba(4, 120, 87, 0.2); }
-        .footer-item.admin:hover { background: #047857; color: white; }
         .footer-item.logout { color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
-        .footer-item.logout:hover { background: #ef4444; color: white; border-color: #ef4444; }
         .sidebar.collapsed .footer-item { width: 45px; padding: 0; border-radius: 50%; }
         .sidebar.collapsed .footer-item span { display: none; }
         .sidebar.collapsed .footer-item i { margin: 0; }
-
         .settings-row { display: flex; gap: 5px; width: 90%; justify-content: center; margin-bottom: 5px; }
         .setting-btn { width: 100%; height: 35px; background: var(--bg-hover); border: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .setting-btn:hover { background: var(--border-color); color: var(--text-main); }
         .sidebar.collapsed .settings-row { flex-direction: column; width: 45px; }
-
-        /* MAIN CONTENT */
         .main-content { flex-grow: 1; background: var(--bg-card); margin: 10px; border-radius: 10px; display: flex; overflow: hidden; box-shadow: 0 2px 10px var(--shadow-color); min-width: 0; border: 1px solid var(--border-color); }
         .email-list { width: 400px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); flex-shrink: 0; }
         .list-header { padding: 15px; border-bottom: 1px solid var(--border-color); background: var(--bg-card); }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
         .search-container { position: relative; width: 100%; }
         .search-input { width: 100%; padding: 8px 10px 8px 35px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-main); outline: none; }
         .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        
-        /* TOOLS */
         .list-tools { padding: 8px 15px; background: var(--bg-hover); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; height: 50px; }
         .tool-btn { width: 36px; height: 36px; border-radius: 50%; background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; outline: none; }
         .tool-btn:hover { background-color: var(--border-color); color: var(--primary-red); transform: scale(1.05); }
         .tool-btn:active { background-color: rgba(213, 0, 50, 0.15); transform: scale(0.95); }
-        
         .master-check, .email-check { appearance: none; width: 18px; height: 18px; border: 2px solid var(--text-muted); border-radius: 4px; cursor: pointer; background: var(--bg-card); position: relative; flex-shrink: 0; }
         .master-check:checked, .email-check:checked { background: var(--primary-red); border-color: var(--primary-red); }
         .master-check:checked::after, .email-check:checked::after { content: ''; position: absolute; left: 5px; top: 1px; width: 4px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-
         #emailContainer { overflow-y: auto; flex-grow: 1; }
         .fake-email { padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid transparent; color: var(--text-muted); }
         .fake-email:hover { background: var(--bg-hover); }
         .fake-email.unread { background: var(--bg-card); font-weight: bold; border-left-color: var(--primary-red); color: var(--text-main); }
         .fake-email.selected { background-color: var(--bg-active) !important; border-left-color: var(--primary-red) !important; }
         .fake-email.row-checked { background-color: var(--bg-active) !important; }
-        
         .email-content { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
         .email-from { font-size: 0.95rem; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
         .email-to { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
         .email-snippet { color: var(--text-muted); font-size: 0.9rem; }
-
         .email-preview { flex-grow: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; width: 100%; overflow-x: hidden; background: var(--bg-card); }
         .detail-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
         .detail-subject { font-size: 1.6rem; color: var(--text-main); margin-bottom: 15px; font-weight: 600; line-height: 1.3; }
@@ -119,53 +80,44 @@
         .from-line { font-size: 1rem; color: var(--text-main); }
         .detail-body { line-height: 1.6; font-size: 1rem; color: var(--text-main); margin-top: 20px; overflow-wrap: break-word; }
         .detail-body * { color: var(--text-main); } 
-
-        /* MODALES Y EDITOR */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-card { background: var(--bg-card); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; border: 1px solid var(--border-color); color: var(--text-main); }
         .account-card { width: 400px; padding: 30px; }
         .users-card { width: 800px; max-height: 80vh; padding: 20px; }
-        
         .compose-modal { position: fixed; bottom: 0; right: 80px; width: 600px; height: 700px; background: var(--bg-card); box-shadow: 0 0 20px rgba(0,0,0,0.2); z-index: 1000; display: flex; flex-direction: column; border-radius: 10px 10px 0 0; transition: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); transform: translateY(120%); border: 1px solid var(--border-color); }
         .compose-modal.active { transform: translateY(0); }
+        .compose-modal.minimized { height: 45px; width: 250px; overflow: hidden; transform: translateY(0); }
+        .compose-modal.maximized { width: 100%; height: 100%; right: 0; bottom: 0; border-radius: 0; transform: translateY(0); }
         .compose-header, .users-header { background: var(--bg-hover); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); cursor: pointer; border-radius: 10px 10px 0 0; color: var(--text-main); }
         .window-btn { background: none; border: none; cursor: pointer; padding: 6px; color: var(--text-muted); border-radius: 4px; }
         .window-btn:hover { background: rgba(0,0,0,0.1); color: var(--primary-red); }
         .window-btn.close-btn:hover { background-color: #e81123; color: white; }
-        
         .compose-body, .users-body { flex-grow: 1; padding: 15px; overflow-y: auto; position: relative; color: var(--text-main); }
         .input-group { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 5px; align-items: center; position: relative; }
         .input-group label { color: var(--text-muted); font-weight: 600; font-size: 0.9rem; margin-right: 10px; min-width: 35px; }
         .input-group input { flex-grow: 1; border: none; padding: 12px 10px; outline: none; font-family: inherit; background: transparent; color: var(--text-main); }
         .cc-link { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; margin-left: 10px; font-weight: 600; padding: 5px; }
         .hidden-field { display: none !important; }
-        
-        /* CHIPS Y AUTOCOMPLETADO */
         .chip-container { flex-grow: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; border: 1px solid transparent; padding: 2px; min-height: 38px; position: relative; }
         .email-chip { display: inline-flex; align-items: center; background: #e8f0fe; color: #1f1f1f; padding: 4px 10px; border-radius: 16px; font-size: 0.9rem; margin: 2px; border: 1px solid #c7d7fa; }
         .chip-close { margin-left: 8px; cursor: pointer; font-size: 1rem; color: #666; }
         .chip-input { border: none; outline: none; padding: 5px; flex-grow: 1; min-width: 100px; font-size: 0.95rem; background: transparent; color: var(--text-main); }
-
         .autocomplete-list { position: absolute; top: 100%; left: 50px; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); z-index: 3000; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-radius: 0 0 6px 6px; }
         .autocomplete-list.visible { display: block; }
         .suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; }
         .suggestion-item:hover { background: var(--bg-hover); }
         .suggestion-item strong { color: var(--text-main); font-size: 0.95rem; }
         .suggestion-item small { color: var(--text-muted); font-size: 0.85rem; }
-
         .remove-field-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; margin-left: 5px; font-size: 1rem; }
         .remove-field-btn:hover { color: #d93025; }
-
         #editor-container { height: 100%; border: none !important; color: var(--text-main); }
         .ql-toolbar { background: var(--bg-hover); border-color: var(--border-color) !important; }
         .ql-container { border: none !important; }
         .ql-editor { color: var(--text-main); }
         .ql-stroke { stroke: var(--text-muted) !important; }
         .ql-fill { fill: var(--text-muted) !important; }
-
         .compose-footer { padding: 15px; display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); background: var(--bg-hover); border-radius: 0 0 10px 10px; }
-        
         .user-table { width: 100%; border-collapse: collapse; color: var(--text-main); }
         .user-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
         .user-table td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
@@ -173,12 +125,10 @@
         .role-tag.admin { background: rgba(213, 0, 50, 0.1); color: var(--primary-red); }
         .role-tag.user { background: rgba(67, 56, 202, 0.1); color: #4338ca; }
         body.dark .role-tag.user { color: #818cf8; }
-
         .btn-action { border: none; background: none; cursor: pointer; padding: 5px; font-size: 1rem; transition: 0.2s; border-radius: 4px; }
         .btn-edit { color: #3b82f6; }
         .btn-delete { color: #ef4444; }
         .btn-create { background: var(--primary-red); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
-    
         .account-form label { display: block; margin-top: 15px; font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
         .account-form input, .account-form select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; margin-top: 5px; background: var(--input-bg); color: var(--text-main); }
         .account-form input:disabled { background: var(--bg-hover); color: var(--text-muted); cursor: not-allowed; }
@@ -186,7 +136,6 @@
         .role-admin { background: rgba(213, 0, 50, 0.1); color: var(--primary-red); }
         .role-user { background: rgba(67, 56, 202, 0.1); color: #4338ca; }
         .send-btn { background-color: var(--primary-red); color: white; border: none; padding: 8px 24px; border-radius: 4px; font-weight: 600; cursor: pointer; }
-        
         #drag-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:50; display:none; flex-direction:column; align-items:center; justify-content:center; color:var(--primary-red); font-weight:bold; border: 3px dashed var(--primary-red); }
         body.dark #drag-overlay { background: rgba(17, 24, 39, 0.95); }
         .attachments-section { margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 5px; max-height: 80px; overflow-y: auto; }
@@ -363,7 +312,6 @@
         
         const STORAGE_KEY = `alhmail_data_${user.email}`;
 
-        // I18N
         const translations = {
             es: { compose: "Redactar", inbox: "Entrada", sent: "Enviados", drafts: "Borradores", spam: "Spam", users: "Usuarios", account: "Mi Cuenta", logout: "Cerrar Sesión", my_account: "Mi Cuenta", search: "Buscar...", new_message: "Mensaje Nuevo", from: "De:", to: "Para:", subject: "Asunto", send: "Enviar", save_changes: "Guardar Cambios", name: "Nombre", password: "Contraseña", role: "Rol", user_management: "Gestión de Usuarios", new: "Nuevo", actions: "Acciones", loading: "Cargando...", select_email: "Selecciona un correo para leer", drop_files: "Suelta archivos aquí", delete_confirm_title: "¿Eliminar {n} correos?", delete_confirm_btn: "Sí, eliminar", cancel: "Cancelar", deleted: "Eliminados", marked_read: "Marcados como leídos", sent_success: "Enviado", saved_success: "Guardado", error_send: "Error al enviar", missing_dest: "Falta el destinatario", empty: "Vacío" },
             en: { compose: "Compose", inbox: "Inbox", sent: "Sent", drafts: "Drafts", spam: "Spam", users: "Users", account: "My Account", logout: "Logout", my_account: "My Account", search: "Search...", new_message: "New Message", from: "From:", to: "To:", subject: "Subject", send: "Send", save_changes: "Save Changes", name: "Name", password: "Password", role: "Role", user_management: "User Management", new: "New", actions: "Actions", loading: "Loading...", select_email: "Select an email to read", drop_files: "Drop files here", delete_confirm_title: "Delete {n} emails?", delete_confirm_btn: "Yes, delete", cancel: "Cancel", deleted: "Deleted", marked_read: "Marked as read", sent_success: "Sent", saved_success: "Saved", error_send: "Error sending", missing_dest: "Missing recipient", empty: "Empty" }
@@ -390,147 +338,125 @@
             initData(); setInterval(initData, 20000);
             loadContacts();
 
-            // LOGICA BOTÓN IA (GEMINI)
+            // --- LÓGICA DE ARCHIVOS (NUEVA) ---
+            const fileInput = document.getElementById('fileInput');
+            document.getElementById('attachBtn').onclick = () => fileInput.click();
+            fileInput.onchange = async (e) => {
+                if (fileInput.files.length > 0) {
+                    await handleFiles(Array.from(fileInput.files));
+                    fileInput.value = ''; 
+                }
+            };
+
+            // Drag and Drop
+            const dropZone = document.getElementById('dropZone');
+            const dragOverlay = document.getElementById('drag-overlay');
+            window.addEventListener('dragover', (e) => { e.preventDefault(); if(document.getElementById('composeModal').classList.contains('active')) dragOverlay.style.display = 'flex'; });
+            dragOverlay.addEventListener('dragleave', (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; });
+            dragOverlay.addEventListener('drop', async (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; if (e.dataTransfer.files.length > 0) await handleFiles(Array.from(e.dataTransfer.files)); });
+            
+            // --- IA ---
             document.getElementById('aiBtn').onclick = async () => {
                 const subject = document.getElementById('subject').value;
                 const { value: prompt } = await Swal.fire({
-                    title: '✨ Asistente de IA',
-                    input: 'textarea',
-                    inputLabel: '¿Sobre qué quieres escribir el correo?',
-                    inputPlaceholder: 'Ej: Escribe un recordatorio amable para pagar la factura pendiente...',
-                    showCancelButton: true,
-                    confirmButtonColor: 'linear-gradient(135deg, #8b5cf6, #d946ef)', 
-                    confirmButtonText: 'Generar',
-                    cancelButtonText: 'Cancelar',
+                    title: '✨ Asistente de IA', input: 'textarea', inputLabel: '¿Sobre qué quieres escribir el correo?',
+                    inputPlaceholder: 'Ej: Escribe un recordatorio amable...', showCancelButton: true,
+                    confirmButtonColor: '#8b5cf6', confirmButtonText: 'Generar', cancelButtonText: 'Cancelar',
                     inputValidator: (value) => { if (!value) return '¡Necesitas escribir una instrucción!'; }
                 });
-
                 if (prompt) {
-                    Swal.fire({
-                        title: 'Pensando...',
-                        html: 'La IA está redactando tu correo',
-                        timerProgressBar: true,
-                        didOpen: () => { Swal.showLoading(); }
-                    });
-
+                    Swal.fire({ title: 'Pensando...', html: 'La IA está redactando...', timerProgressBar: true, didOpen: () => { Swal.showLoading(); } });
                     try {
-                        const res = await fetch(`${API_URL}/ai/draft`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ prompt, subject })
-                        });
+                        const res = await fetch(`${API_URL}/ai/draft`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, subject }) });
                         const data = await res.json();
-                        if (data.success) {
-                            quill.clipboard.dangerouslyPasteHTML(data.text);
-                            Swal.close();
-                        } else { throw new Error(data.error); }
-                    } catch (e) {
-                        Swal.fire({ icon: 'error', title: 'Error IA', text: 'No se pudo generar el texto. Verifica tu API Key.' });
-                    }
+                        if (data.success) { quill.clipboard.dangerouslyPasteHTML(data.text); Swal.close(); } else { throw new Error(data.error || "Error"); }
+                    } catch (e) { Swal.fire({ icon: 'error', title: 'Error IA', text: e.message }); }
                 }
             };
 
             document.getElementById('themeBtn').onclick = () => { currentTheme = currentTheme === 'light' ? 'dark' : 'light'; localStorage.setItem('alhmail_theme', currentTheme); applyTheme(); };
             document.getElementById('langBtn').onclick = () => { currentLang = currentLang === 'es' ? 'en' : 'es'; localStorage.setItem('alhmail_lang', currentLang); applyLanguage(); renderEmails(document.querySelector('.nav-item.active').dataset.target); };
-
-            const toggleBtn = document.getElementById('toggleBtn');
-            if(toggleBtn) toggleBtn.onclick = () => document.getElementById('sidebar').classList.toggle('collapsed');
-            const logoutBtn = document.getElementById('logoutBtn');
-            if(logoutBtn) logoutBtn.onclick = () => Swal.fire({title: currentLang==='es'?'¿Salir?':'Logout?', showCancelButton:true, confirmButtonColor:'#D50032'}).then(r=>{ if(r.isConfirmed){ localStorage.removeItem('alhmail_token'); window.location.href='index.html'; } });
-
-            const adminBtn = document.getElementById('adminUsersBtn');
-            if (IS_ADMIN && adminBtn) { document.getElementById('navSpam').style.display = 'flex'; adminBtn.style.display = 'flex'; adminBtn.onclick = () => { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); }; }
+            const toggleBtn = document.getElementById('toggleBtn'); if(toggleBtn) toggleBtn.onclick = () => document.getElementById('sidebar').classList.toggle('collapsed');
+            const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.onclick = () => Swal.fire({title: currentLang==='es'?'¿Salir?':'Logout?', showCancelButton:true, confirmButtonColor:'#D50032'}).then(r=>{ if(r.isConfirmed){ localStorage.removeItem('alhmail_token'); window.location.href='index.html'; } });
+            const adminBtn = document.getElementById('adminUsersBtn'); if (IS_ADMIN && adminBtn) { document.getElementById('navSpam').style.display = 'flex'; adminBtn.style.display = 'flex'; adminBtn.onclick = () => { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); }; }
             document.getElementById('accountBtn').onclick = () => { isCreatingUser = false; selectedUserId = user.id; fillAccountForm(user, true); document.getElementById('accountModal').classList.add('active'); };
-            document.getElementById('closeAcc').onclick = () => { document.getElementById('accountModal').classList.remove('active'); if((isCreatingUser || (IS_ADMIN && selectedUserId !== user.id)) && document.getElementById('usersModal').classList.contains('active')) {} else if(isCreatingUser) { document.getElementById('usersModal').classList.add('active'); } };
-            document.getElementById('saveAcc').onclick = async () => { const data = { name: document.getElementById('accName').value, email: document.getElementById('accEmail').value, password: document.getElementById('accPass').value, role: document.getElementById('accRole').value }; try { let res; if(isCreatingUser) res = await fetch(`${API_URL}/users`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); else res = await fetch(`${API_URL}/users/${selectedUserId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); if (!res.ok) { const errData = await res.json(); throw new Error(errData.message || 'Error al guardar'); } if(!isCreatingUser && selectedUserId === user.id) { user.name=data.name; user.role=data.role; localStorage.setItem('alhmail_user', JSON.stringify(user)); if(data.role!=='admin' && IS_ADMIN) location.reload(); } Swal.fire({icon:'success', title:translations[currentLang].saved_success, timer:1000, showConfirmButton:false}); document.getElementById('accountModal').classList.remove('active'); if(IS_ADMIN) { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); } } catch(e) { Swal.fire({icon: 'error', title: 'Error', text: e.message}); } };
+            document.getElementById('closeAcc').onclick = () => { document.getElementById('accountModal').classList.remove('active'); if(isCreatingUser) document.getElementById('usersModal').classList.add('active'); };
+            document.getElementById('saveAcc').onclick = async () => { const data = { name: document.getElementById('accName').value, email: document.getElementById('accEmail').value, password: document.getElementById('accPass').value, role: document.getElementById('accRole').value }; try { let res; if(isCreatingUser) res = await fetch(`${API_URL}/users`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); else res = await fetch(`${API_URL}/users/${selectedUserId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); if (!res.ok) throw new Error('Error'); if(!isCreatingUser && selectedUserId === user.id) { user.name=data.name; user.role=data.role; localStorage.setItem('alhmail_user', JSON.stringify(user)); if(data.role!=='admin' && IS_ADMIN) location.reload(); } Swal.fire({icon:'success', title:translations[currentLang].saved_success, timer:1000, showConfirmButton:false}); document.getElementById('accountModal').classList.remove('active'); if(IS_ADMIN) { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); } } catch(e) { Swal.fire({icon: 'error', title: 'Error', text: e.message}); } };
             document.getElementById('addUserBtn').onclick = () => { isCreatingUser = true; selectedUserId = null; document.getElementById('usersModal').classList.remove('active'); fillAccountForm({}, false); document.getElementById('accountModal').classList.add('active'); };
-
             document.querySelectorAll('.nav-item').forEach(item => { item.onclick = (e) => { e.preventDefault(); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); item.classList.add('active'); document.getElementById('folderTitle').innerText = translations[currentLang][item.dataset.target]; renderEmails(item.dataset.target); } });
             document.getElementById('refreshBtn').onclick = () => { initData(); Swal.fire({toast:true, position:'top-end', icon:'info', title:currentLang==='es'?'Actualizado':'Updated', timer:1000}); };
             
             const modal = document.getElementById('composeModal');
             document.getElementById('composeBtn').onclick = () => { resetForm(); modal.classList.add('active'); };
             document.getElementById('btnCloseX').onclick = () => modal.classList.remove('active');
+            const btnMin = document.getElementById('btnMin'); const btnMax = document.getElementById('btnMax');
+            btnMin.onclick = () => { modal.classList.toggle('minimized'); modal.classList.remove('maximized'); };
+            btnMax.onclick = () => { modal.classList.toggle('maximized'); modal.classList.remove('minimized'); };
+
             document.getElementById('sendBtn').onclick = () => sendEmail(false);
             document.getElementById('discardBtn').onclick = () => { if(confirm(currentLang==='es'?"¿Descartar?":"Discard?")) { resetForm(); modal.classList.remove('active'); }};
-            setupChipInput('to', selectedTo); setupChipInput('cc', selectedCc); setupChipInput('bcc', selectedBcc); 
-            setupAutocomplete();
-
+            setupChipInput('to', selectedTo); setupChipInput('cc', selectedCc); setupChipInput('bcc', selectedBcc); setupAutocomplete();
             const btnCc = document.getElementById('btnCc'), btnBcc = document.getElementById('btnBcc');
             btnCc.onclick = () => { document.getElementById('ccField').classList.remove('hidden-field'); btnCc.style.display='none'; document.getElementById('cc-input').focus(); };
             btnBcc.onclick = () => { document.getElementById('bccField').classList.remove('hidden-field'); btnBcc.style.display='none'; document.getElementById('bcc-input').focus(); };
 
             document.getElementById('selectAll').addEventListener('change', function() { const isChecked = this.checked; document.querySelectorAll('.email-check').forEach(chk => { chk.checked = isChecked; const row = chk.closest('.fake-email'); if(isChecked) row.classList.add('row-checked'); else row.classList.remove('row-checked'); }); });
             document.getElementById('deleteSelected').onclick = async () => { 
-                const checkedBoxes = document.querySelectorAll('.email-check:checked'); 
-                const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
+                const checkedBoxes = document.querySelectorAll('.email-check:checked'); const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
                 if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: currentLang==='es'?'Selecciona un correo':'Select an email', timer: 2000 }); 
                 const t = translations[currentLang];
                 const confirm = await Swal.fire({ title: t.delete_confirm_title.replace('{n}', ids.length), icon: 'warning', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: t.delete_confirm_btn, cancelButtonText: t.cancel }); 
-                if (confirm.isConfirmed) { 
-                    emailsData = emailsData.filter(e => !ids.includes(e.id));
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData));
-                    renderEmails(document.querySelector('.nav-item.active').dataset.target);
-                    document.getElementById('selectAll').checked = false;
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: t.deleted, timer: 1000 });
-                } 
+                if (confirm.isConfirmed) { emailsData = emailsData.filter(e => !ids.includes(e.id)); localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData)); renderEmails(document.querySelector('.nav-item.active').dataset.target); document.getElementById('selectAll').checked = false; Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: t.deleted, timer: 1000 }); } 
             };
             document.getElementById('markRead').onclick = () => { 
-                const checkedBoxes = document.querySelectorAll('.email-check:checked'); 
-                const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
+                const checkedBoxes = document.querySelectorAll('.email-check:checked'); const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
                 if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: currentLang==='es'?'Selecciona correos':'Select emails', timer: 2000 }); 
-                emailsData.forEach(e => { if (ids.includes(e.id)) e.unread = false; });
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData));
-                renderEmails(document.querySelector('.nav-item.active').dataset.target);
-                document.getElementById('selectAll').checked = false;
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: translations[currentLang].marked_read, timer: 1000 }); 
+                emailsData.forEach(e => { if (ids.includes(e.id)) e.unread = false; }); localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData)); renderEmails(document.querySelector('.nav-item.active').dataset.target); document.getElementById('selectAll').checked = false; Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: translations[currentLang].marked_read, timer: 1000 }); 
             };
-            
             document.getElementById('searchInput').addEventListener('keyup', () => { renderEmails(document.querySelector('.nav-item.active').dataset.target); });
             document.addEventListener('click', (e) => { if (!e.target.closest('#to-chips-container')) { document.getElementById('autocompleteList').classList.remove('visible'); } });
         });
 
-        // FUNCIONES
-        async function loadContacts() { try { const resUsers = await fetch(`${API_URL}/users`); const users = await resUsers.json(); const resContacts = await fetch(`${API_URL}/contacts`); const contacts = await resContacts.json(); contactsData = [...users, ...contacts]; } catch(e) { console.log("Error loading contacts", e); } }
-        async function loadUsersTable() { try { const res = await fetch(`${API_URL}/users`); const users = await res.json(); const tbody = document.getElementById('usersTableBody'); tbody.innerHTML = ''; users.forEach(u => { tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.email}</td><td><span class="role-tag ${u.role}">${u.role}</span></td><td><button class="btn-action btn-edit" onclick="editUser('${u.id}','${u.name}','${u.email}','${u.role}')"><i class="fas fa-pencil-alt"></i></button>${u.id!==user.id ? `<button class="btn-action btn-delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; }); } catch(e){ console.log(e); } }
+        // --- CONVERTIR A BASE64 ---
+        async function handleFiles(files) {
+            for (const file of files) {
+                const base64 = await toBase64(file);
+                attachedFiles.push({ filename: file.name, content: base64.split(',')[1], encoding: 'base64', contentType: file.type });
+            }
+            renderAttachments();
+        }
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
+        });
+        function renderAttachments() {
+            const container = document.getElementById('fileList'); container.innerHTML = '';
+            attachedFiles.forEach((file, index) => {
+                const chip = document.createElement('div'); chip.className = 'file-chip';
+                chip.innerHTML = `<i class="fas fa-paperclip"></i> ${file.filename} <i class="fas fa-times file-remove"></i>`;
+                chip.querySelector('.file-remove').onclick = () => { attachedFiles.splice(index, 1); renderAttachments(); };
+                container.appendChild(chip);
+            });
+        }
+
+        async function loadContacts() { try { const resUsers = await fetch(`${API_URL}/users`); const users = await resUsers.json(); const resContacts = await fetch(`${API_URL}/contacts`); const contacts = await resContacts.json(); contactsData = [...users, ...contacts]; } catch(e) {} }
+        async function loadUsersTable() { try { const res = await fetch(`${API_URL}/users`); const users = await res.json(); const tbody = document.getElementById('usersTableBody'); tbody.innerHTML = ''; users.forEach(u => { tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.email}</td><td><span class="role-tag ${u.role}">${u.role}</span></td><td><button class="btn-action btn-edit" onclick="editUser('${u.id}','${u.name}','${u.email}','${u.role}')"><i class="fas fa-pencil-alt"></i></button>${u.id!==user.id ? `<button class="btn-action btn-delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; }); } catch(e){} }
         window.editUser = (id, name, email, role) => { selectedUserId = id; isCreatingUser = false; document.getElementById('usersModal').classList.remove('active'); fillAccountForm({name, email, role}, false); document.getElementById('accountModal').classList.add('active'); };
         window.deleteUser = async (id) => { if(confirm("¿Borrar?")) { await fetch(`${API_URL}/users/${id}`, {method:'DELETE'}); loadUsersTable(); } };
         function fillAccountForm(data, isMyAccount) { document.getElementById('accName').value = data.name || ''; document.getElementById('accEmail').value = data.email || ''; document.getElementById('accPass').value = ''; document.getElementById('accRole').value = data.role || 'user'; const badge = document.getElementById('roleBadge'); const roleSelect = document.getElementById('roleSelectContainer'); document.getElementById('accEmail').disabled = !isCreatingUser; if(isCreatingUser) { document.getElementById('accTitle').innerText = translations[currentLang].new; badge.style.display = 'none'; roleSelect.style.display = 'block'; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } else if(isMyAccount) { document.getElementById('accTitle').innerText = translations[currentLang].my_account; badge.style.display = 'inline-block'; roleSelect.style.display = 'none'; if(IS_ADMIN) { badge.innerText = "ADMIN"; badge.className="role-badge role-admin"; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } else { badge.innerText = "USUARIO"; badge.className="role-badge role-user"; document.getElementById('accName').disabled = true; document.getElementById('accPass').disabled = true; document.getElementById('saveAcc').style.display = 'none'; } } else { document.getElementById('accTitle').innerText = "Editar"; badge.style.display = 'none'; roleSelect.style.display = 'block'; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } }
-
-        async function initData() { 
-            try { 
-                let localEmails = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-                const res = await fetch(`${API_URL}/emails?userEmail=${user.email}`); 
-                const newEmails = await res.json(); 
-                if (newEmails.length > 0) {
-                    const emailMap = new Map();
-                    localEmails.forEach(e => emailMap.set(e.id, e)); 
-                    newEmails.forEach(e => emailMap.set(e.id, e));   
-                    localEmails = Array.from(emailMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
-                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(localEmails)); } catch (e) { console.error("Memoria llena", e); return; }
-                    const newIds = newEmails.map(e => e.id);
-                    await fetch(`${API_URL}/emails/downloaded`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids: newIds }) });
-                }
-                emailsData = localEmails;
-                renderEmails(document.querySelector('.nav-item.active').dataset.target); 
-            } catch(e){ console.error(e); } 
-        }
-
+        async function initData() { try { let localEmails = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; const res = await fetch(`${API_URL}/emails?userEmail=${user.email}`); const newEmails = await res.json(); if (newEmails.length > 0) { const emailMap = new Map(); localEmails.forEach(e => emailMap.set(e.id, e)); newEmails.forEach(e => emailMap.set(e.id, e)); localEmails = Array.from(emailMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date)); localStorage.setItem(STORAGE_KEY, JSON.stringify(localEmails)); const newIds = newEmails.map(e => e.id); await fetch(`${API_URL}/emails/downloaded`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids: newIds }) }); } emailsData = localEmails; renderEmails(document.querySelector('.nav-item.active').dataset.target); } catch(e){} }
+        
         function renderEmails(folder) {
             const container = document.getElementById('emailContainer'); container.innerHTML = '';
             let filtered = emailsData.filter(e => e.folder === folder);
             const term = document.getElementById('searchInput').value.toLowerCase();
             if(term) filtered = filtered.filter(e => e.subject.toLowerCase().includes(term) || e.sender.toLowerCase().includes(term));
-            
             if(filtered.length === 0) { container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted)">${translations[currentLang].empty}</div>`; return; }
-            
             filtered.forEach(email => {
                 const el = document.createElement('div'); el.id = `email-row-${email.id}`; el.className = `fake-email ${email.unread?'unread':''}`;
                 const fromLabel = email.sender.split('<')[0].replace(/"/g, '');
                 el.innerHTML = `<input type="checkbox" class="email-check" data-id="${email.id}"><div class="email-content"><div class="email-row-top"><div class="email-from">${fromLabel}</div><span class="email-date">${new Date(email.date).toLocaleDateString()}</span></div><div class="email-to">${translations[currentLang].to} ${email.to_address || 'Mí'}</div><div class="email-subject">${email.subject}</div><div class="email-snippet">${email.preview.replace('Para: ? -','')}</div></div>`;
                 el.querySelector('.email-content').onclick = () => viewEmail(email);
-                const chk = el.querySelector('.email-check');
-                chk.onclick = (e) => { e.stopPropagation(); if(chk.checked) el.classList.add('row-checked'); else el.classList.remove('row-checked'); };
+                const chk = el.querySelector('.email-check'); chk.onclick = (e) => { e.stopPropagation(); if(chk.checked) el.classList.add('row-checked'); else el.classList.remove('row-checked'); };
                 container.appendChild(el);
             });
         }
@@ -539,45 +465,39 @@
             document.querySelectorAll('.fake-email').forEach(el => el.classList.remove('selected'));
             const activeRow = document.getElementById(`email-row-${email.id}`); if (activeRow) activeRow.classList.add('selected');
             const t = translations[currentLang];
-            document.getElementById('previewPanel').innerHTML = `<div class="detail-wrapper"><div class="detail-header"><h2 class="detail-subject">${email.subject}</h2><div class="meta-container"><div class="sender-info"><div class="sender-avatar">${email.sender.charAt(0)}</div><div class="meta-text"><div class="from-line"><strong>${t.from}</strong> ${email.sender}</div><div class="to-line"><strong>${t.to}</strong> ${email.to_address || 'Mí'}</div></div></div></div></div><div class="detail-body">${email.body}</div></div>`;
-            if (email.unread) { 
-                if (activeRow) activeRow.classList.remove('unread'); 
-                email.unread = false; 
-                const index = emailsData.findIndex(e => e.id === email.id);
-                if(index !== -1) emailsData[index].unread = false;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData));
+
+            const sec = email.securityAnalysis || { status: 'clean', score: 0, threats: [] };
+            let badgeColor = '#10b981'; let badgeText = currentLang === 'es' ? 'Seguro' : 'Clean'; let badgeIcon = 'fa-shield-alt';
+            if (sec.status === 'suspicious') { badgeColor = '#f59e0b'; badgeText = currentLang === 'es' ? 'Sospechoso' : 'Suspicious'; badgeIcon = 'fa-exclamation-triangle'; }
+            else if (sec.status === 'infected' || sec.status === 'blocked') { badgeColor = '#ef4444'; badgeText = currentLang === 'es' ? 'PELIGRO' : 'DANGER'; badgeIcon = 'fa-biohazard'; }
+            else if (sec.status === 'verified') { badgeColor = '#3b82f6'; badgeText = currentLang === 'es' ? 'Verificado' : 'Verified'; badgeIcon = 'fa-check-circle'; }
+
+            let threatsHtml = '';
+            if (sec.threats && sec.threats.length > 0) { threatsHtml = `<div style="background:#fff1f2; color:#be123c; padding:10px; border-radius:6px; margin-top:10px; border:1px solid #fda4af; font-size:0.9rem;"><strong><i class="fas fa-bug"></i> ${currentLang === 'es' ? 'Amenazas:' : 'Threats:'}</strong><ul style="margin:5px 0 0 20px; padding:0;">${sec.threats.map(th => `<li>${th}</li>`).join('')}</ul></div>`; }
+
+            let attachmentsHtml = '';
+            if (email.hasAttachments && email.attachments && email.attachments.length > 0) {
+                attachmentsHtml = `<div style="margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;"><strong><i class="fas fa-paperclip"></i> Adjuntos:</strong><div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">${email.attachments.map(att => `<a href="data:${att.contentType};base64,${att.content}" download="${att.filename}" style="text-decoration:none; background:var(--bg-hover); padding:5px 10px; border-radius:4px; font-size:0.85rem; color:var(--text-main); border:1px solid var(--border-color);"><i class="fas fa-file"></i> ${att.filename}</a>`).join('')}</div></div>`;
             }
+
+            document.getElementById('previewPanel').innerHTML = `<div class="detail-wrapper"><div class="detail-header"><div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;"><h2 class="detail-subject" style="margin:0; font-size:1.4rem; color:var(--text-main); line-height:1.2;">${email.subject}</h2><div style="background:${badgeColor}; color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; gap:5px; white-space:nowrap; margin-left:10px;"><i class="fas ${badgeIcon}"></i> ${badgeText}</div></div>${threatsHtml}<div class="meta-container" style="margin-top:15px; display:flex; align-items:center;"><div class="sender-info" style="display:flex; align-items:center; gap:10px;"><div class="sender-avatar" style="width:40px; height:40px; border-radius:50%; background:var(--primary-red); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold;">${email.sender.charAt(0).toUpperCase()}</div><div class="meta-text"><div class="from-line" style="color:var(--text-main);"><strong>${t.from}</strong> ${email.sender}</div><div class="to-line" style="color:var(--text-muted); font-size:0.85rem;"><strong>${t.to}</strong> ${email.to_address || 'Mí'}</div></div></div></div>${attachmentsHtml}</div><div class="detail-body" style="margin-top:20px; color:var(--text-main); line-height:1.6;">${email.body}</div></div>`;
+            if (email.unread) { if (activeRow) activeRow.classList.remove('unread'); email.unread = false; const index = emailsData.findIndex(e => e.id === email.id); if(index !== -1) emailsData[index].unread = false; localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData)); }
         }
 
-        function setupAutocomplete() {
-            const input = document.getElementById('to-input'); const list = document.getElementById('autocompleteList');
-            input.addEventListener('input', function() {
-                const val = this.value.toLowerCase(); list.innerHTML = '';
-                if (!val) { list.classList.remove('visible'); return; }
-                const matches = contactsData.filter(c => (c.name && c.name.toLowerCase().includes(val)) || (c.email && c.email.toLowerCase().includes(val)));
-                matches.forEach(match => {
-                    const item = document.createElement('div'); item.className = 'suggestion-item';
-                    item.innerHTML = `<strong>${match.name}</strong> <small>${match.email}</small>`;
-                    item.onclick = () => { addChip(match.email, 'to', selectedTo); input.value = ''; list.classList.remove('visible'); input.focus(); };
-                    list.appendChild(item);
-                });
-                if (matches.length > 0) list.classList.add('visible'); else list.classList.remove('visible');
-            });
-        }
+        function setupAutocomplete() { const input = document.getElementById('to-input'); const list = document.getElementById('autocompleteList'); input.addEventListener('input', function() { const val = this.value.toLowerCase(); list.innerHTML = ''; if (!val) { list.classList.remove('visible'); return; } const matches = contactsData.filter(c => (c.name && c.name.toLowerCase().includes(val)) || (c.email && c.email.toLowerCase().includes(val))); matches.forEach(match => { const item = document.createElement('div'); item.className = 'suggestion-item'; item.innerHTML = `<strong>${match.name}</strong> <small>${match.email}</small>`; item.onclick = () => { addChip(match.email, 'to', selectedTo); input.value = ''; list.classList.remove('visible'); input.focus(); }; list.appendChild(item); }); if (matches.length > 0) list.classList.add('visible'); else list.classList.remove('visible'); }); }
         function setupChipInput(type, arr) { document.getElementById(`${type}-input`).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') { e.preventDefault(); addChip(e.target.value.trim(), type, arr); document.getElementById('autocompleteList').classList.remove('visible'); } }); document.getElementById(`${type}-input`).addEventListener('blur', (e) => { const val = e.target.value.trim(); if(val) addChip(val, type, arr); }); }
         function addChip(val, type, arr) { if(val && !arr.includes(val)){ arr.push(val); renderChips(type, arr); document.getElementById(`${type}-input`).value=''; } }
         function renderChips(type, arr) { const container = document.getElementById(`${type}-chips-container`); const input = document.getElementById(`${type}-input`); Array.from(container.getElementsByClassName('email-chip')).forEach(e => e.remove()); arr.forEach((email, index) => { const chip = document.createElement('div'); chip.className = 'email-chip'; chip.innerHTML = `${email} <i class="fas fa-times chip-close"></i>`; chip.querySelector('.chip-close').onclick = (e) => { e.stopPropagation(); arr.splice(index, 1); renderChips(type, arr); }; container.insertBefore(chip, input); }); }
         window.hideField = (type) => { document.getElementById(`${type}Field`).classList.add('hidden-field'); if(type === 'cc') { document.getElementById('btnCc').style.display = 'inline-block'; selectedCc = []; renderChips('cc', selectedCc); } else { document.getElementById('btnBcc').style.display = 'inline-block'; selectedBcc = []; renderChips('bcc', selectedBcc); } };
-        function resetForm() { document.getElementById('subject').value=''; quill.setText(''); document.getElementById('from').value = user.email; selectedTo=[]; selectedCc=[]; selectedBcc=[]; renderChips('to', selectedTo); renderChips('cc', selectedCc); renderChips('bcc', selectedBcc); hideField('cc'); hideField('bcc'); }
+        function resetForm() { document.getElementById('subject').value=''; quill.setText(''); document.getElementById('from').value = user.email; selectedTo=[]; selectedCc=[]; selectedBcc=[]; attachedFiles=[]; renderChips('to', selectedTo); renderChips('cc', selectedCc); renderChips('bcc', selectedBcc); hideField('cc'); hideField('bcc'); renderAttachments(); }
         
         async function sendEmail(isDraft) {
             const inputTo = document.getElementById('to-input'); if(inputTo.value.trim()) addChip(inputTo.value.trim(), 'to', selectedTo);
             const inputCc = document.getElementById('cc-input'); if(inputCc.value.trim()) addChip(inputCc.value.trim(), 'cc', selectedCc);
             const inputBcc = document.getElementById('bcc-input'); if(inputBcc.value.trim()) addChip(inputBcc.value.trim(), 'bcc', selectedBcc);
-
             const to = selectedTo.join(','); const subject = document.getElementById('subject').value; const body = quill.root.innerHTML;
             if(!isDraft && !to) return Swal.fire(translations[currentLang].missing_dest);
-            const payload = { from: user.email, to: to, cc: selectedCc.join(','), bcc: selectedBcc.join(','), subject: subject, body: body, isDraft: isDraft, attachments: [] };
+            const payload = { from: user.email, to: to, cc: selectedCc.join(','), bcc: selectedBcc.join(','), subject: subject, body: body, isDraft: isDraft, attachments: attachedFiles };
             try { const res = await fetch(`${API_URL}/emails`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); if(res.ok) { Swal.fire({icon:'success', title: isDraft ? translations[currentLang].saved_success : translations[currentLang].sent_success}); document.getElementById('composeModal').classList.remove('active'); resetForm(); setTimeout(initData, 500); } else { Swal.fire(translations[currentLang].error_send); } } catch(e) { console.error(e); }
         }
     </script>
