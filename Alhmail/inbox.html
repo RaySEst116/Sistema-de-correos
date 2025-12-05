@@ -432,22 +432,61 @@
                 dragOverlay.addEventListener('dragleave', (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; });
                 dragOverlay.addEventListener('drop', async (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; if (e.dataTransfer.files.length > 0) await handleFiles(Array.from(e.dataTransfer.files)); });
     
-                // --- IA ---
+                // --- IA (GEMINI AVANZADO + FIRMA) ---
                 document.getElementById('aiBtn').onclick = async () => {
-                    const subject = document.getElementById('subject').value;
                     const { value: prompt } = await Swal.fire({
-                        title: '✨ Asistente de IA', input: 'textarea', inputLabel: '¿Sobre qué quieres escribir el correo?',
-                        inputPlaceholder: 'Ej: Escribe un recordatorio amable...', showCancelButton: true,
-                        confirmButtonColor: '#8b5cf6', confirmButtonText: 'Generar', cancelButtonText: 'Cancelar',
-                        inputValidator: (value) => { if (!value) return '¡Necesitas escribir una instrucción!'; }
+                        title: '✨ Redactor Inteligente',
+                        input: 'textarea',
+                        inputLabel: 'Describe el correo completo',
+                        inputPlaceholder: 'Ej: Escribe a soporte@google.com reclamando mi cuenta...',
+                        showCancelButton: true,
+                        confirmButtonColor: '#8b5cf6',
+                        confirmButtonText: 'Generar',
+                        cancelButtonText: 'Cancelar',
+                        footer: `<small>Se firmará automáticamente como: <b>${user.name}</b></small>`,
+                        inputValidator: (value) => { if (!value) return '¡Escribe una instrucción!'; }
                     });
+
                     if (prompt) {
-                        Swal.fire({ title: 'Pensando...', html: 'La IA está redactando...', timerProgressBar: true, didOpen: () => { Swal.showLoading(); } });
+                        Swal.fire({ 
+                            title: 'Analizando...', 
+                            html: 'Redactando y firmando...', 
+                            timerProgressBar: true, 
+                            didOpen: () => { Swal.showLoading(); } 
+                        });
+
                         try {
-                            const res = await fetch(`${API_URL}/ai/draft`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, subject }) });
-                            const data = await res.json();
-                            if (data.success) { quill.clipboard.dangerouslyPasteHTML(data.text); Swal.close(); } else { throw new Error(data.error || "Error"); }
-                        } catch (e) { Swal.fire({ icon: 'error', title: 'Error IA', text: e.message }); }
+                            const res = await fetch(`${API_URL}/ai/draft`, { 
+                                method: 'POST', 
+                                headers: { 'Content-Type': 'application/json' }, 
+                                // AQUÍ ENVIAMOS EL NOMBRE DEL USUARIO
+                                body: JSON.stringify({ 
+                                    prompt: prompt,
+                                    senderName: user.name 
+                                }) 
+                            });
+                            
+                            const response = await res.json();
+
+                            if (response.success) {
+                                const { to, subject, body } = response.data;
+
+                                // Llenar campos
+                                if (subject) document.getElementById('subject').value = subject;
+                                if (to) addChip(to, 'to', selectedTo);
+                                if (body) quill.clipboard.dangerouslyPasteHTML(body);
+
+                                Swal.close();
+                                
+                                // Toast de éxito
+                                const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 3000 });
+                                Toast.fire({ icon: 'success', title: '¡Correo redactado!' });
+
+                            } else { throw new Error(response.error); }
+                        } catch (e) { 
+                            console.error(e);
+                            Swal.fire({ icon: 'error', title: 'Error IA', text: 'No pude generar el correo.' }); 
+                        }
                     }
                 };
     
@@ -596,32 +635,91 @@
             }
             
             async function viewEmail(email) {
+                // 1. Selección visual
                 document.querySelectorAll('.fake-email').forEach(el => el.classList.remove('selected'));
-                const activeRow = document.getElementById(`email-row-${email.id}`); if (activeRow) activeRow.classList.add('selected');
-                const t = translations[currentLang];
-                const sec = email.securityAnalysis || { status: 'clean', score: 0, threats: [] };
-                let badgeColor = '#10b981'; let badgeText = currentLang === 'es' ? 'Seguro' : 'Clean'; let badgeIcon = 'fa-shield-alt';
-                if (sec.status === 'suspicious') { badgeColor = '#f59e0b'; badgeText = currentLang === 'es' ? 'Sospechoso' : 'Suspicious'; badgeIcon = 'fa-exclamation-triangle'; }
-                else if (sec.status === 'infected' || sec.status === 'blocked') { badgeColor = '#ef4444'; badgeText = currentLang === 'es' ? 'PELIGRO' : 'DANGER'; badgeIcon = 'fa-biohazard'; }
+                const activeRow = document.getElementById(`email-row-${email.id}`); 
+                if (activeRow) activeRow.classList.add('selected');
                 
+                const t = translations[currentLang];
+
+                // 2. INTERPRETACIÓN DE SEGURIDAD (ESCUDOS)
+                const sec = email.securityAnalysis || { status: 'clean', score: 0, threats: [] };
+                
+                let badgeColor = '#10b981'; // Verde
+                let badgeText = currentLang === 'es' ? 'Seguro' : 'Clean';
+                let badgeIcon = 'fa-shield-alt';
+
+                if (sec.status === 'suspicious') {
+                    badgeColor = '#f59e0b'; // Naranja
+                    badgeText = currentLang === 'es' ? 'Sospechoso' : 'Suspicious';
+                    badgeIcon = 'fa-exclamation-triangle';
+                } else if (sec.status === 'infected' || sec.status === 'blocked') {
+                    badgeColor = '#ef4444'; // Rojo
+                    badgeText = currentLang === 'es' ? 'PELIGRO' : 'DANGER';
+                    badgeIcon = 'fa-biohazard';
+                } else if (sec.status === 'verified') {
+                    badgeColor = '#3b82f6'; // Azul
+                    badgeText = currentLang === 'es' ? 'Verificado' : 'Verified';
+                    badgeIcon = 'fa-check-circle';
+                }
+
+                // 3. HTML DE AMENAZAS
                 let threatsHtml = '';
-                if (sec.threats && sec.threats.length > 0) { threatsHtml = `<div style="background:#fff1f2; color:#be123c; padding:10px; border-radius:6px; margin-top:10px; border:1px solid #fda4af; font-size:0.9rem;"><strong><i class="fas fa-bug"></i> ${currentLang === 'es' ? 'Amenazas:' : 'Threats:'}</strong><ul style="margin:5px 0 0 20px; padding:0;">${sec.threats.map(th => `<li>${th}</li>`).join('')}</ul></div>`; }
-                let attachmentsHtml = '';
-                if (email.hasAttachments && email.attachments && email.attachments.length > 0) { attachmentsHtml = `<div style="margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;"><strong><i class="fas fa-paperclip"></i> Adjuntos:</strong><div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">${email.attachments.map(att => `<a href="data:${att.contentType};base64,${att.content}" download="${att.filename}" style="text-decoration:none; background:var(--bg-hover); padding:5px 10px; border-radius:4px; font-size:0.85rem; color:var(--text-main); border:1px solid var(--border-color);"><i class="fas fa-file"></i> ${att.filename}</a>`).join('')}</div></div>`; }
-    
+                if (sec.threats && sec.threats.length > 0) {
+                    threatsHtml = `
+                    <div style="background:#fff1f2; color:#be123c; padding:10px; border-radius:6px; margin-top:10px; border:1px solid #fda4af; font-size:0.9rem;">
+                        <strong><i class="fas fa-bug"></i> ${currentLang === 'es' ? 'Amenazas detectadas:' : 'Threats detected:'}</strong>
+                        <ul style="margin:5px 0 0 20px; padding:0;">
+                            ${sec.threats.map(th => `<li>${th}</li>`).join('')}
+                        </ul>
+                    </div>`;
+                }
+
+                // 4. RENDERIZADO
+                // (Aquí incluimos también la lógica de avatares y adjuntos que ya tenías)
                 const rawName = email.sender.split('<')[0].replace(/"/g, '').trim();
                 const initial = rawName.charAt(0).toUpperCase();
                 const avatarColor = getColorFromStr(rawName);
-    
-                document.getElementById('previewPanel').innerHTML = `<div class="detail-wrapper"><div class="detail-header"><div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;"><h2 class="detail-subject" style="margin:0; font-size:1.4rem; color:var(--text-main); line-height:1.2;">${email.subject}</h2><div style="background:${badgeColor}; color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; gap:5px; white-space:nowrap; margin-left:10px;"><i class="fas ${badgeIcon}"></i> ${badgeText}</div></div>${threatsHtml}<div class="meta-container" style="margin-top:15px; display:flex; align-items:center;"><div class="sender-info" style="display:flex; align-items:center; gap:10px;"><div class="sender-avatar" style="width:48px; height:48px; border-radius:50%; background:${avatarColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem;">${initial}</div><div class="meta-text"><div class="from-line" style="color:var(--text-main);"><strong>${rawName}</strong></div><div class="to-line" style="color:var(--text-muted); font-size:0.85rem;">${t.to} ${email.to_address || 'Mí'}</div></div></div></div>${attachmentsHtml}</div><div class="detail-body" style="margin-top:20px; color:var(--text-main); line-height:1.6;">${email.body}</div></div>`;
-    
+                
+                let attachmentsHtml = '';
+                if (email.hasAttachments && email.attachments && email.attachments.length > 0) {
+                    attachmentsHtml = `<div style="margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;"><strong><i class="fas fa-paperclip"></i> Adjuntos:</strong><div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">${email.attachments.map(att => `<a href="data:${att.contentType};base64,${att.content}" download="${att.filename}" style="text-decoration:none; background:var(--bg-hover); padding:5px 10px; border-radius:4px; font-size:0.85rem; color:var(--text-main); border:1px solid var(--border-color);"><i class="fas fa-file"></i> ${att.filename}</a>`).join('')}</div></div>`;
+                }
+
+                document.getElementById('previewPanel').innerHTML = `
+                    <div class="detail-wrapper">
+                        <div class="detail-header">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                <h2 class="detail-subject" style="margin:0; font-size:1.4rem; color:var(--text-main); line-height:1.2;">${email.subject}</h2>
+                                <div style="background:${badgeColor}; color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; gap:5px; white-space:nowrap; margin-left:10px;">
+                                    <i class="fas ${badgeIcon}"></i> ${badgeText} (${sec.score}%)
+                                </div>
+                            </div>
+                            
+                            ${threatsHtml}
+
+                            <div class="meta-container" style="margin-top:15px; display:flex; align-items:center;">
+                                <div class="sender-info" style="display:flex; align-items:center; gap:10px;">
+                                    <div class="sender-avatar" style="width:48px; height:48px; border-radius:50%; background:${avatarColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem;">${initial}</div>
+                                    <div class="meta-text">
+                                        <div class="from-line" style="color:var(--text-main);"><strong>${rawName}</strong></div>
+                                        <div class="to-line" style="color:var(--text-muted); font-size:0.85rem;">${t.to} ${email.to_address || 'Mí'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            ${attachmentsHtml}
+                        </div>
+                        <div class="detail-body" style="margin-top:20px; color:var(--text-main); line-height:1.6;">${email.body}</div>
+                    </div>`;
+
+                // 5. Marcar leído localmente
                 if (email.unread) { 
                     if (activeRow) activeRow.classList.remove('unread'); 
                     email.unread = false; 
-                    const index = emailsData.findIndex(e => e.id === email.id); 
-                    if(index !== -1) emailsData[index].unread = false; 
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData)); 
-                    updateUnreadCount(); 
+                    const index = emailsData.findIndex(e => e.id === email.id);
+                    if(index !== -1) emailsData[index].unread = false;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData));
+                    updateUnreadCount();
                 }
             }
     

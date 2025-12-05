@@ -72,34 +72,92 @@ const db = mysql.createPool(dbConfig);
 db.getConnection().then(c => { console.log('✅ BD Conectada (Pool)'); c.release(); }).catch(e => console.error('❌ Error BD:', e.message));
 const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: GMAIL_USER, pass: GMAIL_PASS } });
 
+// ==========================================
+// 1. MOTOR DE SEGURIDAD HEURÍSTICO
+// ==========================================
+async function analyzeEmailSecurity(sender, subject, body, attachments) {
+    let score = 0;
+    let threats = [];
+    let status = "clean"; 
+    let folder = "inbox"; 
+
+    // 1. VERIFICAR LISTAS EN SQL
+    const cleanSender = sender.includes('<') ? sender.match(/<([^>]+)>/)[1] : sender;
+    try {
+        const [rules] = await db.query("SELECT type FROM email_rules WHERE email = ?", [cleanSender]);
+        if (rules.length > 0) {
+            if (rules[0].type === 'block') return { score: 100, threats: ["Remitente Bloqueado (Blacklist)"], status: "blocked", folder: "spam" };
+            if (rules[0].type === 'allow') return { score: 0, threats: ["Remitente Confiable (Whitelist)"], status: "verified", folder: "inbox" };
+        }
+    } catch(e) { console.log("Error consultando reglas:", e.message); }
+
+    // 2. ESCANEO DE CONTENIDO
+    const content = (subject + " " + body).toLowerCase();
+    const spamKeywords = ['virus', 'ganaste', 'urgente', 'lotería', 'hacked', 'bitcoin', 'herencia', 'premio', 'verify your account', 'password'];
+    spamKeywords.forEach(word => {
+        if (content.includes(word)) { score += 25; threats.push(`Palabra sospechosa: '${word}'`); }
+    });
+
+    // 3. ESCANEO DE ADJUNTOS
+    const dangerousExts = ['.exe', '.bat', '.sh', '.js', '.vbs', '.jar', '.scr'];
+    if (attachments && Array.isArray(attachments)) {
+        attachments.forEach(file => {
+            const fname = file.filename || "";
+            const ext = fname.slice(((fname.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+            if (dangerousExts.includes('.' + ext)) { score += 100; threats.push(`Adjunto ejecutable detectado: ${fname}`); }
+        });
+    }
+
+    // 4. EVALUACIÓN
+    if (score >= 100) { status = "infected"; folder = "spam"; }
+    else if (score >= 25) { status = "suspicious"; folder = "spam"; }
+
+    return { score, threats, status, folder };
+}
+
 // ===================================================
 // 2. RUTAS
 // ===================================================
 
-// IA DRAFT (Usa el modelo configurado arriba)
+// 1. GENERAR CORREO COMPLETO CON IA (JSON)
 app.post('/ai/draft', async (req, res) => {
-    const { prompt, subject } = req.body;
-    if (!prompt) return res.status(400).json({ error: "Falta instrucción" });
+    // AHORA RECIBIMOS TAMBIÉN EL NOMBRE DEL REMITENTE
+    const { prompt, senderName } = req.body; 
+    
+    if (!prompt) return res.status(400).json({ error: "Falta la instrucción" });
 
     try {
-        console.log(`🤖 IA (${model.model}) generando...`);
+        console.log("🤖 IA Procesando:", prompt);
         
         const fullPrompt = `
-            Contexto: Redacción de correo electrónico.
-            Asunto: "${subject || 'General'}"
-            Instrucción: "${prompt}"
-            Formato: HTML simple (<p>, <br>, <b>).
-            Tono: Profesional.
+            Eres un asistente de correo electrónico inteligente.
+            
+            CONTEXTO:
+            - Instrucción del usuario: "${prompt}"
+            - Nombre del remitente (quien escribe): "${senderName || 'Un usuario'}"
+            
+            TAREA:
+            Genera una respuesta en formato JSON ESTRICTO (sin markdown, sin comillas extra) con esta estructura:
+            {
+                "to": "extrae el email del destinatario si se menciona, si no, null",
+                "subject": "crea un asunto breve y profesional",
+                "body": "redacta el cuerpo del correo en HTML simple (<p>, <br>, <b>). IMPORTANTE: Termina el correo con una despedida y la firma usando el 'Nombre del remitente' proporcionado."
+            }
         `;
         
         const result = await model.generateContent(fullPrompt);
         const response = await result.response;
-        const text = response.text();
+        let text = response.text();
+
+        // Limpieza de formato markdown
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
         
-        res.json({ success: true, text: text });
+        const jsonResponse = JSON.parse(text);
+        res.json({ success: true, data: jsonResponse });
+
     } catch (e) {
         console.error("❌ ERROR IA:", e.message);
-        res.status(500).json({ error: `Error IA (${e.message}). Revisa la consola para ver modelos válidos.` });
+        res.status(500).json({ error: "La IA no pudo estructurar la respuesta." });
     }
 });
 
