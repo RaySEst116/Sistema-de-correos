@@ -11,34 +11,15 @@
     <script>if (!localStorage.getItem('alhmail_token')) window.location.href = 'index.html';</script>
 
     <style>
-        /* ================= VARIABLES DE TEMA ================= */
-        :root {
-            --primary-red: #D50032;
-            --bg-body: #f9fafb; --bg-card: #ffffff; --bg-sidebar: #ffffff;
-            --bg-hover: #f3f4f6; --bg-active: #fee2e2;
-            --text-main: #374151; --text-muted: #6b7280;
-            --border-color: #e5e7eb; --input-bg: #f9fafb;
-            --shadow-color: rgba(0,0,0,0.05); --scroll-thumb: #cbd5e1;
-        }
-
-        body.dark {
-            --primary-red: #E00034;
-            --bg-body: #111827; --bg-card: #1f2937; --bg-sidebar: #1f2937;
-            --bg-hover: #374151; --bg-active: #374151;
-            --text-main: #f3f4f6; --text-muted: #9ca3af;
-            --border-color: #374151; --input-bg: #111827;
-            --shadow-color: rgba(0,0,0,0.5); --scroll-thumb: #4b5563;
-        }
-
+        /* VARIABLES */
+        :root { --primary-red: #D50032; --bg-body: #f9fafb; --bg-card: #ffffff; --bg-sidebar: #ffffff; --bg-hover: #f3f4f6; --bg-active: #fee2e2; --text-main: #374151; --text-muted: #6b7280; --border-color: #e5e7eb; --input-bg: #f9fafb; --shadow-color: rgba(0,0,0,0.05); --scroll-thumb: #cbd5e1; }
+        body.dark { --primary-red: #E00034; --bg-body: #111827; --bg-card: #1f2937; --bg-sidebar: #1f2937; --bg-hover: #374151; --bg-active: #374151; --text-main: #f3f4f6; --text-muted: #9ca3af; --border-color: #374151; --input-bg: #111827; --shadow-color: rgba(0,0,0,0.5); --scroll-thumb: #4b5563; }
+        
         /* RESET & BASE */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background-color 0.2s, color 0.1s; }
         body { display: flex; height: 100vh; background-color: var(--bg-body); color: var(--text-main); overflow: hidden; padding-right: 0 !important; }
         body.swal2-shown { height: 100vh !important; overflow-y: hidden !important; }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
 
         /* SIDEBAR */
         .sidebar { width: 250px; background: var(--bg-sidebar); display: flex; flex-direction: column; padding: 20px 10px; border-right: 1px solid var(--border-color); transition: 0.3s; z-index: 100; flex-shrink: 0; }
@@ -54,9 +35,8 @@
         .sidebar.collapsed .compose-btn span { display: none; }
         .sidebar.collapsed .compose-btn i { margin: 0; font-size: 1.2rem; }
 
-        /* NAVEGACIÓN CON BADGE */
         .nav-list { list-style: none; flex-grow: 1; overflow-y: auto; overflow-x: hidden; }
-        .nav-item { display: flex; align-items: center; padding: 12px 20px; margin-bottom: 5px; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; position: relative; justify-content: flex-start; }
+        .nav-item { display: flex; align-items: center; padding: 12px 20px; margin-bottom: 5px; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; position: relative; }
         .nav-item:hover { background: var(--bg-hover); color: var(--primary-red); }
         .nav-item.active { background: var(--bg-active); color: var(--primary-red); font-weight: 600; }
         .nav-item i { width: 25px; margin-right: 10px; text-align: center; font-size: 1.1rem; flex-shrink: 0; }
@@ -64,19 +44,11 @@
         .sidebar.collapsed .nav-item span { display: none; }
         .sidebar.collapsed .nav-item i { margin: 0; }
 
-        /* FOOTER SIDEBAR */
         .sidebar-footer { border-top: 1px solid var(--border-color); padding-top: 15px; padding-bottom: 10px; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; width: 100%; }
         .footer-item { width: 90%; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: 0.2s; white-space: nowrap; font-size: 0.9rem; font-weight: 600; }
         .footer-item:hover { background: var(--bg-hover); color: var(--primary-red); }
-        
-        /* Botón Admin (Verde) */
         .footer-item.admin { background: rgba(4, 120, 87, 0.1); color: #047857; border: 1px solid rgba(4, 120, 87, 0.2); }
-        .footer-item.admin:hover { background: #047857 !important; color: white !important; border-color: #047857 !important; }
-        
-        /* Botón Logout (Rojo) */
         .footer-item.logout { color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
-        .footer-item.logout:hover { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
-        
         .sidebar.collapsed .footer-item { width: 45px; padding: 0; border-radius: 50%; }
         .sidebar.collapsed .footer-item span { display: none; }
         .sidebar.collapsed .footer-item i { margin: 0; }
@@ -95,7 +67,6 @@
         .search-input { width: 100%; padding: 8px 10px 8px 35px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-main); outline: none; }
         .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         
-        /* TOOLS */
         .list-tools { padding: 8px 15px; background: var(--bg-hover); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; height: 50px; }
         .tool-btn { width: 36px; height: 36px; border-radius: 50%; background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; outline: none; }
         .tool-btn:hover { background-color: var(--border-color); color: var(--primary-red); transform: scale(1.05); }
@@ -166,13 +137,20 @@
         .remove-field-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; margin-left: 5px; font-size: 1rem; }
         .remove-field-btn:hover { color: #d93025; }
 
-        /* EDITOR */
+        /* EDITOR (CORREGIDO PARA MODO OSCURO Y BARRA DE HERRAMIENTAS) */
         #editor-container { height: 100%; border: none !important; color: var(--text-main); }
-        .ql-toolbar { background: var(--bg-hover); border-color: var(--border-color) !important; }
+        .ql-toolbar { 
+            background: var(--bg-hover); 
+            border-color: var(--border-color) !important; 
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
         .ql-container { border: none !important; }
         .ql-editor { color: var(--text-main); }
+        /* Arreglo de iconos de Quill para modo oscuro */
         .ql-stroke { stroke: var(--text-muted) !important; }
         .ql-fill { fill: var(--text-muted) !important; }
+        .ql-picker { color: var(--text-muted) !important; }
 
         .compose-footer { padding: 15px; display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); background: var(--bg-hover); border-radius: 0 0 10px 10px; }
         
@@ -205,422 +183,464 @@
         .ai-btn { background: linear-gradient(135deg, #8b5cf6, #d946ef); color: white; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
         .footer-left, .footer-right { display: flex; gap: 10px; align-items: center; }
 
-        /* BADGE NOTIFICACIÓN */
+        /* NOTIFICACIÓN ROJA (BADGE) */
         .notification-badge { background-color: var(--primary-red); color: white; font-size: 0.75rem; font-weight: bold; padding: 2px 8px; border-radius: 12px; margin-left: auto; min-width: 20px; text-align: center; display: none; }
         body.dark .notification-badge { background-color: #ef4444; }
         .sidebar.collapsed .notification-badge { position: absolute; top: 5px; right: 5px; padding: 2px 5px; font-size: 0.6rem; min-width: auto; display: block !important; }
         .sidebar.collapsed .notification-badge:empty { display: none !important; }
+        
+        /* HOVERS BOTONES SIDEBAR (CORREGIDO) */
+        .footer-item.admin:hover { background: #047857 !important; color: white !important; border-color: #047857 !important; }
+        .footer-item.logout:hover { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-text">Alhmail</div>
-            <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
-        </div>
-        
-        <button class="compose-btn" id="composeBtn">
-            <i class="fas fa-plus"></i><span data-i18n="compose">Redactar</span>
-        </button>
-        
-        <div class="nav-list">
-            <div class="nav-item active" data-target="inbox">
-                <i class="fas fa-inbox"></i>
-                <span data-i18n="inbox">Entrada</span>
-                <span id="unread-badge" class="notification-badge"></span>
-            </div>
-            <div class="nav-item" data-target="sent"><i class="fas fa-paper-plane"></i><span data-i18n="sent">Enviados</span></div>
-            <div class="nav-item" data-target="drafts"><i class="fas fa-file"></i><span data-i18n="drafts">Borradores</span></div>
-            <div class="nav-item" data-target="spam" id="navSpam" style="display:none; color:#d97706;"><i class="fas fa-exclamation-triangle"></i><span data-i18n="spam">Spam</span></div>
-        </div>
+    <body>
 
-        <div class="sidebar-footer">
-            <div class="settings-row">
-                <button class="setting-btn" id="themeBtn" title="Tema"><i class="fas fa-moon"></i></button>
-                <button class="setting-btn" id="langBtn" title="Idioma"><i class="fas fa-globe"></i></button>
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-text">Alhmail</div>
+                <button class="toggle-btn" id="toggleBtn"><i class="fas fa-bars"></i></button>
             </div>
-
-            <div class="footer-item admin" id="adminUsersBtn" style="display:none;">
-                <i class="fas fa-users-cog"></i><span data-i18n="users">Usuarios</span>
-            </div>
-            <div class="footer-item" id="accountBtn">
-                <i class="fas fa-user-circle"></i><span data-i18n="account">Mi Cuenta</span>
-            </div>
-            <div class="footer-item logout" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i><span data-i18n="logout">Cerrar Sesión</span>
-            </div>
-        </div>
-    </nav>
-
-    <main class="main-content">
-        <div class="email-list">
-            <div class="list-header">
-                <div class="header-top">
-                    <h3 id="folderTitle" style="color:var(--primary-red); margin:0;" data-i18n="inbox">Bandeja de Entrada</h3>
-                    <button class="tool-btn" id="refreshBtn" title="Actualizar"><i class="fas fa-sync-alt"></i></button>
-                </div>
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Buscar..." data-i18n-placeholder="search">
-                </div>
-            </div>
-            <div class="list-tools">
-                <input type="checkbox" id="selectAll" class="master-check" title="Seleccionar Todo">
-                <button class="tool-btn" id="deleteSelected" title="Eliminar"><i class="far fa-trash-alt"></i></button>
-                <button class="tool-btn" id="markRead" title="Marcar Leído"><i class="far fa-envelope-open"></i></button>
-                <button class="tool-btn" id="sortBtn" title="Ordenar"><i class="fas fa-sort-amount-down"></i></button>
-            </div>
-            <div id="emailContainer">
-                <div class="skeleton-row"></div>
-                <div class="skeleton-row"></div>
-                <div class="skeleton-row"></div>
-            </div>
-        </div>
-        <div class="email-preview" id="previewPanel">
-            <div style="text-align:center; color:var(--text-muted); margin-top:100px;">
-                <i class="far fa-envelope" style="font-size:4rem; opacity:0.5;"></i>
-                <p style="margin-top:20px;" data-i18n="select_email">Selecciona un correo para leer</p>
-            </div>
-        </div>
-    </main>
-
-    <div class="compose-modal" id="composeModal">
-        <div class="compose-header" id="composeHeader">
-            <span id="modalTitle" style="font-weight:600;" data-i18n="new_message">Mensaje Nuevo</span>
-            <div class="window-actions">
-                <button class="window-btn" id="btnMin"><i class="fas fa-minus"></i></button>
-                <button class="window-btn" id="btnMax"><i class="fas fa-expand"></i></button>
-                <button class="window-btn" id="btnCloseX"><i class="fas fa-times"></i></button>
-            </div>
-        </div>
-        <div class="compose-body" id="dropZone">
-            <div id="drag-overlay"><i class="fas fa-cloud-upload-alt" style="font-size:3rem; margin-bottom:10px;"></i><br><span data-i18n="drop_files">Suelta archivos aquí</span></div>
-            <div class="input-group"><label data-i18n="from">De:</label><input type="text" id="from" disabled style="background:transparent; color:var(--text-main); font-weight:600;"></div>
             
-            <div class="input-group" style="align-items: flex-start; padding-top: 5px;">
-                <label style="margin-top: 8px;" data-i18n="to">Para:</label>
-                <div class="chip-container" id="to-chips-container" onclick="document.getElementById('to-input').focus()">
-                    <input type="text" id="to-input" class="chip-input" placeholder="" autocomplete="off">
-                </div>
-                <div class="cc-bcc-container" style="position:absolute; right:10px;">
-                    <span class="cc-link" id="btnCc">Cc</span><span class="cc-link" id="btnBcc">Cco</span>
-                </div>
-                <div class="autocomplete-list" id="autocompleteList"></div>
-            </div>
-
-            <div class="input-group hidden-field" id="ccField" style="align-items:flex-start; padding-top:5px;">
-                <label style="margin-top:8px;">Cc:</label>
-                <div class="chip-container" id="cc-chips-container" onclick="document.getElementById('cc-input').focus()">
-                    <input type="text" id="cc-input" class="chip-input">
-                </div>
-                <button class="remove-field-btn" onclick="hideField('cc')"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="input-group hidden-field" id="bccField" style="align-items:flex-start; padding-top:5px;">
-                <label style="margin-top:8px;">Cco:</label>
-                <div class="chip-container" id="bcc-chips-container" onclick="document.getElementById('bcc-input').focus()">
-                    <input type="text" id="bcc-input" class="chip-input">
-                </div>
-                <button class="remove-field-btn" onclick="hideField('bcc')"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="input-group"><input type="text" id="subject" placeholder="Asunto" data-i18n-placeholder="subject"></div>
-            <div id="editor-container"></div>
-            <div class="attachments-section"><div id="fileList"></div></div>
-        </div>
-        <div class="compose-footer">
-            <div class="footer-left"><button class="send-btn" id="sendBtn" data-i18n="send">Enviar</button><button class="ai-btn" id="aiBtn"><i class="fas fa-magic"></i> IA</button></div>
-            <div class="footer-right"><input type="file" id="fileInput" multiple style="display:none"><button class="tool-btn" id="attachBtn" title="Adjuntar"><i class="fas fa-paperclip"></i></button><button class="tool-btn" id="discardBtn" title="Descartar"><i class="far fa-trash-alt"></i></button></div>
-        </div>
-    </div>
-
-    <div class="account-modal modal-overlay" id="accountModal">
-        <div class="account-card modal-card">
-            <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom:20px;">
-                <h3 style="margin:0;" id="accTitle" data-i18n="my_account">Mi Cuenta</h3>
-                <i class="fas fa-times" id="closeAcc" style="cursor:pointer; color:var(--text-muted); font-size:1.2rem;"></i>
-            </div>
-            <div style="text-align:center;"><span id="roleBadge" class="role-badge"></span></div>
-            <div class="account-form">
-                <label data-i18n="name">Nombre</label><input type="text" id="accName" disabled>
-                <label>Email</label><input type="text" id="accEmail" disabled>
-                <label data-i18n="password">Contraseña</label><input type="password" id="accPass" disabled placeholder="********">
-                <div id="roleSelectContainer" style="display:none;">
-                    <label data-i18n="role">Rol</label>
-                    <select id="accRole"><option value="user">Usuario</option><option value="admin">Administrador</option></select>
-                </div>
-            </div>
-            <div style="text-align:right; margin-top:25px;"><button class="send-btn" id="saveAcc" style="display:none;" data-i18n="save_changes">Guardar Cambios</button></div>
-        </div>
-    </div>
-
-    <div class="users-modal modal-overlay" id="usersModal">
-        <div class="users-card modal-card">
-            <div class="users-header">
-                <h3 style="margin:0; color:var(--primary-red);" data-i18n="user_management">Gestión de Usuarios</h3>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-create" id="addUserBtn"><i class="fas fa-plus"></i> <span data-i18n="new">Nuevo</span></button>
-                    <i class="fas fa-times" onclick="document.getElementById('usersModal').classList.remove('active')" style="cursor:pointer; font-size:1.2rem; color:var(--text-muted);"></i>
-                </div>
-            </div>
-            <div class="users-body">
-                <table class="user-table">
-                    <thead><tr><th data-i18n="name">Nombre</th><th>Email</th><th data-i18n="role">Rol</th><th data-i18n="actions">Acciones</th></tr></thead>
-                    <tbody id="usersTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script>
-        const API_URL = 'http://localhost:3001';
-        let emailsData = [], contactsData = [], attachedFiles = [], editingDraftId = null;
-        let searchTerm = "", sortOrder = "desc";
-        let selectedTo = [], selectedCc = [], selectedBcc = [];
-        
-        let user = {};
-        try { user = JSON.parse(localStorage.getItem('alhmail_user')) || {}; } catch(e) { user = {}; }
-        const IS_ADMIN = user.role === 'admin';
-        let selectedUserId = null; let isCreatingUser = false;
-        const STORAGE_KEY = `alhmail_data_${user.email}`;
-
-        const translations = {
-            es: { compose: "Redactar", inbox: "Entrada", sent: "Enviados", drafts: "Borradores", spam: "Spam", users: "Usuarios", account: "Mi Cuenta", logout: "Cerrar Sesión", my_account: "Mi Cuenta", search: "Buscar...", new_message: "Mensaje Nuevo", from: "De:", to: "Para:", subject: "Asunto", send: "Enviar", save_changes: "Guardar Cambios", name: "Nombre", password: "Contraseña", role: "Rol", user_management: "Gestión de Usuarios", new: "Nuevo", actions: "Acciones", loading: "Cargando...", select_email: "Selecciona un correo para leer", drop_files: "Suelta archivos aquí", delete_confirm_title: "¿Eliminar {n} correos?", delete_confirm_btn: "Sí, eliminar", cancel: "Cancelar", deleted: "Eliminados", marked_read: "Marcados como leídos", sent_success: "Enviado", saved_success: "Guardado", error_send: "Error al enviar", missing_dest: "Falta el destinatario", empty: "Vacío" },
-            en: { compose: "Compose", inbox: "Inbox", sent: "Sent", drafts: "Drafts", spam: "Spam", users: "Users", account: "My Account", logout: "Logout", my_account: "My Account", search: "Search...", new_message: "New Message", from: "From:", to: "To:", subject: "Subject", send: "Send", save_changes: "Save Changes", name: "Name", password: "Password", role: "Role", user_management: "User Management", new: "New", actions: "Actions", loading: "Loading...", select_email: "Select an email to read", drop_files: "Drop files here", delete_confirm_title: "Delete {n} emails?", delete_confirm_btn: "Yes, delete", cancel: "Cancel", deleted: "Deleted", marked_read: "Marked as read", sent_success: "Sent", saved_success: "Saved", error_send: "Error sending", missing_dest: "Missing recipient", empty: "Empty" }
-        };
-        let currentLang = localStorage.getItem('alhmail_lang') || 'es';
-        let currentTheme = localStorage.getItem('alhmail_theme') || 'light';
-
-        function applyTheme() {
-            if(currentTheme === 'dark') { document.body.classList.add('dark'); document.getElementById('themeBtn').innerHTML = '<i class="fas fa-sun"></i>'; } 
-            else { document.body.classList.remove('dark'); document.getElementById('themeBtn').innerHTML = '<i class="fas fa-moon"></i>'; }
-        }
-        function applyLanguage() {
-            const t = translations[currentLang];
-            document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = t[el.dataset.i18n]; });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t[el.dataset.i18nPlaceholder]; });
-            const activeNav = document.querySelector('.nav-item.active');
-            if(activeNav) document.getElementById('folderTitle').innerText = t[activeNav.dataset.target];
-        }
-
-        // --- CONFIGURACIÓN DEL EDITOR QUILL ---
-        var quill = new Quill('#editor-container', { 
-            theme: 'snow', 
-            placeholder: '', 
-            modules: { 
-                toolbar: [
-                    ['bold', 'italic', 'underline', 'strike'],        // Negrita, Cursiva, Subrayado, Tachado
-                    [{ 'color': [] }, { 'background': [] }],          // Color de texto y Resaltado
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],     // Listas
-                    ['link', 'clean']                                 // Enlaces y Limpiar formato
-                ] 
-            } 
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            applyTheme(); applyLanguage();
-            initData(); setInterval(initData, 20000);
-            loadContacts();
-
-            // --- LÓGICA DE ARCHIVOS ---
-            const fileInput = document.getElementById('fileInput');
-            document.getElementById('attachBtn').onclick = () => fileInput.click();
+            <button class="compose-btn" id="composeBtn">
+                <i class="fas fa-plus"></i><span data-i18n="compose">Redactar</span>
+            </button>
             
-            fileInput.onchange = async (e) => {
-                if (fileInput.files.length > 0) {
-                    await handleFiles(Array.from(fileInput.files));
-                    fileInput.value = ''; 
-                }
+            <div class="nav-list">
+                <div class="nav-item active" data-target="inbox">
+                    <i class="fas fa-inbox"></i>
+                    <span data-i18n="inbox">Entrada</span>
+                    <span id="unread-badge" class="notification-badge"></span>
+                </div>
+                <div class="nav-item" data-target="sent"><i class="fas fa-paper-plane"></i><span data-i18n="sent">Enviados</span></div>
+                <div class="nav-item" data-target="drafts"><i class="fas fa-file"></i><span data-i18n="drafts">Borradores</span></div>
+                <div class="nav-item" data-target="spam" id="navSpam" style="display:none; color:#d97706;"><i class="fas fa-exclamation-triangle"></i><span data-i18n="spam">Spam</span></div>
+            </div>
+    
+            <div class="sidebar-footer">
+                <div class="settings-row">
+                    <button class="setting-btn" id="themeBtn" title="Tema"><i class="fas fa-moon"></i></button>
+                    <button class="setting-btn" id="langBtn" title="Idioma"><i class="fas fa-globe"></i></button>
+                </div>
+    
+                <div class="footer-item admin" id="adminUsersBtn" style="display:none;">
+                    <i class="fas fa-users-cog"></i><span data-i18n="users">Usuarios</span>
+                </div>
+                <div class="footer-item" id="accountBtn">
+                    <i class="fas fa-user-circle"></i><span data-i18n="account">Mi Cuenta</span>
+                </div>
+                <div class="footer-item logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i><span data-i18n="logout">Cerrar Sesión</span>
+                </div>
+            </div>
+        </nav>
+    
+        <main class="main-content">
+            <div class="email-list">
+                <div class="list-header">
+                    <div class="header-top">
+                        <h3 id="folderTitle" style="color:var(--primary-red); margin:0;" data-i18n="inbox">Bandeja de Entrada</h3>
+                        <button class="tool-btn" id="refreshBtn" title="Actualizar"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar..." data-i18n-placeholder="search">
+                    </div>
+                </div>
+                <div class="list-tools">
+                    <input type="checkbox" id="selectAll" class="master-check" title="Seleccionar Todo">
+                    <button class="tool-btn" id="deleteSelected" title="Eliminar"><i class="far fa-trash-alt"></i></button>
+                    <button class="tool-btn" id="markRead" title="Marcar Leído"><i class="far fa-envelope-open"></i></button>
+                    <button class="tool-btn" id="sortBtn" title="Ordenar"><i class="fas fa-sort-amount-down"></i></button>
+                </div>
+                <div id="emailContainer" data-i18n="loading">
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                </div>
+            </div>
+            <div class="email-preview" id="previewPanel">
+                <div style="text-align:center; color:var(--text-muted); margin-top:100px;">
+                    <i class="far fa-envelope" style="font-size:4rem; opacity:0.5;"></i>
+                    <p style="margin-top:20px;" data-i18n="select_email">Selecciona un correo para leer</p>
+                </div>
+            </div>
+        </main>
+    
+        <div class="compose-modal" id="composeModal">
+            <div class="compose-header" id="composeHeader">
+                <span id="modalTitle" style="font-weight:600;" data-i18n="new_message">Mensaje Nuevo</span>
+                <div class="window-actions">
+                    <button class="window-btn" id="btnMin"><i class="fas fa-minus"></i></button>
+                    <button class="window-btn" id="btnMax"><i class="fas fa-expand"></i></button>
+                    <button class="window-btn" id="btnCloseX"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="compose-body" id="dropZone">
+                <div id="drag-overlay"><i class="fas fa-cloud-upload-alt" style="font-size:3rem; margin-bottom:10px;"></i><br><span data-i18n="drop_files">Suelta archivos aquí</span></div>
+                <div class="input-group"><label data-i18n="from">De:</label><input type="text" id="from" disabled style="background:transparent; color:var(--text-main); font-weight:600;"></div>
+                
+                <div class="input-group" style="align-items: flex-start; padding-top: 5px;">
+                    <label style="margin-top: 8px;" data-i18n="to">Para:</label>
+                    <div class="chip-container" id="to-chips-container" onclick="document.getElementById('to-input').focus()">
+                        <input type="text" id="to-input" class="chip-input" placeholder="" autocomplete="off">
+                    </div>
+                    <div class="cc-bcc-container" style="position:absolute; right:10px;">
+                        <span class="cc-link" id="btnCc">Cc</span><span class="cc-link" id="btnBcc">Cco</span>
+                    </div>
+                    <div class="autocomplete-list" id="autocompleteList"></div>
+                </div>
+    
+                <div class="input-group hidden-field" id="ccField" style="align-items:flex-start; padding-top:5px;">
+                    <label style="margin-top:8px;">Cc:</label>
+                    <div class="chip-container" id="cc-chips-container" onclick="document.getElementById('cc-input').focus()">
+                        <input type="text" id="cc-input" class="chip-input">
+                    </div>
+                    <button class="remove-field-btn" onclick="hideField('cc')"><i class="fas fa-times"></i></button>
+                </div>
+    
+                <div class="input-group hidden-field" id="bccField" style="align-items:flex-start; padding-top:5px;">
+                    <label style="margin-top:8px;">Cco:</label>
+                    <div class="chip-container" id="bcc-chips-container" onclick="document.getElementById('bcc-input').focus()">
+                        <input type="text" id="bcc-input" class="chip-input">
+                    </div>
+                    <button class="remove-field-btn" onclick="hideField('bcc')"><i class="fas fa-times"></i></button>
+                </div>
+    
+                <div class="input-group"><input type="text" id="subject" placeholder="Asunto" data-i18n-placeholder="subject"></div>
+                
+                <div id="editor-container"></div>
+                <div class="attachments-section"><div id="fileList"></div></div>
+            </div>
+    
+            <div class="compose-footer">
+                <div class="footer-left">
+                    <button class="send-btn" id="sendBtn" data-i18n="send">Enviar</button>
+                    <button class="ai-btn" id="aiBtn"><i class="fas fa-magic"></i> IA</button>
+                </div>
+                <div class="footer-right">
+                    <input type="file" id="fileInput" multiple style="display:none">
+                    <button class="tool-btn" id="attachBtn" title="Adjuntar"><i class="fas fa-paperclip"></i></button>
+                    <button class="tool-btn" id="discardBtn" title="Descartar"><i class="far fa-trash-alt"></i></button>
+                </div>
+            </div>
+        </div>
+    
+        <div class="account-modal modal-overlay" id="accountModal">
+            <div class="account-card modal-card">
+                <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom:20px;">
+                    <h3 style="margin:0;" id="accTitle" data-i18n="my_account">Mi Cuenta</h3>
+                    <i class="fas fa-times" id="closeAcc" style="cursor:pointer; color:var(--text-muted); font-size:1.2rem;"></i>
+                </div>
+                <div style="text-align:center;"><span id="roleBadge" class="role-badge"></span></div>
+                <div class="account-form">
+                    <label data-i18n="name">Nombre</label><input type="text" id="accName" disabled>
+                    <label>Email</label><input type="text" id="accEmail" disabled>
+                    <label data-i18n="password">Contraseña</label><input type="password" id="accPass" disabled placeholder="********">
+                    <div id="roleSelectContainer" style="display:none;">
+                        <label data-i18n="role">Rol</label>
+                        <select id="accRole"><option value="user">Usuario</option><option value="admin">Administrador</option></select>
+                    </div>
+                </div>
+                <div style="text-align:right; margin-top:25px;"><button class="send-btn" id="saveAcc" style="display:none;" data-i18n="save_changes">Guardar Cambios</button></div>
+            </div>
+        </div>
+    
+        <div class="users-modal modal-overlay" id="usersModal">
+            <div class="users-card modal-card">
+                <div class="users-header">
+                    <h3 style="margin:0; color:var(--primary-red);" data-i18n="user_management">Gestión de Usuarios</h3>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-create" id="addUserBtn"><i class="fas fa-plus"></i> <span data-i18n="new">Nuevo</span></button>
+                        <i class="fas fa-times" onclick="document.getElementById('usersModal').classList.remove('active')" style="cursor:pointer; font-size:1.2rem; color:var(--text-muted);"></i>
+                    </div>
+                </div>
+                <div class="users-body">
+                    <table class="user-table">
+                        <thead><tr><th data-i18n="name">Nombre</th><th>Email</th><th data-i18n="role">Rol</th><th data-i18n="actions">Acciones</th></tr></thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+        <script>
+            const API_URL = 'http://localhost:3001';
+            let emailsData = [], contactsData = [], attachedFiles = [], editingDraftId = null;
+            let searchTerm = "", sortOrder = "desc";
+            let selectedTo = [], selectedCc = [], selectedBcc = [];
+            
+            let user = {};
+            try { user = JSON.parse(localStorage.getItem('alhmail_user')) || {}; } catch(e) { user = {}; }
+            const IS_ADMIN = user.role === 'admin';
+            let selectedUserId = null; let isCreatingUser = false;
+            const STORAGE_KEY = `alhmail_data_${user.email}`;
+    
+            const translations = {
+                es: { compose: "Redactar", inbox: "Entrada", sent: "Enviados", drafts: "Borradores", spam: "Spam", users: "Usuarios", account: "Mi Cuenta", logout: "Cerrar Sesión", my_account: "Mi Cuenta", search: "Buscar...", new_message: "Mensaje Nuevo", from: "De:", to: "Para:", subject: "Asunto", send: "Enviar", save_changes: "Guardar Cambios", name: "Nombre", password: "Contraseña", role: "Rol", user_management: "Gestión de Usuarios", new: "Nuevo", actions: "Acciones", loading: "Cargando...", select_email: "Selecciona un correo para leer", drop_files: "Suelta archivos aquí", delete_confirm_title: "¿Eliminar {n} correos?", delete_confirm_btn: "Sí, eliminar", cancel: "Cancelar", deleted: "Eliminados", marked_read: "Marcados como leídos", sent_success: "Enviado", saved_success: "Guardado", error_send: "Error al enviar", missing_dest: "Falta el destinatario", empty: "Vacío" },
+                en: { compose: "Compose", inbox: "Inbox", sent: "Sent", drafts: "Drafts", spam: "Spam", users: "Users", account: "My Account", logout: "Logout", my_account: "My Account", search: "Search...", new_message: "New Message", from: "From:", to: "To:", subject: "Subject", send: "Send", save_changes: "Save Changes", name: "Name", password: "Password", role: "Role", user_management: "User Management", new: "New", actions: "Actions", loading: "Loading...", select_email: "Select an email to read", drop_files: "Drop files here", delete_confirm_title: "Delete {n} emails?", delete_confirm_btn: "Yes, delete", cancel: "Cancel", deleted: "Deleted", marked_read: "Marked as read", sent_success: "Sent", saved_success: "Saved", error_send: "Error sending", missing_dest: "Missing recipient", empty: "Empty" }
             };
-
-            const dragOverlay = document.getElementById('drag-overlay');
-            window.addEventListener('dragover', (e) => { e.preventDefault(); if(document.getElementById('composeModal').classList.contains('active')) dragOverlay.style.display = 'flex'; });
-            dragOverlay.addEventListener('dragleave', (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; });
-            dragOverlay.addEventListener('drop', async (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; if (e.dataTransfer.files.length > 0) await handleFiles(Array.from(e.dataTransfer.files)); });
-
-            // --- IA ---
-            document.getElementById('aiBtn').onclick = async () => {
-                const subject = document.getElementById('subject').value;
-                const { value: prompt } = await Swal.fire({
-                    title: '✨ Asistente de IA', input: 'textarea', inputLabel: '¿Sobre qué quieres escribir el correo?',
-                    inputPlaceholder: 'Ej: Escribe un recordatorio amable...', showCancelButton: true,
-                    confirmButtonColor: '#8b5cf6', confirmButtonText: 'Generar', cancelButtonText: 'Cancelar',
-                    inputValidator: (value) => { if (!value) return '¡Necesitas escribir una instrucción!'; }
-                });
-                if (prompt) {
-                    Swal.fire({ title: 'Pensando...', html: 'La IA está redactando...', timerProgressBar: true, didOpen: () => { Swal.showLoading(); } });
-                    try {
-                        const res = await fetch(`${API_URL}/ai/draft`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, subject }) });
-                        const data = await res.json();
-                        if (data.success) { quill.clipboard.dangerouslyPasteHTML(data.text); Swal.close(); } else { throw new Error(data.error || "Error"); }
-                    } catch (e) { Swal.fire({ icon: 'error', title: 'Error IA', text: e.message }); }
-                }
-            };
-
-            // --- UI & SETTINGS ---
-            document.getElementById('themeBtn').onclick = () => { currentTheme = currentTheme === 'light' ? 'dark' : 'light'; localStorage.setItem('alhmail_theme', currentTheme); applyTheme(); };
-            document.getElementById('langBtn').onclick = () => { currentLang = currentLang === 'es' ? 'en' : 'es'; localStorage.setItem('alhmail_lang', currentLang); applyLanguage(); renderEmails(document.querySelector('.nav-item.active').dataset.target); };
-            
-            const toggleBtn = document.getElementById('toggleBtn'); if(toggleBtn) toggleBtn.onclick = () => document.getElementById('sidebar').classList.toggle('collapsed');
-            const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.onclick = () => Swal.fire({title: currentLang==='es'?'¿Salir?':'Logout?', showCancelButton:true, confirmButtonColor:'#D50032'}).then(r=>{ if(r.isConfirmed){ localStorage.removeItem('alhmail_token'); window.location.href='index.html'; } });
-
-            const adminBtn = document.getElementById('adminUsersBtn'); if (IS_ADMIN && adminBtn) { document.getElementById('navSpam').style.display = 'flex'; adminBtn.style.display = 'flex'; adminBtn.onclick = () => { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); }; }
-            document.getElementById('accountBtn').onclick = () => { isCreatingUser = false; selectedUserId = user.id; fillAccountForm(user, true); document.getElementById('accountModal').classList.add('active'); };
-            document.getElementById('closeAcc').onclick = () => { document.getElementById('accountModal').classList.remove('active'); if(isCreatingUser) document.getElementById('usersModal').classList.add('active'); };
-            document.getElementById('saveAcc').onclick = async () => { const data = { name: document.getElementById('accName').value, email: document.getElementById('accEmail').value, password: document.getElementById('accPass').value, role: document.getElementById('accRole').value }; try { let res; if(isCreatingUser) res = await fetch(`${API_URL}/users`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); else res = await fetch(`${API_URL}/users/${selectedUserId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); if (!res.ok) throw new Error('Error'); if(!isCreatingUser && selectedUserId === user.id) { user.name=data.name; user.role=data.role; localStorage.setItem('alhmail_user', JSON.stringify(user)); if(data.role!=='admin' && IS_ADMIN) location.reload(); } Swal.fire({icon:'success', title:translations[currentLang].saved_success, timer:1000, showConfirmButton:false}); document.getElementById('accountModal').classList.remove('active'); if(IS_ADMIN) { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); } } catch(e) { Swal.fire({icon: 'error', title: 'Error', text: e.message}); } };
-            document.getElementById('addUserBtn').onclick = () => { isCreatingUser = true; selectedUserId = null; document.getElementById('usersModal').classList.remove('active'); fillAccountForm({}, false); document.getElementById('accountModal').classList.add('active'); };
-            
-            // --- NAVEGACIÓN ---
-            document.querySelectorAll('.nav-item').forEach(item => { item.onclick = (e) => { e.preventDefault(); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); item.classList.add('active'); document.getElementById('folderTitle').innerText = translations[currentLang][item.dataset.target]; renderEmails(item.dataset.target); } });
-            document.getElementById('refreshBtn').onclick = () => { initData(); Swal.fire({toast:true, position:'top-end', icon:'info', title:currentLang==='es'?'Actualizado':'Updated', timer:1000}); };
-            
-            // --- VENTANA REDACTAR ---
-            const modal = document.getElementById('composeModal');
-            document.getElementById('composeBtn').onclick = () => { resetForm(); modal.classList.add('active'); };
-            document.getElementById('btnCloseX').onclick = () => modal.classList.remove('active');
-            
-            // MINIMIZE / MAXIMIZE
-            const btnMin = document.getElementById('btnMin');
-            const btnMax = document.getElementById('btnMax');
-            btnMin.onclick = () => { modal.classList.toggle('minimized'); modal.classList.remove('maximized'); };
-            btnMax.onclick = () => { modal.classList.toggle('maximized'); modal.classList.remove('minimized'); };
-
-            document.getElementById('sendBtn').onclick = () => sendEmail(false);
-            document.getElementById('discardBtn').onclick = () => { if(confirm(currentLang==='es'?"¿Descartar?":"Discard?")) { resetForm(); modal.classList.remove('active'); }};
-            setupChipInput('to', selectedTo); setupChipInput('cc', selectedCc); setupChipInput('bcc', selectedBcc); setupAutocomplete();
-            const btnCc = document.getElementById('btnCc'), btnBcc = document.getElementById('btnBcc');
-            btnCc.onclick = () => { document.getElementById('ccField').classList.remove('hidden-field'); btnCc.style.display='none'; document.getElementById('cc-input').focus(); };
-            btnBcc.onclick = () => { document.getElementById('bccField').classList.remove('hidden-field'); btnBcc.style.display='none'; document.getElementById('bcc-input').focus(); };
-
-            document.getElementById('selectAll').addEventListener('change', function() { const isChecked = this.checked; document.querySelectorAll('.email-check').forEach(chk => { chk.checked = isChecked; const row = chk.closest('.fake-email'); if(isChecked) row.classList.add('row-checked'); else row.classList.remove('row-checked'); }); });
-            document.getElementById('deleteSelected').onclick = async () => { 
-                const checkedBoxes = document.querySelectorAll('.email-check:checked'); const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
-                if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: currentLang==='es'?'Selecciona un correo':'Select an email', timer: 2000 }); 
+            let currentLang = localStorage.getItem('alhmail_lang') || 'es';
+            let currentTheme = localStorage.getItem('alhmail_theme') || 'light';
+    
+            function applyTheme() {
+                if(currentTheme === 'dark') { document.body.classList.add('dark'); document.getElementById('themeBtn').innerHTML = '<i class="fas fa-sun"></i>'; } 
+                else { document.body.classList.remove('dark'); document.getElementById('themeBtn').innerHTML = '<i class="fas fa-moon"></i>'; }
+            }
+            function applyLanguage() {
                 const t = translations[currentLang];
-                const confirm = await Swal.fire({ title: t.delete_confirm_title.replace('{n}', ids.length), icon: 'warning', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: t.delete_confirm_btn, cancelButtonText: t.cancel }); 
-                if (confirm.isConfirmed) { 
-                    emailsData = emailsData.filter(e => !ids.includes(e.id));
+                document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = t[el.dataset.i18n]; });
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t[el.dataset.i18nPlaceholder]; });
+                const activeNav = document.querySelector('.nav-item.active');
+                if(activeNav) document.getElementById('folderTitle').innerText = t[activeNav.dataset.target];
+            }
+    
+            // --- CONFIGURACIÓN QUILL (TOOLBAR EXPANDIDA) ---
+            var quill = new Quill('#editor-container', { 
+                theme: 'snow', 
+                placeholder: '', 
+                modules: { 
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],        // Negrita, Cursiva, Subrayado, Tachado
+                        [{ 'color': [] }, { 'background': [] }],          // Color de texto y Resaltado
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],     // Listas
+                        ['link', 'clean']                                 // Enlaces y Limpiar formato
+                    ] 
+                } 
+            });
+    
+            document.addEventListener('DOMContentLoaded', () => {
+                applyTheme(); applyLanguage();
+                initData(); setInterval(initData, 20000);
+                loadContacts();
+    
+                // --- LÓGICA DE ARCHIVOS ---
+                const fileInput = document.getElementById('fileInput');
+                document.getElementById('attachBtn').onclick = () => fileInput.click();
+                
+                fileInput.onchange = async (e) => {
+                    if (fileInput.files.length > 0) {
+                        await handleFiles(Array.from(fileInput.files));
+                        fileInput.value = ''; 
+                    }
+                };
+    
+                const dragOverlay = document.getElementById('drag-overlay');
+                window.addEventListener('dragover', (e) => { e.preventDefault(); if(document.getElementById('composeModal').classList.contains('active')) dragOverlay.style.display = 'flex'; });
+                dragOverlay.addEventListener('dragleave', (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; });
+                dragOverlay.addEventListener('drop', async (e) => { e.preventDefault(); dragOverlay.style.display = 'none'; if (e.dataTransfer.files.length > 0) await handleFiles(Array.from(e.dataTransfer.files)); });
+    
+                // --- IA ---
+                document.getElementById('aiBtn').onclick = async () => {
+                    const subject = document.getElementById('subject').value;
+                    const { value: prompt } = await Swal.fire({
+                        title: '✨ Asistente de IA', input: 'textarea', inputLabel: '¿Sobre qué quieres escribir el correo?',
+                        inputPlaceholder: 'Ej: Escribe un recordatorio amable...', showCancelButton: true,
+                        confirmButtonColor: '#8b5cf6', confirmButtonText: 'Generar', cancelButtonText: 'Cancelar',
+                        inputValidator: (value) => { if (!value) return '¡Necesitas escribir una instrucción!'; }
+                    });
+                    if (prompt) {
+                        Swal.fire({ title: 'Pensando...', html: 'La IA está redactando...', timerProgressBar: true, didOpen: () => { Swal.showLoading(); } });
+                        try {
+                            const res = await fetch(`${API_URL}/ai/draft`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, subject }) });
+                            const data = await res.json();
+                            if (data.success) { quill.clipboard.dangerouslyPasteHTML(data.text); Swal.close(); } else { throw new Error(data.error || "Error"); }
+                        } catch (e) { Swal.fire({ icon: 'error', title: 'Error IA', text: e.message }); }
+                    }
+                };
+    
+                // --- UI & SETTINGS ---
+                document.getElementById('themeBtn').onclick = () => { currentTheme = currentTheme === 'light' ? 'dark' : 'light'; localStorage.setItem('alhmail_theme', currentTheme); applyTheme(); };
+                document.getElementById('langBtn').onclick = () => { currentLang = currentLang === 'es' ? 'en' : 'es'; localStorage.setItem('alhmail_lang', currentLang); applyLanguage(); renderEmails(document.querySelector('.nav-item.active').dataset.target); };
+                
+                const toggleBtn = document.getElementById('toggleBtn'); if(toggleBtn) toggleBtn.onclick = () => document.getElementById('sidebar').classList.toggle('collapsed');
+                const logoutBtn = document.getElementById('logoutBtn'); if(logoutBtn) logoutBtn.onclick = () => Swal.fire({title: currentLang==='es'?'¿Salir?':'Logout?', showCancelButton:true, confirmButtonColor:'#D50032'}).then(r=>{ if(r.isConfirmed){ localStorage.removeItem('alhmail_token'); window.location.href='index.html'; } });
+    
+                const adminBtn = document.getElementById('adminUsersBtn'); if (IS_ADMIN && adminBtn) { document.getElementById('navSpam').style.display = 'flex'; adminBtn.style.display = 'flex'; adminBtn.onclick = () => { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); }; }
+                document.getElementById('accountBtn').onclick = () => { isCreatingUser = false; selectedUserId = user.id; fillAccountForm(user, true); document.getElementById('accountModal').classList.add('active'); };
+                document.getElementById('closeAcc').onclick = () => { document.getElementById('accountModal').classList.remove('active'); if(isCreatingUser) document.getElementById('usersModal').classList.add('active'); };
+                document.getElementById('saveAcc').onclick = async () => { const data = { name: document.getElementById('accName').value, email: document.getElementById('accEmail').value, password: document.getElementById('accPass').value, role: document.getElementById('accRole').value }; try { let res; if(isCreatingUser) res = await fetch(`${API_URL}/users`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); else res = await fetch(`${API_URL}/users/${selectedUserId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); if (!res.ok) throw new Error('Error'); if(!isCreatingUser && selectedUserId === user.id) { user.name=data.name; user.role=data.role; localStorage.setItem('alhmail_user', JSON.stringify(user)); if(data.role!=='admin' && IS_ADMIN) location.reload(); } Swal.fire({icon:'success', title:translations[currentLang].saved_success, timer:1000, showConfirmButton:false}); document.getElementById('accountModal').classList.remove('active'); if(IS_ADMIN) { loadUsersTable(); document.getElementById('usersModal').classList.add('active'); } } catch(e) { Swal.fire({icon: 'error', title: 'Error', text: e.message}); } };
+                document.getElementById('addUserBtn').onclick = () => { isCreatingUser = true; selectedUserId = null; document.getElementById('usersModal').classList.remove('active'); fillAccountForm({}, false); document.getElementById('accountModal').classList.add('active'); };
+                
+                // --- NAVEGACIÓN ---
+                document.querySelectorAll('.nav-item').forEach(item => { item.onclick = (e) => { e.preventDefault(); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); item.classList.add('active'); document.getElementById('folderTitle').innerText = translations[currentLang][item.dataset.target]; renderEmails(item.dataset.target); } });
+                document.getElementById('refreshBtn').onclick = () => { initData(); Swal.fire({toast:true, position:'top-end', icon:'info', title:currentLang==='es'?'Actualizado':'Updated', timer:1000}); };
+                
+                // --- VENTANA REDACTAR ---
+                const modal = document.getElementById('composeModal');
+                document.getElementById('composeBtn').onclick = () => { resetForm(); modal.classList.add('active'); };
+                document.getElementById('btnCloseX').onclick = () => modal.classList.remove('active');
+                
+                // MINIMIZE / MAXIMIZE
+                const btnMin = document.getElementById('btnMin');
+                const btnMax = document.getElementById('btnMax');
+                btnMin.onclick = () => { modal.classList.toggle('minimized'); modal.classList.remove('maximized'); };
+                btnMax.onclick = () => { modal.classList.toggle('maximized'); modal.classList.remove('minimized'); };
+    
+                document.getElementById('sendBtn').onclick = () => sendEmail(false);
+                document.getElementById('discardBtn').onclick = () => { if(confirm(currentLang==='es'?"¿Descartar?":"Discard?")) { resetForm(); modal.classList.remove('active'); }};
+                setupChipInput('to', selectedTo); setupChipInput('cc', selectedCc); setupChipInput('bcc', selectedBcc); setupAutocomplete();
+                const btnCc = document.getElementById('btnCc'), btnBcc = document.getElementById('btnBcc');
+                btnCc.onclick = () => { document.getElementById('ccField').classList.remove('hidden-field'); btnCc.style.display='none'; document.getElementById('cc-input').focus(); };
+                btnBcc.onclick = () => { document.getElementById('bccField').classList.remove('hidden-field'); btnBcc.style.display='none'; document.getElementById('bcc-input').focus(); };
+    
+                document.getElementById('selectAll').addEventListener('change', function() { const isChecked = this.checked; document.querySelectorAll('.email-check').forEach(chk => { chk.checked = isChecked; const row = chk.closest('.fake-email'); if(isChecked) row.classList.add('row-checked'); else row.classList.remove('row-checked'); }); });
+                document.getElementById('deleteSelected').onclick = async () => { 
+                    const checkedBoxes = document.querySelectorAll('.email-check:checked'); const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
+                    if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: currentLang==='es'?'Selecciona un correo':'Select an email', timer: 2000 }); 
+                    const t = translations[currentLang];
+                    const confirm = await Swal.fire({ title: t.delete_confirm_title.replace('{n}', ids.length), icon: 'warning', showCancelButton: true, confirmButtonColor: '#D50032', confirmButtonText: t.delete_confirm_btn, cancelButtonText: t.cancel }); 
+                    if (confirm.isConfirmed) { 
+                        emailsData = emailsData.filter(e => !ids.includes(e.id));
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData));
+                        renderEmails(document.querySelector('.nav-item.active').dataset.target);
+                        updateUnreadCount();
+                        document.getElementById('selectAll').checked = false;
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: t.deleted, timer: 1000 });
+                    } 
+                };
+                document.getElementById('markRead').onclick = () => { 
+                    const checkedBoxes = document.querySelectorAll('.email-check:checked'); 
+                    const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
+                    if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: currentLang==='es'?'Selecciona correos':'Select emails', timer: 2000 }); 
+                    emailsData.forEach(e => { if (ids.includes(e.id)) e.unread = false; });
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData));
                     renderEmails(document.querySelector('.nav-item.active').dataset.target);
+                    updateUnreadCount();
                     document.getElementById('selectAll').checked = false;
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: t.deleted, timer: 1000 });
-                } 
-            };
-            document.getElementById('markRead').onclick = () => { 
-                const checkedBoxes = document.querySelectorAll('.email-check:checked'); 
-                const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.dataset.id)); 
-                if (ids.length === 0) return Swal.fire({ toast: true, position: 'top', icon: 'warning', title: currentLang==='es'?'Selecciona correos':'Select emails', timer: 2000 }); 
-                emailsData.forEach(e => { if (ids.includes(e.id)) e.unread = false; });
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData));
-                renderEmails(document.querySelector('.nav-item.active').dataset.target);
-                document.getElementById('selectAll').checked = false;
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: translations[currentLang].marked_read, timer: 1000 }); 
-            };
-            document.getElementById('searchInput').addEventListener('keyup', () => { renderEmails(document.querySelector('.nav-item.active').dataset.target); });
-            document.addEventListener('click', (e) => { if (!e.target.closest('#to-chips-container')) { document.getElementById('autocompleteList').classList.remove('visible'); } });
-        });
-
-        // --- FUNCIONES DE ADJUNTOS (CRÍTICAS) ---
-        async function handleFiles(files) {
-            for (const file of files) {
-                const base64 = await toBase64(file);
-                attachedFiles.push({ filename: file.name, content: base64.split(',')[1], encoding: 'base64', contentType: file.type });
-            }
-            renderAttachments();
-        }
-        const toBase64 = file => new Promise((resolve, reject) => {
-            const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
-        });
-        function renderAttachments() {
-            const container = document.getElementById('fileList'); container.innerHTML = '';
-            attachedFiles.forEach((file, index) => {
-                const chip = document.createElement('div'); chip.className = 'file-chip';
-                chip.innerHTML = `<i class="fas fa-paperclip"></i> ${file.filename} <i class="fas fa-times file-remove"></i>`;
-                chip.querySelector('.file-remove').onclick = () => { attachedFiles.splice(index, 1); renderAttachments(); };
-                container.appendChild(chip);
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: translations[currentLang].marked_read, timer: 1000 }); 
+                };
+                document.getElementById('searchInput').addEventListener('keyup', () => { renderEmails(document.querySelector('.nav-item.active').dataset.target); });
+                document.addEventListener('click', (e) => { if (!e.target.closest('#to-chips-container')) { document.getElementById('autocompleteList').classList.remove('visible'); } });
             });
-        }
-
-        // Generador de colores
-        function getColorFromStr(str) {
-            let hash = 0; for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
-            const h = Math.abs(hash) % 360; return `hsl(${h}, 70%, 45%)`;
-        }
-
-        async function loadContacts() { try { const resUsers = await fetch(`${API_URL}/users`); const users = await resUsers.json(); const resContacts = await fetch(`${API_URL}/contacts`); const contacts = await resContacts.json(); contactsData = [...users, ...contacts]; } catch(e) {} }
-        async function loadUsersTable() { try { const res = await fetch(`${API_URL}/users`); const users = await res.json(); const tbody = document.getElementById('usersTableBody'); tbody.innerHTML = ''; users.forEach(u => { tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.email}</td><td><span class="role-tag ${u.role}">${u.role}</span></td><td><button class="btn-action btn-edit" onclick="editUser('${u.id}','${u.name}','${u.email}','${u.role}')"><i class="fas fa-pencil-alt"></i></button>${u.id!==user.id ? `<button class="btn-action btn-delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; }); } catch(e){} }
-        window.editUser = (id, name, email, role) => { selectedUserId = id; isCreatingUser = false; document.getElementById('usersModal').classList.remove('active'); fillAccountForm({name, email, role}, false); document.getElementById('accountModal').classList.add('active'); };
-        window.deleteUser = async (id) => { if(confirm("¿Borrar?")) { await fetch(`${API_URL}/users/${id}`, {method:'DELETE'}); loadUsersTable(); } };
-        function fillAccountForm(data, isMyAccount) { document.getElementById('accName').value = data.name || ''; document.getElementById('accEmail').value = data.email || ''; document.getElementById('accPass').value = ''; document.getElementById('accRole').value = data.role || 'user'; const badge = document.getElementById('roleBadge'); const roleSelect = document.getElementById('roleSelectContainer'); document.getElementById('accEmail').disabled = !isCreatingUser; if(isCreatingUser) { document.getElementById('accTitle').innerText = translations[currentLang].new; badge.style.display = 'none'; roleSelect.style.display = 'block'; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } else if(isMyAccount) { document.getElementById('accTitle').innerText = translations[currentLang].my_account; badge.style.display = 'inline-block'; roleSelect.style.display = 'none'; if(IS_ADMIN) { badge.innerText = "ADMIN"; badge.className="role-badge role-admin"; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } else { badge.innerText = "USUARIO"; badge.className="role-badge role-user"; document.getElementById('accName').disabled = true; document.getElementById('accPass').disabled = true; document.getElementById('saveAcc').style.display = 'none'; } } else { document.getElementById('accTitle').innerText = "Editar"; badge.style.display = 'none'; roleSelect.style.display = 'block'; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } }
-        async function initData() { try { let localEmails = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; const res = await fetch(`${API_URL}/emails?userEmail=${user.email}`); const newEmails = await res.json(); if (newEmails.length > 0) { const emailMap = new Map(); localEmails.forEach(e => emailMap.set(e.id, e)); newEmails.forEach(e => emailMap.set(e.id, e)); localEmails = Array.from(emailMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date)); localStorage.setItem(STORAGE_KEY, JSON.stringify(localEmails)); const newIds = newEmails.map(e => e.id); await fetch(`${API_URL}/emails/downloaded`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids: newIds }) }); } emailsData = localEmails; renderEmails(document.querySelector('.nav-item.active').dataset.target); } catch(e){} }
-        
-        function renderEmails(folder) {
-            const container = document.getElementById('emailContainer'); container.innerHTML = '';
-            let filtered = emailsData.filter(e => e.folder === folder);
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            if(term) filtered = filtered.filter(e => e.subject.toLowerCase().includes(term) || e.sender.toLowerCase().includes(term));
-            if(filtered.length === 0) { container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted)">${translations[currentLang].empty}</div>`; return; }
-            filtered.forEach(email => {
-                const el = document.createElement('div'); el.id = `email-row-${email.id}`; el.className = `fake-email ${email.unread?'unread':''}`;
+    
+            // --- FUNCIONES ---
+            function updateUnreadCount() {
+                const count = emailsData.filter(e => e.folder === 'inbox' && e.unread).length;
+                const badge = document.getElementById('unread-badge');
+                if (badge) {
+                    badge.innerText = count > 99 ? '99+' : count;
+                    badge.style.display = count > 0 ? 'inline-block' : 'none';
+                }
+            }
+    
+            async function handleFiles(files) {
+                for (const file of files) {
+                    const base64 = await toBase64(file);
+                    attachedFiles.push({ filename: file.name, content: base64.split(',')[1], encoding: 'base64', contentType: file.type });
+                }
+                renderAttachments();
+            }
+            const toBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
+            });
+            function renderAttachments() {
+                const container = document.getElementById('fileList'); container.innerHTML = '';
+                attachedFiles.forEach((file, index) => {
+                    const chip = document.createElement('div'); chip.className = 'file-chip';
+                    chip.innerHTML = `<i class="fas fa-paperclip"></i> ${file.filename} <i class="fas fa-times file-remove"></i>`;
+                    chip.querySelector('.file-remove').onclick = () => { attachedFiles.splice(index, 1); renderAttachments(); };
+                    container.appendChild(chip);
+                });
+            }
+    
+            function getColorFromStr(str) {
+                let hash = 0; for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
+                const h = Math.abs(hash) % 360; return `hsl(${h}, 70%, 45%)`;
+            }
+    
+            async function loadContacts() { try { const resUsers = await fetch(`${API_URL}/users`); const users = await resUsers.json(); const resContacts = await fetch(`${API_URL}/contacts`); const contacts = await resContacts.json(); contactsData = [...users, ...contacts]; } catch(e) {} }
+            async function loadUsersTable() { try { const res = await fetch(`${API_URL}/users`); const users = await res.json(); const tbody = document.getElementById('usersTableBody'); tbody.innerHTML = ''; users.forEach(u => { tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.email}</td><td><span class="role-tag ${u.role}">${u.role}</span></td><td><button class="btn-action btn-edit" onclick="editUser('${u.id}','${u.name}','${u.email}','${u.role}')"><i class="fas fa-pencil-alt"></i></button>${u.id!==user.id ? `<button class="btn-action btn-delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; }); } catch(e){} }
+            window.editUser = (id, name, email, role) => { selectedUserId = id; isCreatingUser = false; document.getElementById('usersModal').classList.remove('active'); fillAccountForm({name, email, role}, false); document.getElementById('accountModal').classList.add('active'); };
+            window.deleteUser = async (id) => { if(confirm("¿Borrar?")) { await fetch(`${API_URL}/users/${id}`, {method:'DELETE'}); loadUsersTable(); } };
+            function fillAccountForm(data, isMyAccount) { document.getElementById('accName').value = data.name || ''; document.getElementById('accEmail').value = data.email || ''; document.getElementById('accPass').value = ''; document.getElementById('accRole').value = data.role || 'user'; const badge = document.getElementById('roleBadge'); const roleSelect = document.getElementById('roleSelectContainer'); document.getElementById('accEmail').disabled = !isCreatingUser; if(isCreatingUser) { document.getElementById('accTitle').innerText = translations[currentLang].new; badge.style.display = 'none'; roleSelect.style.display = 'block'; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } else if(isMyAccount) { document.getElementById('accTitle').innerText = translations[currentLang].my_account; badge.style.display = 'inline-block'; roleSelect.style.display = 'none'; if(IS_ADMIN) { badge.innerText = "ADMIN"; badge.className="role-badge role-admin"; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } else { badge.innerText = "USUARIO"; badge.className="role-badge role-user"; document.getElementById('accName').disabled = true; document.getElementById('accPass').disabled = true; document.getElementById('saveAcc').style.display = 'none'; } } else { document.getElementById('accTitle').innerText = "Editar"; badge.style.display = 'none'; roleSelect.style.display = 'block'; document.getElementById('accName').disabled = false; document.getElementById('accPass').disabled = false; document.getElementById('saveAcc').style.display = 'inline-block'; } }
+            
+            async function initData() { 
+                try { 
+                    let localEmails = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+                    const res = await fetch(`${API_URL}/emails?userEmail=${user.email}`); 
+                    const newEmails = await res.json(); 
+                    if (newEmails.length > 0) {
+                        const emailMap = new Map();
+                        localEmails.forEach(e => emailMap.set(e.id, e)); 
+                        newEmails.forEach(e => emailMap.set(e.id, e));   
+                        localEmails = Array.from(emailMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(localEmails)); 
+                        const newIds = newEmails.map(e => e.id);
+                        await fetch(`${API_URL}/emails/downloaded`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids: newIds }) });
+                    }
+                    emailsData = localEmails;
+                    renderEmails(document.querySelector('.nav-item.active').dataset.target); 
+                    updateUnreadCount(); 
+                } catch(e){} 
+            }
+            
+            function renderEmails(folder) {
+                const container = document.getElementById('emailContainer'); container.innerHTML = '';
+                let filtered = emailsData.filter(e => e.folder === folder);
+                const term = document.getElementById('searchInput').value.toLowerCase();
+                if(term) filtered = filtered.filter(e => e.subject.toLowerCase().includes(term) || e.sender.toLowerCase().includes(term));
+                if(filtered.length === 0) { container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted)">${translations[currentLang].empty}</div>`; return; }
+                filtered.forEach(email => {
+                    const el = document.createElement('div'); el.id = `email-row-${email.id}`; el.className = `fake-email ${email.unread?'unread':''}`;
+                    const rawName = email.sender.split('<')[0].replace(/"/g, '').trim();
+                    const initial = rawName.charAt(0).toUpperCase();
+                    const avatarColor = getColorFromStr(rawName);
+                    el.innerHTML = `<div style="display:flex; align-items:center; gap:12px; width:100%;"><input type="checkbox" class="email-check" data-id="${email.id}" onclick="event.stopPropagation()"><div style="width:32px; height:32px; border-radius:50%; background:${avatarColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem; flex-shrink:0;">${initial}</div><div class="email-content" style="flex-grow:1; min-width:0;"><div class="email-row-top" style="display:flex; justify-content:space-between;"><div class="email-from" style="font-weight:700; color:var(--text-main);">${rawName}</div><span class="email-date" style="font-size:0.75rem; color:var(--text-muted);">${new Date(email.date).toLocaleDateString()}</span></div><div class="email-subject" style="font-size:0.9rem; color:var(--text-main);">${email.subject}</div><div class="email-snippet" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${email.preview.replace('Para: ? -','')}</div></div></div>`;
+                    el.querySelector('.email-content').onclick = () => viewEmail(email);
+                    const chk = el.querySelector('.email-check'); chk.onclick = (e) => { e.stopPropagation(); if(chk.checked) el.classList.add('row-checked'); else el.classList.remove('row-checked'); };
+                    container.appendChild(el);
+                });
+            }
+            
+            async function viewEmail(email) {
+                document.querySelectorAll('.fake-email').forEach(el => el.classList.remove('selected'));
+                const activeRow = document.getElementById(`email-row-${email.id}`); if (activeRow) activeRow.classList.add('selected');
+                const t = translations[currentLang];
+                const sec = email.securityAnalysis || { status: 'clean', score: 0, threats: [] };
+                let badgeColor = '#10b981'; let badgeText = currentLang === 'es' ? 'Seguro' : 'Clean'; let badgeIcon = 'fa-shield-alt';
+                if (sec.status === 'suspicious') { badgeColor = '#f59e0b'; badgeText = currentLang === 'es' ? 'Sospechoso' : 'Suspicious'; badgeIcon = 'fa-exclamation-triangle'; }
+                else if (sec.status === 'infected' || sec.status === 'blocked') { badgeColor = '#ef4444'; badgeText = currentLang === 'es' ? 'PELIGRO' : 'DANGER'; badgeIcon = 'fa-biohazard'; }
                 
+                let threatsHtml = '';
+                if (sec.threats && sec.threats.length > 0) { threatsHtml = `<div style="background:#fff1f2; color:#be123c; padding:10px; border-radius:6px; margin-top:10px; border:1px solid #fda4af; font-size:0.9rem;"><strong><i class="fas fa-bug"></i> ${currentLang === 'es' ? 'Amenazas:' : 'Threats:'}</strong><ul style="margin:5px 0 0 20px; padding:0;">${sec.threats.map(th => `<li>${th}</li>`).join('')}</ul></div>`; }
+                let attachmentsHtml = '';
+                if (email.hasAttachments && email.attachments && email.attachments.length > 0) { attachmentsHtml = `<div style="margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;"><strong><i class="fas fa-paperclip"></i> Adjuntos:</strong><div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">${email.attachments.map(att => `<a href="data:${att.contentType};base64,${att.content}" download="${att.filename}" style="text-decoration:none; background:var(--bg-hover); padding:5px 10px; border-radius:4px; font-size:0.85rem; color:var(--text-main); border:1px solid var(--border-color);"><i class="fas fa-file"></i> ${att.filename}</a>`).join('')}</div></div>`; }
+    
                 const rawName = email.sender.split('<')[0].replace(/"/g, '').trim();
                 const initial = rawName.charAt(0).toUpperCase();
                 const avatarColor = getColorFromStr(rawName);
-
-                el.innerHTML = `<div style="display:flex; align-items:center; gap:12px; width:100%;"><input type="checkbox" class="email-check" data-id="${email.id}" onclick="event.stopPropagation()"><div style="width:32px; height:32px; border-radius:50%; background:${avatarColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem; flex-shrink:0;">${initial}</div><div class="email-content" style="flex-grow:1; min-width:0;"><div class="email-row-top" style="display:flex; justify-content:space-between;"><div class="email-from" style="font-weight:700; color:var(--text-main);">${rawName}</div><span class="email-date" style="font-size:0.75rem; color:var(--text-muted);">${new Date(email.date).toLocaleDateString()}</span></div><div class="email-subject" style="font-size:0.9rem; color:var(--text-main);">${email.subject}</div><div class="email-snippet" style="font-size:0.8rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${email.preview.replace('Para: ? -','')}</div></div></div>`;
-                el.querySelector('.email-content').onclick = () => viewEmail(email);
-                const chk = el.querySelector('.email-check'); chk.onclick = (e) => { e.stopPropagation(); if(chk.checked) el.classList.add('row-checked'); else el.classList.remove('row-checked'); };
-                container.appendChild(el);
-            });
-        }
-        
-        async function viewEmail(email) {
-            document.querySelectorAll('.fake-email').forEach(el => el.classList.remove('selected'));
-            const activeRow = document.getElementById(`email-row-${email.id}`); if (activeRow) activeRow.classList.add('selected');
-            const t = translations[currentLang];
-
-            const sec = email.securityAnalysis || { status: 'clean', score: 0, threats: [] };
-            let badgeColor = '#10b981'; let badgeText = currentLang === 'es' ? 'Seguro' : 'Clean'; let badgeIcon = 'fa-shield-alt';
-            if (sec.status === 'suspicious') { badgeColor = '#f59e0b'; badgeText = currentLang === 'es' ? 'Sospechoso' : 'Suspicious'; badgeIcon = 'fa-exclamation-triangle'; }
-            else if (sec.status === 'infected' || sec.status === 'blocked') { badgeColor = '#ef4444'; badgeText = currentLang === 'es' ? 'PELIGRO' : 'DANGER'; badgeIcon = 'fa-biohazard'; }
-            else if (sec.status === 'verified') { badgeColor = '#3b82f6'; badgeText = currentLang === 'es' ? 'Verificado' : 'Verified'; badgeIcon = 'fa-check-circle'; }
-
-            let threatsHtml = '';
-            if (sec.threats && sec.threats.length > 0) { threatsHtml = `<div style="background:#fff1f2; color:#be123c; padding:10px; border-radius:6px; margin-top:10px; border:1px solid #fda4af; font-size:0.9rem;"><strong><i class="fas fa-bug"></i> ${currentLang === 'es' ? 'Amenazas:' : 'Threats:'}</strong><ul style="margin:5px 0 0 20px; padding:0;">${sec.threats.map(th => `<li>${th}</li>`).join('')}</ul></div>`; }
-
-            let attachmentsHtml = '';
-            if (email.hasAttachments && email.attachments && email.attachments.length > 0) {
-                attachmentsHtml = `<div style="margin-top:15px; border-top:1px solid var(--border-color); padding-top:10px;"><strong><i class="fas fa-paperclip"></i> Adjuntos:</strong><div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;">${email.attachments.map(att => `<a href="data:${att.contentType};base64,${att.content}" download="${att.filename}" style="text-decoration:none; background:var(--bg-hover); padding:5px 10px; border-radius:4px; font-size:0.85rem; color:var(--text-main); border:1px solid var(--border-color);"><i class="fas fa-file"></i> ${att.filename}</a>`).join('')}</div></div>`;
+    
+                document.getElementById('previewPanel').innerHTML = `<div class="detail-wrapper"><div class="detail-header"><div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;"><h2 class="detail-subject" style="margin:0; font-size:1.4rem; color:var(--text-main); line-height:1.2;">${email.subject}</h2><div style="background:${badgeColor}; color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; gap:5px; white-space:nowrap; margin-left:10px;"><i class="fas ${badgeIcon}"></i> ${badgeText}</div></div>${threatsHtml}<div class="meta-container" style="margin-top:15px; display:flex; align-items:center;"><div class="sender-info" style="display:flex; align-items:center; gap:10px;"><div class="sender-avatar" style="width:48px; height:48px; border-radius:50%; background:${avatarColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem;">${initial}</div><div class="meta-text"><div class="from-line" style="color:var(--text-main);"><strong>${rawName}</strong></div><div class="to-line" style="color:var(--text-muted); font-size:0.85rem;">${t.to} ${email.to_address || 'Mí'}</div></div></div></div>${attachmentsHtml}</div><div class="detail-body" style="margin-top:20px; color:var(--text-main); line-height:1.6;">${email.body}</div></div>`;
+    
+                if (email.unread) { 
+                    if (activeRow) activeRow.classList.remove('unread'); 
+                    email.unread = false; 
+                    const index = emailsData.findIndex(e => e.id === email.id); 
+                    if(index !== -1) emailsData[index].unread = false; 
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData)); 
+                    updateUnreadCount(); 
+                }
             }
-
-            const rawName = email.sender.split('<')[0].replace(/"/g, '').trim();
-            const initial = rawName.charAt(0).toUpperCase();
-            const avatarColor = getColorFromStr(rawName);
-
-            document.getElementById('previewPanel').innerHTML = `<div class="detail-wrapper"><div class="detail-header"><div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;"><h2 class="detail-subject" style="margin:0; font-size:1.4rem; color:var(--text-main); line-height:1.2;">${email.subject}</h2><div style="background:${badgeColor}; color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; gap:5px; white-space:nowrap; margin-left:10px;"><i class="fas ${badgeIcon}"></i> ${badgeText}</div></div>${threatsHtml}<div class="meta-container" style="margin-top:15px; display:flex; align-items:center;"><div class="sender-info" style="display:flex; align-items:center; gap:10px;"><div class="sender-avatar" style="width:48px; height:48px; border-radius:50%; background:${avatarColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem;">${initial}</div><div class="meta-text"><div class="from-line" style="color:var(--text-main);"><strong>${rawName}</strong></div><div class="to-line" style="color:var(--text-muted); font-size:0.85rem;">${t.to} ${email.to_address || 'Mí'}</div></div></div></div>${attachmentsHtml}</div><div class="detail-body" style="margin-top:20px; color:var(--text-main); line-height:1.6;">${email.body}</div></div>`;
-
-            if (email.unread) { if (activeRow) activeRow.classList.remove('unread'); email.unread = false; const index = emailsData.findIndex(e => e.id === email.id); if(index !== -1) emailsData[index].unread = false; localStorage.setItem(STORAGE_KEY, JSON.stringify(emailsData)); }
-        }
-
-        function setupAutocomplete() { const input = document.getElementById('to-input'); const list = document.getElementById('autocompleteList'); input.addEventListener('input', function() { const val = this.value.toLowerCase(); list.innerHTML = ''; if (!val) { list.classList.remove('visible'); return; } const matches = contactsData.filter(c => (c.name && c.name.toLowerCase().includes(val)) || (c.email && c.email.toLowerCase().includes(val))); matches.forEach(match => { const item = document.createElement('div'); item.className = 'suggestion-item'; item.innerHTML = `<strong>${match.name}</strong> <small>${match.email}</small>`; item.onclick = () => { addChip(match.email, 'to', selectedTo); input.value = ''; list.classList.remove('visible'); input.focus(); }; list.appendChild(item); }); if (matches.length > 0) list.classList.add('visible'); else list.classList.remove('visible'); }); }
-        function setupChipInput(type, arr) { document.getElementById(`${type}-input`).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') { e.preventDefault(); addChip(e.target.value.trim(), type, arr); document.getElementById('autocompleteList').classList.remove('visible'); } }); document.getElementById(`${type}-input`).addEventListener('blur', (e) => { const val = e.target.value.trim(); if(val) addChip(val, type, arr); }); }
-        function addChip(val, type, arr) { if(val && !arr.includes(val)){ arr.push(val); renderChips(type, arr); document.getElementById(`${type}-input`).value=''; } }
-        function renderChips(type, arr) { const container = document.getElementById(`${type}-chips-container`); const input = document.getElementById(`${type}-input`); Array.from(container.getElementsByClassName('email-chip')).forEach(e => e.remove()); arr.forEach((email, index) => { const chip = document.createElement('div'); chip.className = 'email-chip'; chip.innerHTML = `${email} <i class="fas fa-times chip-close"></i>`; chip.querySelector('.chip-close').onclick = (e) => { e.stopPropagation(); arr.splice(index, 1); renderChips(type, arr); }; container.insertBefore(chip, input); }); }
-        window.hideField = (type) => { document.getElementById(`${type}Field`).classList.add('hidden-field'); if(type === 'cc') { document.getElementById('btnCc').style.display = 'inline-block'; selectedCc = []; renderChips('cc', selectedCc); } else { document.getElementById('btnBcc').style.display = 'inline-block'; selectedBcc = []; renderChips('bcc', selectedBcc); } };
-        function resetForm() { document.getElementById('subject').value=''; quill.setText(''); document.getElementById('from').value = user.email; selectedTo=[]; selectedCc=[]; selectedBcc=[]; attachedFiles=[]; renderChips('to', selectedTo); renderChips('cc', selectedCc); renderChips('bcc', selectedBcc); hideField('cc'); hideField('bcc'); renderAttachments(); }
-        
-        async function sendEmail(isDraft) {
-            const inputTo = document.getElementById('to-input'); if(inputTo.value.trim()) addChip(inputTo.value.trim(), 'to', selectedTo);
-            const inputCc = document.getElementById('cc-input'); if(inputCc.value.trim()) addChip(inputCc.value.trim(), 'cc', selectedCc);
-            const inputBcc = document.getElementById('bcc-input'); if(inputBcc.value.trim()) addChip(inputBcc.value.trim(), 'bcc', selectedBcc);
-
-            const to = selectedTo.join(','); const subject = document.getElementById('subject').value; const body = quill.root.innerHTML;
-            if(!isDraft && !to) return Swal.fire(translations[currentLang].missing_dest);
-            const payload = { from: user.email, to: to, cc: selectedCc.join(','), bcc: selectedBcc.join(','), subject: subject, body: body, isDraft: isDraft, attachments: attachedFiles };
-            try { const res = await fetch(`${API_URL}/emails`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); if(res.ok) { Swal.fire({icon:'success', title: isDraft ? translations[currentLang].saved_success : translations[currentLang].sent_success}); document.getElementById('composeModal').classList.remove('active'); resetForm(); setTimeout(initData, 500); } else { Swal.fire(translations[currentLang].error_send); } } catch(e) { console.error(e); }
-        }
-    </script>
+    
+            function setupAutocomplete() { const input = document.getElementById('to-input'); const list = document.getElementById('autocompleteList'); input.addEventListener('input', function() { const val = this.value.toLowerCase(); list.innerHTML = ''; if (!val) { list.classList.remove('visible'); return; } const matches = contactsData.filter(c => (c.name && c.name.toLowerCase().includes(val)) || (c.email && c.email.toLowerCase().includes(val))); matches.forEach(match => { const item = document.createElement('div'); item.className = 'suggestion-item'; item.innerHTML = `<strong>${match.name}</strong> <small>${match.email}</small>`; item.onclick = () => { addChip(match.email, 'to', selectedTo); input.value = ''; list.classList.remove('visible'); input.focus(); }; list.appendChild(item); }); if (matches.length > 0) list.classList.add('visible'); else list.classList.remove('visible'); }); }
+            function setupChipInput(type, arr) { document.getElementById(`${type}-input`).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') { e.preventDefault(); addChip(e.target.value.trim(), type, arr); document.getElementById('autocompleteList').classList.remove('visible'); } }); document.getElementById(`${type}-input`).addEventListener('blur', (e) => { const val = e.target.value.trim(); if(val) addChip(val, type, arr); }); }
+            function addChip(val, type, arr) { if(val && !arr.includes(val)){ arr.push(val); renderChips(type, arr); document.getElementById(`${type}-input`).value=''; } }
+            function renderChips(type, arr) { const container = document.getElementById(`${type}-chips-container`); const input = document.getElementById(`${type}-input`); Array.from(container.getElementsByClassName('email-chip')).forEach(e => e.remove()); arr.forEach((email, index) => { const chip = document.createElement('div'); chip.className = 'email-chip'; chip.innerHTML = `${email} <i class="fas fa-times chip-close"></i>`; chip.querySelector('.chip-close').onclick = (e) => { e.stopPropagation(); arr.splice(index, 1); renderChips(type, arr); }; container.insertBefore(chip, input); }); }
+            window.hideField = (type) => { document.getElementById(`${type}Field`).classList.add('hidden-field'); if(type === 'cc') { document.getElementById('btnCc').style.display = 'inline-block'; selectedCc = []; renderChips('cc', selectedCc); } else { document.getElementById('btnBcc').style.display = 'inline-block'; selectedBcc = []; renderChips('bcc', selectedBcc); } };
+            function resetForm() { document.getElementById('subject').value=''; quill.setText(''); document.getElementById('from').value = user.email; selectedTo=[]; selectedCc=[]; selectedBcc=[]; attachedFiles=[]; renderChips('to', selectedTo); renderChips('cc', selectedCc); renderChips('bcc', selectedBcc); hideField('cc'); hideField('bcc'); renderAttachments(); }
+            
+            async function sendEmail(isDraft) {
+                const inputTo = document.getElementById('to-input'); if(inputTo.value.trim()) addChip(inputTo.value.trim(), 'to', selectedTo);
+                const inputCc = document.getElementById('cc-input'); if(inputCc.value.trim()) addChip(inputCc.value.trim(), 'cc', selectedCc);
+                const inputBcc = document.getElementById('bcc-input'); if(inputBcc.value.trim()) addChip(inputBcc.value.trim(), 'bcc', selectedBcc);
+                const to = selectedTo.join(','); const subject = document.getElementById('subject').value; const body = quill.root.innerHTML;
+                if(!isDraft && !to) return Swal.fire(translations[currentLang].missing_dest);
+                const payload = { from: user.email, to: to, cc: selectedCc.join(','), bcc: selectedBcc.join(','), subject: subject, body: body, isDraft: isDraft, attachments: attachedFiles };
+                try { const res = await fetch(`${API_URL}/emails`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); if(res.ok) { Swal.fire({icon:'success', title: isDraft ? translations[currentLang].saved_success : translations[currentLang].sent_success}); document.getElementById('composeModal').classList.remove('active'); resetForm(); setTimeout(initData, 500); } else { Swal.fire(translations[currentLang].error_send); } } catch(e) { console.error(e); }
+            }
+        </script>
 </body>
 </html>
