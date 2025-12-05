@@ -384,6 +384,29 @@
             };
             let currentLang = localStorage.getItem('alhmail_lang') || 'es';
             let currentTheme = localStorage.getItem('alhmail_theme') || 'light';
+
+            // --- 1. CONFIGURACIÓN DE TOASTS (ALERTAS ESTÉTICAS) ---
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end', // Aparece abajo a la derecha
+                showConfirmButton: false,
+                timer: 3000, // Dura 3 segundos
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            // Función auxiliar para lanzar el Toast con el color correcto según el tema
+            function fireToast(icon, title) {
+                Toast.fire({
+                    icon: icon,
+                    title: title,
+                    background: currentTheme === 'dark' ? '#1f2937' : '#fff',
+                    color: currentTheme === 'dark' ? '#fff' : '#333'
+                });
+            }
     
             function applyTheme() {
                 if(currentTheme === 'dark') { document.body.classList.add('dark'); document.getElementById('themeBtn').innerHTML = '<i class="fas fa-sun"></i>'; } 
