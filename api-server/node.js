@@ -19,12 +19,11 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // 1. CONFIGURACIÓN IA (INTEGRANDO TU CURL)
 // ===================================================
 
-// ⚠️ PEGA TU API KEY AQUÍ
-const GEN_AI_KEY = 'AIzaSyCUwaT1XkFYDnzVCyrz6P7PPs7YWPxybS8'; 
+// API-KEY NO TOCAR
+const GEN_AI_KEY = ''; 
 
 const genAI = new GoogleGenerativeAI(GEN_AI_KEY);
 
-// AQUÍ ESTÁ EL CAMBIO QUE PEDISTE:
 // Usamos "gemini-2.5-flash" como en tu curl.
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 

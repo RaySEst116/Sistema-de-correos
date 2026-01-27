@@ -4,45 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Alhmail</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* VARIABLES DE TEMA */
+        :root {
+            --primary-red: #D50032;
+            --primary-hover: #C20049;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #374151;
+            --input-border: #e5e7eb;
+            --input-text: #000000;
+            --placeholder: #9ca3af;
+        }
+
+        /* MODO OSCURO */
+        body.dark-mode {
+            --bg-color: #1f2937;
+            --card-bg: #111827;
+            --text-color: #f3f4f6;
+            --input-border: #374151;
+            --input-text: #ffffff;
+            --placeholder: #6b7280;
+        }
+
         body {
             margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif;
-            background-color: #f3f4f6; height: 100vh;
+            background-color: var(--bg-color); height: 100vh;
             display: flex; align-items: center; justify-content: center;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        /* BOTONES FLOTANTES (TEMA / IDIOMA) */
+        .top-controls {
+            position: absolute; top: 20px; right: 20px;
+            display: flex; gap: 15px;
+        }
+        .control-btn {
+            background: var(--card-bg); border: 1px solid var(--input-border);
+            color: var(--text-color); padding: 8px 12px; border-radius: 20px;
+            cursor: pointer; font-size: 0.9rem; transition: 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .control-btn:hover { border-color: var(--primary-red); color: var(--primary-red); }
+
+        /* TARJETA LOGIN */
         .login-card {
-            background: white; padding: 40px; border-radius: 10px;
+            background: var(--card-bg); padding: 40px; border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 400px;
-            text-align: center;
+            text-align: center; transition: background-color 0.3s;
         }
-        .logo { color: #D50032; font-size: 2rem; font-weight: bold; margin-bottom: 20px; }
+        .logo { color: var(--primary-red); font-size: 2rem; font-weight: bold; margin-bottom: 20px; }
         .input-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; margin-bottom: 8px; color: #374151; font-weight: 600; font-size: 0.9rem; }
+        
+        label { display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 600; font-size: 0.9rem; }
+        
         input {
-            width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 6px;
-            outline: none; box-sizing: border-box; transition: border 0.2s;
+            width: 100%; padding: 12px; 
+            background: var(--card-bg); color: var(--input-text);
+            border: 1px solid var(--input-border); border-radius: 6px;
+            outline: none; box-sizing: border-box; transition: 0.3s;
         }
-        input:focus { border-color: #D50032; }
+        input::placeholder { color: var(--placeholder); }
+        input:focus { border-color: var(--primary-red); }
+        
         .login-btn {
-            width: 100%; padding: 12px; background-color: #D50032; color: white;
+            width: 100%; padding: 12px; background-color: var(--primary-red); color: white;
             border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
             font-size: 1rem; transition: background 0.2s;
         }
-        .login-btn:hover { background-color: #C20049; }
-        .error-msg { color: #D50032; font-size: 0.9rem; margin-top: 15px; display: none; }
+        .login-btn:hover { background-color: var(--primary-hover); }
         
-        /* Enlace de recuperar */
+        .error-msg { color: var(--primary-red); font-size: 0.9rem; margin-top: 15px; display: none; }
+        
         .forgot-link {
-            display: block; margin-top: 15px; font-size: 0.9rem; color: #6b7280;
-            text-decoration: none; cursor: pointer;
+            display: block; margin-top: 15px; font-size: 0.9rem; color: var(--text-color);
+            text-decoration: none; cursor: pointer; opacity: 0.8;
         }
-        .forgot-link:hover { text-decoration: underline; color: #D50032; }
+        .forgot-link:hover { text-decoration: underline; color: var(--primary-red); opacity: 1; }
     </style>
     
     <script>
+        // Redirección inmediata si ya hay sesión
         if (localStorage.getItem('alhmail_token')) {
             window.location.href = 'inbox.html';
         }
@@ -50,15 +96,24 @@
 </head>
 <body>
 
+    <div class="top-controls">
+        <button class="control-btn" id="themeBtn">
+            <i class="fas fa-moon"></i>
+        </button>
+        <button class="control-btn" id="langBtn">
+            <i class="fas fa-globe"></i> <span id="langText">ES</span>
+        </button>
+    </div>
+
     <div class="login-card">
         <div class="logo"><i class="fas fa-envelope-open-text"></i> Alhmail</div>
         <form id="loginForm">
             <div class="input-group">
-                <label>Correo Electrónico</label>
+                <label id="lblEmail">Correo Electrónico</label>
                 <input type="email" id="email" placeholder="admin@alhmail.com" required>
             </div>
             <div class="input-group">
-                <label>Contraseña</label>
+                <label id="lblPass">Contraseña</label>
                 <input type="password" id="password" placeholder="••••••" required>
             </div>
             
@@ -71,16 +126,100 @@
 
     <script>
         const API_URL = 'http://localhost:3001';
+        
+        // --- TEXTOS TRADUCIDOS ---
+        const translations = {
+            es: {
+                title: "Login - Alhmail",
+                lblEmail: "Correo Electrónico",
+                lblPass: "Contraseña",
+                btnSubmit: "Ingresar",
+                verifying: "Verificando...",
+                forgotBtn: "¿Olvidaste tu contraseña?",
+                errorLogin: "Usuario o contraseña incorrectos",
+                errorConn: "Error de conexión",
+                swalTitle: "Recuperar Contraseña",
+                swalText: "Ingresa tu correo para recibir una nueva contraseña temporal.",
+                swalConfirm: "Enviar",
+                swalCancel: "Cancelar",
+                swalSuccessTitle: "¡Correo enviado!",
+                swalSuccessText: "Revisa tu bandeja de entrada.",
+                langLabel: "ES"
+            },
+            en: {
+                title: "Login - Alhmail",
+                lblEmail: "Email Address",
+                lblPass: "Password",
+                btnSubmit: "Sign In",
+                verifying: "Verifying...",
+                forgotBtn: "Forgot Password?",
+                errorLogin: "Invalid email or password",
+                errorConn: "Connection error",
+                swalTitle: "Recover Password",
+                swalText: "Enter your email to receive a temporary password.",
+                swalConfirm: "Send",
+                swalCancel: "Cancel",
+                swalSuccessTitle: "Email Sent!",
+                swalSuccessText: "Check your inbox.",
+                langLabel: "EN"
+            }
+        };
+
+        // --- ESTADO INICIAL ---
+        let currentLang = localStorage.getItem('alhmail_lang') || 'es';
+        let currentTheme = localStorage.getItem('alhmail_theme') || 'light';
+
+        function applyTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeBtn');
+            if (currentTheme === 'dark') {
+                body.classList.add('dark-mode');
+                btn.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                body.classList.remove('dark-mode');
+                btn.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        }
+
+        function applyLanguage() {
+            const t = translations[currentLang];
+            document.title = t.title;
+            document.getElementById('lblEmail').innerText = t.lblEmail;
+            document.getElementById('lblPass').innerText = t.lblPass;
+            document.getElementById('btnSubmit').innerText = t.btnSubmit;
+            document.getElementById('forgotBtn').innerText = t.forgotBtn;
+            document.getElementById('langText').innerText = t.langLabel;
+            document.documentElement.lang = currentLang;
+        }
+
+        // Inicializar
+        applyTheme();
+        applyLanguage();
+
+        // --- LISTENERS DE CONFIGURACIÓN ---
+        document.getElementById('themeBtn').onclick = () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('alhmail_theme', currentTheme);
+            applyTheme();
+        };
+
+        document.getElementById('langBtn').onclick = () => {
+            currentLang = currentLang === 'es' ? 'en' : 'es';
+            localStorage.setItem('alhmail_lang', currentLang);
+            applyLanguage();
+        };
 
         // --- LÓGICA DE LOGIN ---
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const t = translations[currentLang]; // Textos actuales
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const btn = document.getElementById('btnSubmit');
             const errorDiv = document.getElementById('errorMsg');
 
-            btn.innerText = "Verificando...";
+            btn.innerText = t.verifying;
             btn.disabled = true;
             errorDiv.style.display = 'none';
 
@@ -99,30 +238,34 @@
                     window.location.href = 'inbox.html';
                 } else {
                     errorDiv.style.display = 'block';
-                    errorDiv.innerText = data.message || "Error al ingresar";
+                    errorDiv.innerText = data.message || t.errorLogin;
                 }
             } catch (err) {
                 console.error(err);
                 errorDiv.style.display = 'block';
-                errorDiv.innerText = "Error de conexión con el servidor";
+                errorDiv.innerText = t.errorConn;
             } finally {
-                btn.innerText = "Ingresar";
+                btn.innerText = t.btnSubmit;
                 btn.disabled = false;
             }
         });
 
         // --- LÓGICA DE RECUPERAR CONTRASEÑA ---
         document.getElementById('forgotBtn').addEventListener('click', async () => {
+            const t = translations[currentLang]; // Textos actuales
+
             const { value: email } = await Swal.fire({
-                title: 'Recuperar Contraseña',
-                text: 'Ingresa tu correo para recibir una nueva contraseña temporal.',
+                title: t.swalTitle,
+                text: t.swalText,
                 input: 'email',
-                inputPlaceholder: 'tu@correo.com',
+                inputPlaceholder: 'user@example.com',
                 showCancelButton: true,
                 confirmButtonColor: '#D50032',
-                confirmButtonText: 'Enviar',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText: t.swalConfirm,
+                cancelButtonText: t.swalCancel,
                 showLoaderOnConfirm: true,
+                background: currentTheme === 'dark' ? '#1f2937' : '#fff',
+                color: currentTheme === 'dark' ? '#fff' : '#545454',
                 preConfirm: (email) => {
                     return fetch(`${API_URL}/forgot-password`, {
                         method: 'POST',
@@ -130,13 +273,11 @@
                         body: JSON.stringify({ email: email })
                     })
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error(response.statusText)
-                        }
+                        if (!response.ok) throw new Error(response.statusText)
                         return response.json()
                     })
                     .catch(error => {
-                        Swal.showValidationMessage(`Error: No se encontró el correo`)
+                        Swal.showValidationMessage(`Error: ${error}`)
                     })
                 },
                 allowOutsideClick: () => !Swal.isLoading()
@@ -144,10 +285,12 @@
 
             if (email) {
                 Swal.fire({
-                    title: '¡Correo enviado!',
-                    text: 'Revisa tu bandeja de entrada para ver tu nueva contraseña.',
+                    title: t.swalSuccessTitle,
+                    text: t.swalSuccessText,
                     icon: 'success',
-                    confirmButtonColor: '#D50032'
+                    confirmButtonColor: '#D50032',
+                    background: currentTheme === 'dark' ? '#1f2937' : '#fff',
+                    color: currentTheme === 'dark' ? '#fff' : '#545454'
                 });
             }
         });
