@@ -2,7 +2,7 @@ import os
 
 EXTENSIONES_CODIGO = {
     ".py", ".js", ".ts", ".java", ".c", ".cpp", ".h", ".cs",
-    ".go", ".rs", ".php", ".html", ".css", ".scss", ".vue"
+    ".go", ".rs", ".php", ".html", ".css", ".scss", ".vue", "json"
 }
 
 def contar_lineas(ruta_proyecto):

@@ -1,12 +1,31 @@
 {
+  "name": "api-server",
+  "version": "1.0.0",
+  "description": "Backend server for Alhmail email system",
+  "main": "node.js",
+  "type": "module",
+  "scripts": {
+    "start": "node node.js",
+    "dev": "nodemon node.js",
+    "test": "node test.js",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "body-parser": "^2.2.1",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "imap-simple": "^5.1.0",
     "mailparser": "^3.9.0",
     "mysql2": "^3.15.3",
     "nodemailer": "^7.0.11"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

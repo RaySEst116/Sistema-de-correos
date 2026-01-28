@@ -1,14 +1,33 @@
-const express = require('express');
-const mysql = require('mysql2/promise');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
-const imap = require('imap-simple');
-const { simpleParser } = require('mailparser');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import express from 'express';
+import mysql from 'mysql2/promise';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import nodemailer from 'nodemailer';
+import imap from 'imap-simple';
+import { simpleParser } from 'mailparser';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+// Configura dotenv
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const localEnvPath = resolve(__dirname, '.env');
+const rootEnvPath = resolve(__dirname, '..', '.env');
+const envPath = fs.existsSync(localEnvPath)
+    ? localEnvPath
+    : (fs.existsSync(rootEnvPath) ? rootEnvPath : undefined);
+
+if (envPath) {
+    dotenv.config({ path: envPath });
+} else {
+    console.warn('⚠️  No se encontró archivo .env en api-server ni en la raíz del proyecto.');
+}
 
 // Para que el diagnóstico funcione en Node versiones antiguas
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const app = express();
 app.use(cors());
@@ -19,13 +38,10 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // 1. CONFIGURACIÓN IA (INTEGRANDO TU CURL)
 // ===================================================
 
-// ⚠️ PEGA TU API KEY AQUÍ
-const GEN_AI_KEY = 'AIzaSyCUwaT1XkFYDnzVCyrz6P7PPs7YWPxybS8'; 
+const GEN_AI_KEY = process.env.GEN_AI_KEY; 
 
 const genAI = new GoogleGenerativeAI(GEN_AI_KEY);
 
-// AQUÍ ESTÁ EL CAMBIO QUE PEDISTE:
-// Usamos "gemini-2.5-flash" como en tu curl.
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // --- DIAGNÓSTICO DE MODELOS (SE EJECUTA AL INICIAR) ---
@@ -52,18 +68,19 @@ async function checkAvailableModels() {
         }
     } catch (e) {
         // Ignoramos error de fetch si no es crítico, el servidor seguirá intentando funcionar
+        console.error(e)
     }
 }
 checkAvailableModels();
 
 
 // --- CREDENCIALES DE CORREO ---
-const GMAIL_USER = 'mcskipper16@gmail.com'; 
-const GMAIL_PASS = 'vzok rdpj syjt fjut'; 
+const GMAIL_USER = process.env.GMAIL_USER; 
+const GMAIL_PASS = process.env.GMAIL_PASS; 
 
 // --- BASE DE DATOS (POOL) ---
 const dbConfig = {
-    host: 'localhost', port: 3307, user: 'root', password: '1234', database: 'alhmail_security',
+    host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME,
     waitForConnections: true, connectionLimit: 10, queueLimit: 0
 };
 const db = mysql.createPool(dbConfig); 

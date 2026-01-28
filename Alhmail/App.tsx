@@ -222,9 +222,9 @@ const App: React.FC = () => {
                     <i className="fas fa-shield-virus fa-spin text-5xl mb-6 text-green-500"></i>
                     <p className="text-xl font-bold mb-2">ESTABLECIENDO TÚNEL SEGURO...</p>
                     <div className="text-xs text-green-400 opacity-80 space-y-1">
-                        <p>> Handshake TLS 1.3... OK</p>
-                        <p>> Verificando Certificados... OK</p>
-                        <p>> Escaneando Headers en busca de Spoofing... OK</p>
+                        <p> Handshake TLS 1.3... OK</p>
+                        <p> Verificando Certificados... OK</p>
+                        <p> Escaneando Headers en busca de Spoofing... OK</p>
                     </div>
                 </div>
             )}
