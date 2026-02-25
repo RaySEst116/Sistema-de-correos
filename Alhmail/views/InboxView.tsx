@@ -5,7 +5,6 @@ import EmailList from '../components/EmailList';
 import EmailDetail from '../components/EmailDetail';
 import ComposeModal from '../components/ComposeModal';
 import AccountModal from '../components/AccountModal';
-import UsersModal from '../components/UsersModal';
 import { db } from '../services/db';
 import { websocketService } from '../services/websocket';
 import { classifyEmailContent /*, generateSyntheticEmail */ } from '../services/geminiService'; // IA desactivada
@@ -526,23 +525,34 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
 
       <AccountModal
         isOpen={isAccountOpen}
-        onClose={() => { setIsAccountOpen(false); if (isCreatingUser) setIsUsersOpen(true); }}
-        user={isCreatingUser ? {} as User : users.find(u => u.id === selectedUserId) || user}
+        onClose={() => { setIsAccountOpen(false); }}
+        user={user}
         onSave={handleAccountSave}
-        isCreating={isCreatingUser}
+        isCreating={false}
         isAdmin={user.role === 'admin'}
       />
 
       {user.role === 'admin' && (
-        <UsersModal
-          isOpen={isUsersOpen}
-          onClose={() => setIsUsersOpen(false)}
-          users={users}
-          onEdit={handleUserEdit}
-          onDelete={handleUserDelete}
-          onCreate={handleUserCreate}
-          currentUserId={user.id}
-        />
+        <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 50 }}>
+          <a
+            href="/admin"
+            style={{
+              background: '#1f2937',
+              color: 'white',
+              padding: '10px 15px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            }}
+          >
+            <i className="fas fa-cog"></i>
+            Panel Admin
+          </a>
+        </div>
       )}
     </div>
   );

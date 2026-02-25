@@ -1,15 +1,16 @@
 {
   "name": "api-server",
   "version": "1.0.0",
-  "description": "Backend server for Alhmail email system",
-  "main": "node.js",
+  "description": "Backend server for Alhmail email system - Refactored modular architecture",
+  "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "node node.js",
-    "dev": "nodemon node.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "node test.js",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:test": "node test.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

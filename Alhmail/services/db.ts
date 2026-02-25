@@ -207,10 +207,13 @@ export const db = {
     moveEmailToFolder: async (id: number, folder: string): Promise<void> => {
         if (USE_API) {
             try {
+                // El backend solo permite actualizar unread, no folder
+                // Para mover de carpeta, necesitaríamos un endpoint específico
+                // Por ahora, solo marcamos como leído
                 await fetch(`${API_URL}/emails/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ folder, unread: false })
+                    body: JSON.stringify({ unread: false })
                 });
                 return;
             } catch (e) { console.error(e); }
@@ -240,10 +243,56 @@ export const db = {
     },
 
     getContacts: async (): Promise<Contact[]> => {
+        if (USE_API) {
+            try {
+                const res = await fetch(`${API_URL}/contacts`);
+                if (!res.ok) throw new Error('API Offline');
+                
+                const contacts = await res.json();
+                USE_API = true; // Confirmar que la API funciona
+                return contacts;
+            } catch (e) {
+                console.error('Error obteniendo contactos desde API:', e);
+                USE_API = false; // Cambiar a modo offline
+            }
+        }
+        
+        // Fallback o modo Offline
         return INITIAL_CONTACTS;
     },
 
-    login: async (email: string): Promise<User> => {
+    login: async (email: string, password: string): Promise<User> => {
+        if (USE_API) {
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.error || 'Error de autenticación');
+                }
+                
+                const data = await res.json();
+                const user: User = {
+                    id: data.user.id,
+                    name: data.user.name,
+                    email: data.user.email,
+                    role: data.user.role,
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name)}&background=000&color=fff`
+                };
+                localStorage.setItem('alhmail_user', JSON.stringify(user));
+                USE_API = true; // Confirmar que la API funciona
+                return user;
+            } catch (e) {
+                console.error('Error en login API:', e);
+                USE_API = false; // Cambiar a modo offline
+            }
+        }
+
+        // Fallback modo offline
         await delay(800);
         const user: User = {
             id: 'u1',
@@ -262,6 +311,16 @@ export const db = {
     },
 
     logout: async (): Promise<void> => {
+        if (USE_API) {
+            try {
+                await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (e) {
+                console.error('Error en logout API:', e);
+            }
+        }
         localStorage.removeItem('alhmail_user');
     }
 };

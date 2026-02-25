@@ -111,50 +111,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         
         // Intentar login normal por HTTP (el login sigue siendo HTTP por seguridad)
         try {
-          const res = await fetch(`${API_URL}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-            signal: AbortSignal.timeout(5000)
-          });
-
-          const data = await res.json();
-
-          if (data.success) {
-            localStorage.setItem('alhmail_token', data.token);
-            localStorage.setItem('alhmail_user', JSON.stringify(data.user));
-            
-            // Mostrar mensaje de éxito con información del servidor
-            if (window.Swal) {
-              await window.Swal.fire({
-                icon: 'success',
-                title: '¡Inicio de sesión exitoso!',
-                html: `
-                  <div>Conectado por WebSocket correctamente</div>
-                  <small style="color: #666;">
-                    ${serverInfo ? `BD: ${serverInfo.services.database} | IA: ${serverInfo.services.gemini}` : 'Conexión activa'}
-                  </small>
-                `,
-                timer: 2000,
-                showConfirmButton: false
-              });
-            }
-
-            // Usar db.login si existe, sino llamar directamente con el usuario del API
-            try {
-              const user = await db.login(email);
-              onLogin(user);
-              navigate('/inbox');
-            } catch {
-              // fallback: usar el usuario devuelto por la API
-              onLogin(data.user);
-              navigate('/inbox');
-            }
-            return;
-          } else {
-            setError(data.message || 'Usuario o contraseña incorrectos');
-            return;
+          const user = await db.login(email, password);
+          onLogin(user);
+          navigate('/inbox');
+          
+          // Mostrar mensaje de éxito
+          if (window.Swal) {
+            await window.Swal.fire({
+              icon: 'success',
+              title: '¡Inicio de sesión exitoso!',
+              text: `Bienvenido ${user.name}`,
+              timer: 2000,
+              showConfirmButton: false
+            });
           }
+          return;
         } catch (loginError) {
           console.error('Error en login con servidor:', loginError);
           setError('Error al iniciar sesión. Verifica tus credenciales.');

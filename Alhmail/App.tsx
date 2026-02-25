@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import InboxView from './views/InboxView';
 import Login from './components/Login';
+import AdminPage from './pages/AdminPage';
 import ToastNotification from './components/ToastNotification';
 import { db } from './services/db';
 import { User } from './types';
@@ -54,6 +55,10 @@ const App: React.FC = () => {
                 <Route 
                     path="/inbox" 
                     element={user ? <InboxView user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />} 
+                />
+                <Route 
+                    path="/admin" 
+                    element={user && user.role === 'admin' ? <AdminPage /> : <Navigate to="/login" replace />} 
                 />
                 <Route 
                     path="/" 
