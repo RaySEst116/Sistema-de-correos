@@ -1,116 +1,374 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FolderType } from '../types';
+import ThemeToggle from './ThemeToggle';
+import LangToggle from './LangToggle';
 
 interface SidebarProps {
-    isCollapsed: boolean;
-    toggleSidebar: () => void;
-    currentFolder: FolderType;
-    setFolder: (folder: FolderType) => void;
-    onCompose: () => void;
-    onConnectService: () => void;
-    dbStatus: boolean; // Prop to indicate connection
+  isCollapsed: boolean;
+  toggleSidebar: () => void;
+  currentFolder: FolderType;
+  setFolder: (folder: FolderType) => void;
+  onCompose: () => void;
+  onAccount: () => void;
+  onUsers: () => void;
+  onLogout: () => void;
+  unreadCount: number;
+  isAdmin: boolean;
+  showSpam?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-    isCollapsed, 
-    toggleSidebar, 
-    currentFolder, 
-    setFolder, 
-    onCompose,
-    onConnectService,
-    dbStatus
+const translations = {
+  es: {
+    compose: 'Redactar',
+    inbox: 'Entrada',
+    sent: 'Enviados',
+    drafts: 'Borradores',
+    spam: 'Spam',
+    users: 'Usuarios',
+    account: 'Mi Cuenta',
+    logout: 'Cerrar Sesión',
+  },
+  en: {
+    compose: 'Compose',
+    inbox: 'Inbox',
+    sent: 'Sent',
+    drafts: 'Drafts',
+    spam: 'Spam',
+    users: 'Users',
+    account: 'My Account',
+    logout: 'Logout',
+  },
+};
+
+const Sidebar: React.FC<SidebarProps> = ({
+  isCollapsed,
+  toggleSidebar,
+  currentFolder,
+  setFolder,
+  onCompose,
+  onAccount,
+  onUsers,
+  onLogout,
+  unreadCount,
+  isAdmin,
+  showSpam = false,
 }) => {
-    
-    const navItems: { id: FolderType; icon: string; label: string; color?: string }[] = [
-        { id: 'inbox', icon: 'fa-inbox', label: 'Bandeja de Entrada' },
-        { id: 'quarantine', icon: 'fa-shield-virus', label: 'Cuarentena (Admin)', color: 'text-red-600' },
-        { id: 'work', icon: 'fa-briefcase', label: 'Trabajo' },
-        { id: 'personal', icon: 'fa-user', label: 'Personal' },
-        { id: 'sent', icon: 'fa-paper-plane', label: 'Enviados' },
-        { id: 'drafts', icon: 'fa-file', label: 'Borradores' },
-        { id: 'spam', icon: 'fa-exclamation-triangle', label: 'Spam' },
-        { id: 'trash', icon: 'fa-trash', label: 'Papelera' },
-    ];
+  const [currentLang, setCurrentLang] = useState<'es' | 'en'>('es');
 
-    return (
-        <nav className={`bg-white h-full border-r border-gray-200 flex flex-col py-5 transition-all duration-300 relative z-50 ${isCollapsed ? 'w-[70px] px-2' : 'w-[250px] px-4'}`}>
-            <div className={`flex items-center justify-between mb-8 ${isCollapsed ? 'justify-center' : 'px-2'}`}>
-                {!isCollapsed && (
-                    <div className="text-2xl font-bold text-primary-red whitespace-nowrap overflow-hidden transition-opacity">
-                        Alhmail <span className="text-xs text-gray-500 block font-normal">Security Edition</span>
-                    </div>
-                )}
-                <button 
-                    onClick={toggleSidebar} 
-                    className="text-gray-500 hover:text-primary-red transition-colors text-lg focus:outline-none"
-                >
-                    <i className="fas fa-bars"></i>
-                </button>
-            </div>
+  useEffect(() => {
+    const lang = localStorage.getItem('alhmail_lang') as 'es' | 'en' || 'es';
+    setCurrentLang(lang);
+    const handleLangChange = (e: CustomEvent) => {
+      setCurrentLang(e.detail.lang);
+    };
+    window.addEventListener('langChanged' as any, handleLangChange);
+    return () => window.removeEventListener('langChanged' as any, handleLangChange);
+  }, []);
 
-            <button 
-                onClick={onCompose}
-                className={`bg-primary-red hover:bg-dark-magenta text-white font-semibold rounded-full transition-all duration-300 shadow-md flex items-center justify-center mb-6 mx-auto ${isCollapsed ? 'w-12 h-12 p-0' : 'w-full py-3 px-4 gap-2'}`}
-            >
-                <i className="fas fa-plus"></i>
-                {!isCollapsed && <span>Redactar</span>}
-            </button>
+  const t = translations[currentLang];
 
-            {/* External Connection Section */}
-            {!isCollapsed && (
-                <div className="mb-6 px-2">
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-2">Conexiones Externas</p>
-                    <button 
-                        onClick={onConnectService}
-                        className="w-full border border-gray-300 text-gray-700 rounded-lg py-2 text-sm flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
-                    >
-                        <i className="fab fa-google"></i> / <i className="fab fa-microsoft"></i>
-                        <span>Conectar Cuenta</span>
-                    </button>
-                </div>
+  const navItems: { id: FolderType; icon: string; labelKey: keyof typeof translations.es }[] = [
+    { id: 'inbox', icon: 'fa-inbox', labelKey: 'inbox' },
+    { id: 'sent', icon: 'fa-paper-plane', labelKey: 'sent' },
+    { id: 'drafts', icon: 'fa-file', labelKey: 'drafts' },
+  ];
+
+  if (showSpam) {
+    navItems.push({ id: 'spam', icon: 'fa-exclamation-triangle', labelKey: 'spam' });
+  }
+
+  return (
+    <nav
+      className="sidebar"
+      style={{
+        width: isCollapsed ? '80px' : '250px',
+        background: 'var(--bg-sidebar, #ffffff)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: isCollapsed ? '20px 5px' : '20px 10px',
+        borderRight: '1px solid var(--border-color, #e5e7eb)',
+        transition: '0.3s',
+        zIndex: 100,
+        flexShrink: 0,
+      }}
+    >
+      <div
+        className="sidebar-header"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: '30px',
+          padding: '0 10px',
+          alignItems: 'center',
+          height: '40px',
+        }}
+      >
+        {!isCollapsed && (
+          <div
+            className="logo-text"
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: 'var(--primary-red, #D50032)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+            }}
+          >
+            Alhmail
+          </div>
+        )}
+        <button
+          onClick={toggleSidebar}
+          className="toggle-btn"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '1.4rem',
+            color: 'var(--text-muted, #6b7280)',
+            width: '40px',
+          }}
+        >
+          <i className="fas fa-bars"></i>
+        </button>
+      </div>
+
+      <button
+        onClick={onCompose}
+        className="compose-btn"
+        style={{
+          background: 'var(--primary-red, #D50032)',
+          color: 'white',
+          border: 'none',
+          height: '45px',
+          width: isCollapsed ? '45px' : '90%',
+          margin: '0 auto 30px auto',
+          borderRadius: isCollapsed ? '50%' : '50px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: isCollapsed ? '0' : '10px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          boxShadow: '0 2px 5px rgba(213,0,50,0.3)',
+          flexShrink: 0,
+        }}
+        onMouseOver={(e) => (e.currentTarget.style.background = '#C20049')}
+        onMouseOut={(e) => (e.currentTarget.style.background = 'var(--primary-red, #D50032)')}
+      >
+        <i className="fas fa-plus" style={{ margin: isCollapsed ? '0' : '0' }}></i>
+        {!isCollapsed && <span>{t.compose}</span>}
+      </button>
+
+      <ul
+        className="nav-list"
+        style={{
+          listStyle: 'none',
+          flexGrow: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        }}
+      >
+        {navItems.map((item) => (
+          <li
+            key={item.id}
+            className={`nav-item ${currentFolder === item.id ? 'active' : ''}`}
+            onClick={() => setFolder(item.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: isCollapsed ? '12px 0' : '12px 20px',
+              marginBottom: '5px',
+              color: currentFolder === item.id ? 'var(--primary-red, #D50032)' : 'var(--text-muted, #6b7280)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: '0.2s',
+              whiteSpace: 'nowrap',
+              position: 'relative',
+              fontWeight: currentFolder === item.id ? '600' : 'normal',
+            }}
+            onMouseOver={(e) => {
+              if (currentFolder !== item.id) {
+                e.currentTarget.style.background = 'var(--bg-hover, #f3f4f6)';
+                e.currentTarget.style.color = 'var(--primary-red, #D50032)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (currentFolder !== item.id) {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+              }
+            }}
+          >
+            <i
+              className={`fas ${item.icon}`}
+              style={{
+                width: '25px',
+                marginRight: isCollapsed ? '0' : '10px',
+                textAlign: 'center',
+                fontSize: '1.1rem',
+                flexShrink: 0,
+              }}
+            />
+            {!isCollapsed && <span>{t[item.labelKey]}</span>}
+            {item.id === 'inbox' && unreadCount > 0 && (
+              <span
+                className="notification-badge"
+                style={{
+                  backgroundColor: 'var(--primary-red, #D50032)',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  marginLeft: 'auto',
+                  minWidth: '20px',
+                  textAlign: 'center',
+                  display: isCollapsed ? 'none' : 'inline-block',
+                }}
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
             )}
+          </li>
+        ))}
+      </ul>
 
-            <ul className="list-none flex-grow overflow-y-auto">
-                {navItems.map((item) => (
-                    <li key={item.id} className="relative group mb-1">
-                        <button 
-                            onClick={() => setFolder(item.id)}
-                            className={`w-full flex items-center p-3 rounded-lg transition-all duration-200 whitespace-nowrap
-                                ${currentFolder === item.id 
-                                    ? 'bg-red-50 text-primary-red' 
-                                    : 'text-gray-700 hover:bg-orange-50 hover:text-accent-orange'
-                                } ${isCollapsed ? 'justify-center' : ''}`}
-                        >
-                            <i className={`fas ${item.icon} text-lg ${isCollapsed ? 'mr-0' : 'mr-4 w-6 text-center'} ${item.color || ''}`}></i>
-                            {!isCollapsed && <span className={item.color}>{item.label}</span>}
-                        </button>
-                        
-                        {/* Tooltip for collapsed state */}
-                        {isCollapsed && (
-                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-oxide-red text-white text-sm px-3 py-1.5 rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-[100] pointer-events-none">
-                                {item.label}
-                                <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-oxide-red"></div>
-                            </div>
-                        )}
-                    </li>
-                ))}
-            </ul>
+      <div
+        className="sidebar-footer"
+        style={{
+          borderTop: '1px solid var(--border-color, #e5e7eb)',
+          paddingTop: '15px',
+          paddingBottom: '10px',
+          marginTop: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '8px',
+          flexShrink: 0,
+          width: '100%',
+        }}
+      >
+        <div
+          className="settings-row"
+          style={{
+            display: 'flex',
+            gap: '5px',
+            width: isCollapsed ? '45px' : '90%',
+            justifyContent: 'center',
+            marginBottom: '5px',
+            flexDirection: isCollapsed ? 'column' : 'row',
+          }}
+        >
+          <ThemeToggle />
+          <LangToggle />
+        </div>
 
-            {/* Database Status Indicator */}
-            <div className={`mt-auto border-t border-gray-100 pt-4 ${isCollapsed ? 'flex justify-center' : 'px-2'}`}>
-                <div className={`flex items-center gap-2 text-xs font-mono border rounded px-2 py-1 ${dbStatus ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                    <div className={`w-2 h-2 rounded-full ${dbStatus ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-                    {!isCollapsed && (
-                        <div className="flex flex-col">
-                            <span className="font-bold">{dbStatus ? 'DB: ONLINE' : 'DB: OFFLINE'}</span>
-                            <span className="text-[10px] opacity-75">{dbStatus ? 'MySQL Workbench' : 'LocalStorage'}</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </nav>
-    );
+        {isAdmin && (
+          <div
+            className="footer-item admin"
+            onClick={onUsers}
+            style={{
+              width: isCollapsed ? '45px' : '90%',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#047857',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: '0.2s',
+              whiteSpace: 'nowrap',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              background: 'rgba(4, 120, 87, 0.1)',
+              border: '1px solid rgba(4, 120, 87, 0.2)',
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = '#047857';
+              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.borderColor = '#047857';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(4, 120, 87, 0.1)';
+              e.currentTarget.style.color = '#047857';
+              e.currentTarget.style.borderColor = 'rgba(4, 120, 87, 0.2)';
+            }}
+          >
+            <i className="fas fa-users-cog" style={{ marginRight: isCollapsed ? '0' : '8px' }}></i>
+            {!isCollapsed && <span>{t.users}</span>}
+          </div>
+        )}
+
+        <div
+          className="footer-item"
+          onClick={onAccount}
+          style={{
+            width: isCollapsed ? '45px' : '90%',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-muted, #6b7280)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: '0.2s',
+            whiteSpace: 'nowrap',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'var(--bg-hover, #f3f4f6)';
+            e.currentTarget.style.color = 'var(--primary-red, #D50032)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+          }}
+        >
+          <i className="fas fa-user-circle" style={{ marginRight: isCollapsed ? '0' : '8px' }}></i>
+          {!isCollapsed && <span>{t.account}</span>}
+        </div>
+
+        <div
+          className="footer-item logout"
+          onClick={onLogout}
+          style={{
+            width: isCollapsed ? '45px' : '90%',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ef4444',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: '0.2s',
+            whiteSpace: 'nowrap',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = '#ef4444';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.borderColor = '#ef4444';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+            e.currentTarget.style.color = '#ef4444';
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+          }}
+        >
+          <i className="fas fa-sign-out-alt" style={{ marginRight: isCollapsed ? '0' : '8px' }}></i>
+          {!isCollapsed && <span>{t.logout}</span>}
+        </div>
+      </div>
+    </nav>
+  );
 };
 
 export default Sidebar;

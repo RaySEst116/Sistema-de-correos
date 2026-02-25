@@ -70,40 +70,127 @@ export const db = {
         return USE_API;
     },
 
-    getEmails: async (): Promise<Email[]> => {
-        // Try connecting to API
+    getEmails: async (userEmail: string): Promise<Email[]> => {
+        // Intenta cargar correos desde la API y adaptarlos al tipo Email usado en el frontend
         try {
-            // We do a quick check first or just try the fetch
-            const res = await fetch(`${API_URL}/emails`);
-            if (!res.ok) throw new Error("API Offline");
-            const data = await res.json();
-            USE_API = true; // Connection successful
-            return data;
+            const res = await fetch(`${API_URL}/emails?userEmail=${encodeURIComponent(userEmail)}`);
+            if (!res.ok) throw new Error('API Offline');
+
+            const apiData = await res.json();
+
+            // Adaptar el formato devuelto por la API (tabla emails) al tipo Email del frontend
+            const mapped: Email[] = apiData.map((r: any) => {
+                const security: any = r.securityAnalysis || {};
+                const riskLevel: 'safe' | 'suspicious' | 'high' | undefined =
+                    security.status === 'risk' || security.status === 'suspicious'
+                        ? 'suspicious'
+                        : security.status === 'infected' || security.status === 'blocked'
+                        ? 'high'
+                        : security.status
+                        ? 'safe'
+                        : undefined;
+
+                return {
+                    id: r.id,
+                    folder: r.folder,
+                    unread: !!r.unread,
+                    sender: r.sender || r.from || r.owner_email || '',
+                    email: r.email || r.owner_email || '',
+                    replyTo: r.replyTo,
+                    subject: r.subject || '(Sin Asunto)',
+                    preview: r.preview || (r.body ? String(r.body).substring(0, 50) + '...' : ''),
+                    body: r.body || '',
+                    date: r.date ? String(r.date) : '',
+                    hasAttachments: !!r.hasAttachments,
+                    attachmentName: Array.isArray(r.attachments) && r.attachments.length > 0
+                        ? r.attachments[0].filename || r.attachments[0].name || undefined
+                        : undefined,
+                    riskLevel,
+                    riskReason: security.threats && security.threats.length
+                        ? security.threats.join(', ')
+                        : undefined,
+                    securityAnalysis: security
+                } as Email;
+            });
+
+            USE_API = true; // Conexión exitosa
+            return mapped;
         } catch (e) {
-            console.warn("API de MySQL no detectada o error de conexión. Usando modo offline (localStorage).");
-            USE_API = false; // Switch to offline mode
+            console.warn('API de MySQL no detectada o error de conexión. Usando modo offline (localStorage).');
+            USE_API = false; // Cambiar a modo offline
             return getLocalEmails();
         }
     },
 
+    // Guardar correo en modo simulación/offline. Si la API está activa, intentamos
+    // reutilizar la ruta /emails como envío interno a nosotros mismos.
     saveEmail: async (email: Email): Promise<void> => {
         if (USE_API) {
             try {
+                const payload = {
+                    from: email.sender || email.email,
+                    to: email.email, // el correo llega a la bandeja del usuario actual
+                    subject: email.subject,
+                    body: email.body,
+                    isDraft: false,
+                    attachments: [],
+                    idToDelete: null
+                };
+
                 await fetch(`${API_URL}/emails`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(email)
+                    body: JSON.stringify(payload)
                 });
                 return;
             } catch (e) {
-                console.error("Error guardando en API, guardando localmente.");
-                // If post fails, we might want to fallback or just log error
+                console.error('Error guardando en API, guardando localmente.');
             }
         }
-        // Fallback or Offline mode
+
+        // Fallback o modo Offline
         await delay(200);
         const emails = getLocalEmails();
         saveLocalEmails([email, ...emails]);
+    },
+
+    // Enviar correo interno usando la API (entre usuarios registrados en la BD)
+    sendInternalEmail: async (from: string, to: string, subject: string, body: string): Promise<void> => {
+        if (USE_API) {
+            try {
+                const payload = { from, to, subject, body, isDraft: false, attachments: [], idToDelete: null };
+                const res = await fetch(`${API_URL}/emails`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || 'Error enviando correo interno');
+                }
+                return;
+            } catch (e) {
+                console.error('Error enviando correo interno vía API:', e);
+                throw e;
+            }
+        }
+
+        // Si no hay API disponible, simulamos guardando localmente en carpeta 'sent'
+        await delay(200);
+        const emails = getLocalEmails();
+        const newEmail: Email = {
+            id: Date.now(),
+            folder: 'sent',
+            unread: false,
+            sender: from,
+            email: from,
+            subject,
+            preview: body.substring(0, 50) + '...',
+            body,
+            date: new Date().toLocaleString(),
+            hasAttachments: false
+        } as Email;
+        saveLocalEmails([newEmail, ...emails]);
     },
 
     deleteEmail: async (id: number): Promise<void> => {
