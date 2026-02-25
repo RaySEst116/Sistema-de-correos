@@ -16,6 +16,8 @@ interface SidebarProps {
   unreadCount: number;
   isAdmin: boolean;
   showSpam?: boolean;
+  isMobile?: boolean;
+  isOpen?: boolean;
 }
 
 const translations = {
@@ -53,6 +55,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   unreadCount,
   isAdmin,
   showSpam = false,
+  isMobile = false,
+  isOpen = false,
 }) => {
   const [currentLang, setCurrentLang] = useState<'es' | 'en'>('es');
 
@@ -80,17 +84,23 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <nav
-      className="sidebar"
+      className={`sidebar ${isMobile && isOpen ? 'mobile-open' : ''}`}
       style={{
-        width: isCollapsed ? '80px' : '250px',
+        width: isMobile ? '250px' : (isCollapsed ? '80px' : '250px'),
         background: 'var(--bg-sidebar, #ffffff)',
         display: 'flex',
         flexDirection: 'column',
-        padding: isCollapsed ? '20px 5px' : '20px 10px',
-        borderRight: '1px solid var(--border-color, #e5e7eb)',
-        transition: '0.3s',
-        zIndex: 100,
+        padding: isMobile ? '20px 10px' : (isCollapsed ? '20px 5px' : '20px 10px'),
+        borderRight: isMobile ? 'none' : '1px solid var(--border-color, #e5e7eb)',
+        transition: isMobile ? 'left 0.3s ease, transform 0.3s ease' : '0.3s',
+        zIndex: isMobile ? 1000 : 100,
         flexShrink: 0,
+        position: isMobile ? 'fixed' : 'relative',
+        left: isMobile ? '0' : 'auto',
+        transform: isMobile ? (isOpen ? 'translateX(0)' : 'translateX(-250px)') : 'none',
+        top: isMobile ? '0' : 'auto',
+        height: isMobile ? '100vh' : 'auto',
+        boxShadow: isMobile && isOpen ? '2px 0 10px rgba(0,0,0,0.1)' : 'none',
       }}
     >
       <div

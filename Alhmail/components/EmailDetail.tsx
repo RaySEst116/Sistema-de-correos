@@ -6,9 +6,11 @@ import SecurityForensics from './SecurityForensics';
 interface EmailDetailProps {
     email: Email | null;
     onAdminAction: (action: 'block' | 'allow', email: Email) => void;
+    onBack?: () => void;
+    isMobile?: boolean;
 }
 
-const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction }) => {
+const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction, onBack, isMobile = false }) => {
     if (!email) {
         return (
             <div style={{
@@ -49,8 +51,36 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction }) => {
             height: '100%',
             backgroundColor: 'var(--bg-card, #FFFFFF)',
             overflowY: 'auto',
-            animation: 'fadeIn 0.3s ease'
+            animation: 'fadeIn 0.3s ease',
+            position: 'relative'
         }}>
+            {/* Mobile Back Button */}
+            {isMobile && onBack && (
+                <button
+                    onClick={onBack}
+                    style={{
+                        position: 'sticky',
+                        top: '0',
+                        left: '0',
+                        right: '0',
+                        zIndex: 20,
+                        background: 'var(--bg-card, #FFFFFF)',
+                        border: 'none',
+                        borderBottom: '1px solid var(--border-color, #e5e7eb)',
+                        padding: '12px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: 'var(--text-main, #374151)',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                    }}
+                >
+                    <i className="fas fa-arrow-left"></i>
+                    Volver a la lista
+                </button>
+            )}
             
             {/* Security Alert Banner */}
             {isQuarantine && (
@@ -62,7 +92,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction }) => {
                     alignItems: 'flex-start',
                     gap: '1rem',
                     position: 'sticky',
-                    top: 0,
+                    top: isMobile ? '49px' : '0',
                     zIndex: 10
                 }}>
                     <div style={{
@@ -246,8 +276,8 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction }) => {
                                             color: '#9A3412',
                                             padding: '0 0.25rem',
                                             borderRadius: '0.25rem',
-                                            title: `Responde a: ${email.replyTo}`
-                                        }}>
+                                            cursor: 'help'
+                                        }} title={`Responde a: ${email.replyTo}`}>
                                             <i className="fas fa-random"></i> Reply-To Diferente
                                         </span>
                                     )}

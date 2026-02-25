@@ -43,16 +43,18 @@ const HealthStatus: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="p-4 bg-white rounded-lg">
-                <div className="text-sm text-gray-600">Verificando estado del sistema...</div>
+            <div style={{ padding: '24px', textAlign: 'center' }}>
+                <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: 'var(--primary-red, #D50032)', marginBottom: '16px' }}></i>
+                <p style={{ color: 'var(--text-muted, #6b7280)', fontSize: '16px' }}>Verificando estado del sistema...</p>
             </div>
         );
     }
 
     if (!health) {
         return (
-            <div className="p-4 bg-white rounded-lg">
-                <div className="text-sm text-red-600">No se pudo obtener el estado del sistema</div>
+            <div style={{ padding: '24px', textAlign: 'center' }}>
+                <i className="fas fa-exclamation-triangle" style={{ fontSize: '2rem', color: '#ef4444', marginBottom: '16px' }}></i>
+                <p style={{ color: '#ef4444', fontSize: '16px', fontWeight: '500' }}>No se pudo obtener el estado del sistema</p>
             </div>
         );
     }
@@ -62,13 +64,13 @@ const HealthStatus: React.FC = () => {
             case 'healthy':
             case 'connected':
             case 'enabled':
-                return 'text-green-600 bg-green-100';
+                return { backgroundColor: '#f0fdf4', color: '#16a34a' };
             case 'unhealthy':
             case 'disconnected':
             case 'disabled':
-                return 'text-red-600 bg-red-100';
+                return { backgroundColor: '#fef2f2', color: '#dc2626' };
             default:
-                return 'text-gray-600 bg-gray-100';
+                return { backgroundColor: '#f9fafb', color: '#6b7280' };
         }
     };
 
@@ -77,62 +79,170 @@ const HealthStatus: React.FC = () => {
             case 'healthy':
             case 'connected':
             case 'enabled':
-                return '✓';
+                return 'fas fa-check-circle';
             case 'unhealthy':
             case 'disconnected':
             case 'disabled':
-                return '✗';
+                return 'fas fa-times-circle';
             default:
-                return '?';
+                return 'fas fa-question-circle';
         }
     };
 
     return (
-        <div className="p-4 bg-white rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">Estado del Sistema</h3>
+        <div style={{ padding: '24px' }}>
+            <h3 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: 'var(--text-main, #374151)',
+                margin: '0 0 24px 0'
+            }}>
+                Estado del Sistema
+            </h3>
             
-            <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <span className="font-medium">Estado General</span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(health.status)}`}>
-                        {getStatusIcon(health.status)} {health.status.toUpperCase()}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px',
+                    background: 'var(--bg-hover, #f3f4f6)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color, #e5e7eb)'
+                }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text-main, #374151)' }}>Estado General</span>
+                    <span style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.025em',
+                        ...getStatusColor(health.status)
+                    }}>
+                        <i className={`fas ${getStatusIcon(health.status)}`} style={{ marginRight: '6px' }}></i>
+                        {health.status === 'healthy' ? 'Saludable' : 'No Saludable'}
                     </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <span className="font-medium">Base de Datos</span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(health.services.database)}`}>
-                        {getStatusIcon(health.services.database)} {health.services.database.toUpperCase()}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px',
+                    background: 'var(--bg-hover, #f3f4f6)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color, #e5e7eb)'
+                }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text-main, #374151)' }}>Base de Datos</span>
+                    <span style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.025em',
+                        ...getStatusColor(health.services.database)
+                    }}>
+                        <i className={`fas ${getStatusIcon(health.services.database)}`} style={{ marginRight: '6px' }}></i>
+                        {health.services.database === 'connected' ? 'Conectada' : 'Desconectada'}
                     </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <span className="font-medium">IA (Gemini)</span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(health.services.gemini)}`}>
-                        {getStatusIcon(health.services.gemini)} {health.services.gemini.toUpperCase()}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px',
+                    background: 'var(--bg-hover, #f3f4f6)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color, #e5e7eb)'
+                }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text-main, #374151)' }}>IA (Gemini)</span>
+                    <span style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.025em',
+                        ...getStatusColor(health.services.gemini)
+                    }}>
+                        <i className={`fas ${getStatusIcon(health.services.gemini)}`} style={{ marginRight: '6px' }}></i>
+                        {health.services.gemini === 'enabled' ? 'Habilitada' : 'Deshabilitada'}
                     </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <span className="font-medium">Puerto</span>
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-600">
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px',
+                    background: 'var(--bg-hover, #f3f4f6)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color, #e5e7eb)'
+                }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text-main, #374151)' }}>Puerto</span>
+                    <span style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        backgroundColor: '#dbeafe',
+                        color: '#1e40af'
+                    }}>
+                        <i className="fas fa-server" style={{ marginRight: '6px' }}></i>
                         {health.services.port}
                     </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <span className="font-medium">Última Verificación</span>
-                    <span className="text-sm text-gray-600">
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px',
+                    background: 'var(--bg-hover, #f3f4f6)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color, #e5e7eb)'
+                }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text-main, #374151)' }}>Última Verificación</span>
+                    <span style={{ fontSize: '14px', color: 'var(--text-muted, #6b7280)' }}>
+                        <i className="fas fa-clock" style={{ marginRight: '6px' }}></i>
                         {new Date(health.timestamp).toLocaleString()}
                     </span>
                 </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t">
+            <div style={{
+                marginTop: '24px',
+                paddingTop: '24px',
+                borderTop: '1px solid var(--border-color, #e5e7eb)'
+            }}>
                 <button
                     onClick={checkHealth}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm"
+                    style={{
+                        background: 'var(--primary-red, #D50032)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'background-color 0.2s',
+                        boxShadow: '0 2px 4px rgba(213, 0, 50, 0.2)'
+                    }}
+                    onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = '#C20049';
+                    }}
+                    onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--primary-red, #D50032)';
+                    }}
                 >
+                    <i className="fas fa-sync-alt"></i>
                     Verificar Ahora
                 </button>
             </div>

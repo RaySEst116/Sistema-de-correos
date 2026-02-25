@@ -27,6 +27,7 @@ interface ComposeModalProps {
   user: User;
   contacts?: { name: string; email: string }[];
   currentLang?: 'es' | 'en';
+  isMobile?: boolean;
 }
 
 const translations = {
@@ -53,6 +54,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
   user,
   contacts = [],
   currentLang = 'es',
+  isMobile = false,
 }) => {
   const [to, setTo] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
@@ -171,7 +173,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     }
   };
 
-  // const handleAiGenerate = async () => { // COMENTADO - IA DESACTIVADA
+  // const handleAiGenerate = async () => { 
   //   if (!window.Swal) {
   //     alert('SweetAlert2 no está disponible');
   //     return;
@@ -241,10 +243,11 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const modalWidth = isMaximized ? '95vw' : '500px';
-  const modalHeight = isMaximized ? '90vh' : '600px';
-  const modalBottom = isMinimized ? '0' : '20px';
-  const modalRight = isMaximized ? '2.5vw' : '20px';
+  const modalWidth = isMobile ? '95vw' : (isMaximized ? '95vw' : '500px');
+  const modalHeight = isMobile ? '95vh' : (isMaximized ? '90vh' : '600px');
+  const modalBottom = isMobile ? '2.5vh' : (isMinimized ? '0' : '20px');
+  const modalRight = isMobile ? '2.5vw' : (isMaximized ? '2.5vw' : '20px');
+  const modalLeft = isMobile ? '2.5vw' : 'auto';
 
   return (
     <div
@@ -253,6 +256,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
         position: 'fixed',
         bottom: modalBottom,
         right: modalRight,
+        left: modalLeft,
         width: modalWidth,
         height: modalHeight,
         background: 'var(--bg-card, #ffffff)',

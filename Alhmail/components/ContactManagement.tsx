@@ -71,59 +71,188 @@ const ContactManagement: React.FC = () => {
     };
 
     if (loading) {
-        return <div className="p-4">Cargando contactos...</div>;
+        return (
+            <div style={{ padding: '24px', textAlign: 'center' }}>
+                <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: 'var(--primary-red, #D50032)', marginBottom: '16px' }}></i>
+                <p style={{ color: 'var(--text-muted, #6b7280)', fontSize: '16px' }}>Cargando contactos...</p>
+            </div>
+        );
     }
 
     return (
-        <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Gestión de Contactos</h2>
+        <div style={{ padding: '24px' }}>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '24px'
+            }}>
+                <h2 style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: 'var(--text-main, #374151)',
+                    margin: 0
+                }}>
+                    Gestión de Contactos
+                </h2>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    style={{
+                        background: 'var(--primary-red, #D50032)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'background-color 0.2s',
+                        boxShadow: '0 2px 4px rgba(213, 0, 50, 0.2)'
+                    }}
+                    onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = '#C20049';
+                    }}
+                    onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--primary-red, #D50032)';
+                    }}
                 >
+                    <i className="fas fa-plus"></i>
                     Nuevo Contacto
                 </button>
             </div>
 
             {showForm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg w-96">
-                        <h3 className="text-lg font-bold mb-4">
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'var(--bg-card, #ffffff)',
+                        padding: '24px',
+                        borderRadius: '12px',
+                        width: '90%',
+                        maxWidth: '480px',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <h3 style={{
+                            fontSize: '1.25rem',
+                            fontWeight: 'bold',
+                            color: 'var(--text-main, #374151)',
+                            margin: '0 0 20px 0'
+                        }}>
                             {editingContact ? 'Editar Contacto' : 'Nuevo Contacto'}
                         </h3>
                         <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Nombre</label>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    color: 'var(--text-main, #374151)',
+                                    marginBottom: '6px'
+                                }}>
+                                    Nombre
+                                </label>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                    className="w-full border rounded px-3 py-2"
+                                    style={{
+                                        width: '100%',
+                                        border: '1px solid var(--border-color, #e5e7eb)',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        fontSize: '14px',
+                                        backgroundColor: 'var(--bg-card, #ffffff)',
+                                        color: 'var(--text-main, #374151)',
+                                        transition: 'border-color 0.2s'
+                                    }}
                                     required
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Email</label>
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{
+                                    display: 'block',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    color: 'var(--text-main, #374151)',
+                                    marginBottom: '6px'
+                                }}>
+                                    Email
+                                </label>
                                 <input
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                    className="w-full border rounded px-3 py-2"
+                                    style={{
+                                        width: '100%',
+                                        border: '1px solid var(--border-color, #e5e7eb)',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        fontSize: '14px',
+                                        backgroundColor: 'var(--bg-card, #ffffff)',
+                                        color: 'var(--text-main, #374151)',
+                                        transition: 'border-color 0.2s'
+                                    }}
                                     required
                                 />
                             </div>
-                            <div className="flex gap-2">
+                            <div style={{ display: 'flex', gap: '12px' }}>
                                 <button
                                     type="submit"
-                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                                    style={{
+                                        background: '#10b981',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '10px 16px',
+                                        borderRadius: '6px',
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'background-color 0.2s',
+                                        flex: 1
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#059669';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#10b981';
+                                    }}
                                 >
                                     {editingContact ? 'Actualizar' : 'Crear'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={resetForm}
-                                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                    style={{
+                                        background: '#6b7280',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '10px 16px',
+                                        borderRadius: '6px',
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'background-color 0.2s',
+                                        flex: 1
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#4b5563';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.backgroundColor = '#6b7280';
+                                    }}
                                 >
                                     Cancelar
                                 </button>
@@ -133,33 +262,142 @@ const ContactManagement: React.FC = () => {
                 </div>
             )}
 
-            <div className="bg-white rounded-lg overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-4 py-2 text-left">ID</th>
-                            <th className="px-4 py-2 text-left">Nombre</th>
-                            <th className="px-4 py-2 text-left">Email</th>
-                            <th className="px-4 py-2 text-left">Acciones</th>
+            <div style={{
+                background: 'var(--bg-card, #ffffff)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                border: '1px solid var(--border-color, #e5e7eb)',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{
+                            background: 'var(--bg-hover, #f3f4f6)',
+                            borderBottom: '1px solid var(--border-color, #e5e7eb)'
+                        }}>
+                            <th style={{
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: 'var(--text-muted, #6b7280)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
+                            }}>ID</th>
+                            <th style={{
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: 'var(--text-muted, #6b7280)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
+                            }}>Nombre</th>
+                            <th style={{
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: 'var(--text-muted, #6b7280)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
+                            }}>Email</th>
+                            <th style={{
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: 'var(--text-muted, #6b7280)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em'
+                            }}>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {contacts.map((contact) => (
-                            <tr key={contact.id || contact.email} className="border-t">
-                                <td className="px-4 py-2">{contact.id || '-'}</td>
-                                <td className="px-4 py-2">{contact.name}</td>
-                                <td className="px-4 py-2">{contact.email}</td>
-                                <td className="px-4 py-2">
+                            <tr key={contact.id || contact.email} style={{
+                                borderBottom: '1px solid var(--border-color, #e5e7eb)',
+                                transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = 'var(--bg-hover, #f3f4f6)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                            }}>
+                                <td style={{
+                                    padding: '12px 16px',
+                                    fontSize: '14px',
+                                    color: 'var(--text-muted, #6b7280)',
+                                    fontFamily: 'monospace'
+                                }}>{contact.id || '-'}</td>
+                                <td style={{
+                                    padding: '12px 16px',
+                                    fontSize: '14px',
+                                    color: 'var(--text-main, #374151)',
+                                    fontWeight: '500'
+                                }}>{contact.name}</td>
+                                <td style={{
+                                    padding: '12px 16px',
+                                    fontSize: '14px',
+                                    color: 'var(--text-main, #374151)',
+                                    fontFamily: 'monospace'
+                                }}>{contact.email}</td>
+                                <td style={{
+                                    padding: '12px 16px',
+                                    display: 'flex',
+                                    gap: '8px'
+                                }}>
                                     <button
                                         onClick={() => handleEdit(contact)}
-                                        className="bg-blue-500 text-white px-3 py-1 rounded text-sm mr-2 hover:bg-blue-600"
+                                        style={{
+                                            background: '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '6px 10px',
+                                            borderRadius: '4px',
+                                            fontSize: '12px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.2s',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#2563eb';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#3b82f6';
+                                        }}
                                     >
+                                        <i className="fas fa-edit"></i>
                                         Editar
                                     </button>
                                     <button
                                         onClick={() => contact.id && handleDelete(contact.id)}
-                                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                                        style={{
+                                            background: '#ef4444',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '6px 10px',
+                                            borderRadius: '4px',
+                                            fontSize: '12px',
+                                            fontWeight: '500',
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.2s',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#dc2626';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#ef4444';
+                                        }}
                                     >
+                                        <i className="fas fa-trash"></i>
                                         Eliminar
                                     </button>
                                 </td>
@@ -168,8 +406,30 @@ const ContactManagement: React.FC = () => {
                     </tbody>
                 </table>
                 {contacts.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                        No hay contactos registrados
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '48px 24px',
+                        color: 'var(--text-muted, #6b7280)'
+                    }}>
+                        <i className="fas fa-address-book" style={{
+                            fontSize: '3rem',
+                            marginBottom: '16px',
+                            opacity: 0.5
+                        }}></i>
+                        <p style={{
+                            fontSize: '16px',
+                            margin: 0,
+                            fontWeight: '500'
+                        }}>
+                            No hay contactos registrados
+                        </p>
+                        <p style={{
+                            fontSize: '14px',
+                            margin: '8px 0 0 0',
+                            opacity: 0.8
+                        }}>
+                            Agrega tu primer contacto para comenzar
+                        </p>
                     </div>
                 )}
             </div>

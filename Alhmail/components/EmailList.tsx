@@ -17,6 +17,7 @@ interface EmailListProps {
   onMarkRead?: (ids: number[]) => void;
   currentLang?: 'es' | 'en';
   loading?: boolean;
+  isMobile?: boolean;
 }
 
 const translations = {
@@ -58,6 +59,7 @@ const EmailList: React.FC<EmailListProps> = ({
   onMarkRead,
   currentLang = 'es',
   loading = false,
+  isMobile = false,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());

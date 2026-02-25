@@ -5,10 +5,24 @@ import EmailList from '../components/EmailList';
 import EmailDetail from '../components/EmailDetail';
 import ComposeModal from '../components/ComposeModal';
 import AccountModal from '../components/AccountModal';
+import AdminModal from '../components/AdminModal';
 import { db } from '../services/db';
 import { websocketService } from '../services/websocket';
 import { classifyEmailContent /*, generateSyntheticEmail */ } from '../services/geminiService'; // IA desactivada
 import { Email, FolderType, User } from '../types';
+
+// Hook para detectar pantalla móvil
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  return isMobile;
+};
 
 interface InboxViewProps {
   user: User;
@@ -42,15 +56,18 @@ const translations = {
 
 const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   // App State
   const [emails, setEmails] = useState<Email[]>([]);
   const [currentFolder, setCurrentFolder] = useState<FolderType>('inbox');
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [emailDetailOpen, setEmailDetailOpen] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isUsersOpen, setIsUsersOpen] = useState(false);
-  const [listWidth, setListWidth] = useState(350);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [listWidth, setListWidth] = useState(isMobile ? window.innerWidth : 350);
   const [loading, setLoading] = useState(false);
   const [simulating, setSimulating] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -157,6 +174,9 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
 
   const handleSelectEmail = async (email: Email) => {
     setSelectedEmail(email);
+    if (isMobile) {
+      setEmailDetailOpen(true);
+    }
     if (email.unread) {
       const updated = emails.map(e => e.id === email.id ? { ...e, unread: false } : e);
       setEmails(updated);
@@ -164,6 +184,11 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
       updateUnreadCount(updated);
       setSelectedEmail({ ...email, unread: false });
     }
+  };
+
+  const handleBackToList = () => {
+    setEmailDetailOpen(false);
+    setSelectedEmail(null);
   };
 
   const handleSendEmail = async (data: {
@@ -289,14 +314,12 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
   const handleUserEdit = (u: User) => {
     setSelectedUserId(u.id);
     setIsCreatingUser(false);
-    setIsUsersOpen(false);
     setIsAccountOpen(true);
   };
 
   const handleUserCreate = () => {
     setIsCreatingUser(true);
     setSelectedUserId(null);
-    setIsUsersOpen(false);
     setIsAccountOpen(true);
   };
 
@@ -373,7 +396,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     }
   };
 
-  // const handleAutoSimulate = async () => { // COMENTADO - IA DESACTIVADA
+  // const handleAutoSimulate = async () => {
 //   const synthetic = await generateSyntheticEmail();
 //   await processIncomingEmail({
 //     sender: synthetic.sender || 'random@internet.com',
@@ -389,7 +412,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     setConnecting(true);
     await new Promise(r => setTimeout(r, 2000));
     alert(`Conexión Segura (TLS 1.3) establecida con ${service.toLowerCase() === 'g' ? 'Google' : 'Microsoft'}.`);
-    // handleAutoSimulate(); // COMENTADO - IA DESACTIVADA
+    // handleAutoSimulate(); 
     setConnecting(false);
   };
 
@@ -413,12 +436,20 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     }
   };
 
-  // Resizer logic
+  // Resizer logic (solo para desktop)
   const isResizing = useRef(false);
-  const handleMouseDown = () => { isResizing.current = true; document.body.style.cursor = 'col-resize'; };
-  const handleMouseUp = () => { isResizing.current = false; document.body.style.cursor = 'default'; };
+  const handleMouseDown = () => { 
+    if (!isMobile) {
+      isResizing.current = true; 
+      document.body.style.cursor = 'col-resize';
+    }
+  };
+  const handleMouseUp = () => { 
+    isResizing.current = false; 
+    document.body.style.cursor = 'default';
+  };
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isResizing.current) return;
+    if (!isResizing.current || isMobile) return;
     const sidebarWidth = sidebarCollapsed ? 80 : 250;
     let newWidth = e.clientX - sidebarWidth;
     if (newWidth < 250) newWidth = 250;
@@ -426,18 +457,20 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     setListWidth(newWidth);
   };
   useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [sidebarCollapsed]);
+    if (!isMobile) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [sidebarCollapsed, isMobile]);
 
   const filteredEmails = emails.filter(e => e.folder === currentFolder);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-main, #f3f4f6)', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-main, #f3f4f6)', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       {connecting && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999,
@@ -454,47 +487,125 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         </div>
       )}
 
+      {/* Mobile menu toggle */}
+      {isMobile && (
+        <button
+          className="mobile-menu-toggle"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            position: 'fixed',
+            top: '15px',
+            left: '15px',
+            zIndex: 1001,
+            background: 'var(--primary-red, #D50032)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '10px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <i className="fas fa-bars"></i>
+        </button>
+      )}
+
+      {/* Sidebar overlay for mobile */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="sidebar-overlay mobile-open"
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 998,
+            display: 'block'
+          }}
+        />
+      )}
+
       <Sidebar
-        isCollapsed={sidebarCollapsed}
-        toggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        isCollapsed={isMobile ? false : sidebarCollapsed}
+        toggleSidebar={() => isMobile ? setSidebarOpen(!sidebarOpen) : setSidebarCollapsed(!sidebarCollapsed)}
         currentFolder={currentFolder}
-        setFolder={(f) => { setCurrentFolder(f); setSelectedEmail(null); }}
-        onCompose={() => setIsComposeOpen(true)}
-        onAccount={() => { setIsCreatingUser(false); setSelectedUserId(user.id); setIsAccountOpen(true); }}
-        onUsers={() => setIsUsersOpen(true)}
+        setFolder={(f) => { setCurrentFolder(f); setSelectedEmail(null); if (isMobile) setSidebarOpen(false); }}
+        onCompose={() => { setIsComposeOpen(true); if (isMobile) setSidebarOpen(false); }}
+        onAccount={() => { setIsCreatingUser(false); setSelectedUserId(user.id); setIsAccountOpen(true); if (isMobile) setSidebarOpen(false); }}
+        onUsers={() => { setIsAdminModalOpen(true); if (isMobile) setSidebarOpen(false); }}
         onLogout={handleLogout}
         unreadCount={unreadCount}
         isAdmin={user.role === 'admin'}
         showSpam={user.role === 'admin'}
+        isMobile={isMobile}
+        isOpen={sidebarOpen}
       />
 
       <main style={{
         flex: 1, display: 'flex', background: 'var(--bg-card, #ffffff)',
-        margin: '12px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        border: '1px solid var(--border-color, #e5e7eb)', overflow: 'hidden', position: 'relative'
+        margin: isMobile ? '0' : '12px', borderRadius: isMobile ? '0' : '12px',
+        boxShadow: isMobile ? 'none' : '0 2px 8px rgba(0,0,0,0.08)',
+        border: isMobile ? 'none' : '1px solid var(--border-color, #e5e7eb)', overflow: 'hidden', position: 'relative'
       }}>
-        <EmailList
-          emails={filteredEmails}
-          folder={currentFolder}
-          selectedEmailId={selectedEmail?.id || null}
-          onSelectEmail={handleSelectEmail}
-          width={listWidth}
-          onRefresh={loadEmails}
-          onDeleteSelected={handleDeleteSelected}
-          onMarkRead={handleMarkRead}
-          currentLang={currentLang}
-          loading={loading}
-        />
+        {/* Email List - siempre visible en mobile, o a la izquierda en desktop */}
+        <div className={isMobile ? 'email-list-container' : ''} style={{
+          display: isMobile && emailDetailOpen ? 'none' : 'flex',
+          flexDirection: 'column',
+          width: isMobile ? '100%' : `${listWidth}px`,
+          flexShrink: 0
+        }}>
+          <EmailList
+            emails={filteredEmails}
+            folder={currentFolder}
+            selectedEmailId={selectedEmail?.id || null}
+            onSelectEmail={handleSelectEmail}
+            width={isMobile ? window.innerWidth : listWidth}
+            onRefresh={loadEmails}
+            onDeleteSelected={handleDeleteSelected}
+            onMarkRead={handleMarkRead}
+            currentLang={currentLang}
+            loading={loading}
+            isMobile={isMobile}
+          />
+        </div>
 
-        <div
-          onMouseDown={handleMouseDown}
-          style={{ width: '4px', background: 'var(--border-color, #e5e7eb)', cursor: 'col-resize', zIndex: 10 }}
-        />
+        {/* Resizer - solo en desktop */}
+        {!isMobile && (
+          <div
+            onMouseDown={handleMouseDown}
+            style={{ width: '4px', background: 'var(--border-color, #e5e7eb)', cursor: 'col-resize', zIndex: 10 }}
+          />
+        )}
 
-        <EmailDetail
-          email={selectedEmail}
-          onAdminAction={handleAdminAction}
-        />
+        {/* Email Detail - overlay en mobile, panel normal en desktop */}
+        <div className={isMobile ? 'email-detail-container' : ''} style={{
+          flex: 1,
+          display: isMobile ? (emailDetailOpen ? 'flex' : 'none') : 'flex',
+          position: isMobile ? 'fixed' : 'relative',
+          top: isMobile ? 0 : 'auto',
+          left: isMobile ? 0 : 'auto',
+          right: isMobile ? 0 : 'auto',
+          bottom: isMobile ? 0 : 'auto',
+          zIndex: isMobile ? 1002 : 'auto',
+          background: 'var(--bg-card, #ffffff)',
+          transform: isMobile && emailDetailOpen ? 'translateX(0)' : (isMobile ? 'translateX(100%)' : 'none'),
+          transition: isMobile ? 'transform 0.3s ease' : 'none'
+        }}>
+          <EmailDetail
+            email={selectedEmail}
+            onAdminAction={handleAdminAction}
+            onBack={isMobile ? handleBackToList : undefined}
+            isMobile={isMobile}
+          />
+        </div>
+      </main>
 
         {/* Simulation & Logout Buttons */}
         {/* <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 50, display: 'flex', gap: '8px' }}>
@@ -511,8 +622,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
             <i className={`fas fa-random ${simulating ? 'animate-spin' : ''}`}></i>
             {simulating ? 'Analizando...' : 'Auto Simulación'}
           </button>
-        </div> */} // COMENTADO - IA DESACTIVADA
-      </main>
+        </div> */}
 
       <ComposeModal
         isOpen={isComposeOpen}
@@ -521,6 +631,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         user={user}
         contacts={contacts}
         currentLang={currentLang}
+        isMobile={isMobile}
       />
 
       <AccountModal
@@ -532,28 +643,12 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         isAdmin={user.role === 'admin'}
       />
 
-      {user.role === 'admin' && (
-        <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 50 }}>
-          <a
-            href="/admin"
-            style={{
-              background: '#1f2937',
-              color: 'white',
-              padding: '10px 15px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-            }}
-          >
-            <i className="fas fa-cog"></i>
-            Panel Admin
-          </a>
-        </div>
-      )}
+      
+      <AdminModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        isMobile={isMobile}
+      />
     </div>
   );
 };
