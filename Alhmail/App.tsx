@@ -60,7 +60,7 @@ const App: React.FC = () => {
                     element={<Navigate to={user ? "/inbox" : "/login"} replace />} 
                 />
             </Routes>
-            {user && <ToastNotification />}
+            {user && <ToastNotification currentUserEmail={user.email} />}
         </Router>
     );
 };

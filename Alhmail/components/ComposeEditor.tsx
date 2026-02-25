@@ -168,7 +168,6 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
   };
 
   const selectSuggestion = (suggestion: { name: string; email: string }) => {
-    console.log('selectSuggestion called:', suggestion, 'activeField:', activeField);
     setSuggestionClicked(true);
     if (activeField) {
       addChip(suggestion.email, activeField);

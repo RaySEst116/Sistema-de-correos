@@ -76,10 +76,10 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     return () => window.removeEventListener('langChanged' as any, handleLangChange);
   }, []);
 
-  // Load Emails when folder changes
+  // Load Emails on component mount and when user changes
   useEffect(() => {
     loadEmails();
-  }, [currentFolder]);
+  }, [user.email]);
 
   // Load contacts and users
   useEffect(() => {
@@ -89,34 +89,13 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     }
   }, [user]);
 
-  // WebSocket - Escuchar nuevos correos
+  // WebSocket - Escuchar nuevos correos para actualizar la lista (sin mostrar toast)
   useEffect(() => {
     const handleNewEmail = (data: any) => {
       // Solo actualizar si el correo es para el usuario actual
       if (data.userEmail === user.email) {
-        console.log('📧 Nuevo correo recibido en InboxView:', data);
-        
-        // Agregar el nuevo correo a la lista
-        const newEmail: Email = {
-          ...data.email,
-          id: Date.now(), // ID temporal hasta que se sincronice con el servidor
-        };
-        
-        setEmails(prevEmails => {
-          const updatedEmails = [newEmail, ...prevEmails];
-          // Actualizar localStorage
-          localStorage.setItem('alhmail_emails', JSON.stringify(updatedEmails));
-          updateUnreadCount(updatedEmails);
-          return updatedEmails;
-        });
-
-        // Si estamos en la bandeja de entrada, actualizar la vista
-        if (currentFolder === 'inbox') {
-          // Refrescar la lista para obtener el ID real del servidor
-          setTimeout(() => {
-            loadEmails();
-          }, 1000);
-        }
+        // Recargar correos para obtener el nuevo
+        loadEmails();
       }
     };
 
@@ -125,29 +104,26 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     return () => {
       websocketService.off('new-email', handleNewEmail);
     };
-  }, [user.email, currentFolder]);
+  }, [user.email]);
 
   const loadEmails = async () => {
     setLoading(true);
     try {
-      let localEmails = JSON.parse(localStorage.getItem('alhmail_emails') || '[]');
+      // Solo cargar correos del API para el usuario actual
       const res = await fetch(`${API_URL}/emails?userEmail=${user.email}`);
-      const newEmails = await res.json();
-      if (newEmails.length > 0) {
-        const emailMap = new Map();
-        localEmails.forEach((e: Email) => emailMap.set(e.id, e));
-        newEmails.forEach((e: Email) => emailMap.set(e.id, e));
-        localEmails = Array.from(emailMap.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        localStorage.setItem('alhmail_emails', JSON.stringify(localEmails));
-        const newIds = newEmails.map((e: Email) => e.id);
-        await fetch(`${API_URL}/emails/downloaded`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: newIds }),
-        });
-      }
-      setEmails(localEmails);
-      updateUnreadCount(localEmails);
+      const emailsFromAPI = await res.json();
+      
+      // Filtrar correos por usuario actual para mayor seguridad
+      const userEmails = emailsFromAPI.filter((email: Email) => 
+        email.owner_email === user.email
+      );
+      
+      setEmails(userEmails);
+      updateUnreadCount(userEmails);
+      
+      // NOTA: No eliminamos correos de la BD después de cargarlos
+      // Los correos deben persistir en el sistema
+      
     } catch (error) {
       console.error('Error cargando correos:', error);
       setEmails([]);
@@ -508,6 +484,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
           onDeleteSelected={handleDeleteSelected}
           onMarkRead={handleMarkRead}
           currentLang={currentLang}
+          loading={loading}
         />
 
         <div

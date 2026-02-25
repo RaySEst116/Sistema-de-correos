@@ -16,6 +16,7 @@ interface EmailListProps {
   onDeleteSelected?: (ids: number[]) => void;
   onMarkRead?: (ids: number[]) => void;
   currentLang?: 'es' | 'en';
+  loading?: boolean;
 }
 
 const translations = {
@@ -56,6 +57,7 @@ const EmailList: React.FC<EmailListProps> = ({
   onDeleteSelected,
   onMarkRead,
   currentLang = 'es',
+  loading = false,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -209,7 +211,7 @@ const EmailList: React.FC<EmailListProps> = ({
               color: 'var(--text-muted, #6b7280)',
             }}
           >
-            {searchTerm ? t.empty : t.loading}
+            {loading ? t.loading : (searchTerm ? t.empty : t.empty)}
           </div>
         ) : (
           filteredEmails.map((email) => (

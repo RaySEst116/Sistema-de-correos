@@ -18,22 +18,18 @@ class WebSocketService {
         });
 
         this.socket.on('connect', () => {
-            console.log('🔌 Conectado al servidor por WebSocket');
             this.emit('connection-status', { connected: true });
         });
 
         this.socket.on('disconnect', () => {
-            console.log('🔌 Desconectado del servidor');
             this.emit('connection-status', { connected: false });
         });
 
         this.socket.on('server-status', (data) => {
-            console.log('📊 Estado del servidor recibido:', data);
             this.emit('server-status', data);
         });
 
         this.socket.on('health-response', (data) => {
-            console.log('🏥 Health check response:', data);
             this.emit('health-response', data);
         });
 

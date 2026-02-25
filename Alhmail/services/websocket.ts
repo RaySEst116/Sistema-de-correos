@@ -23,6 +23,7 @@ export interface NewEmailNotification {
 class WebSocketService {
   private socket: Socket | null = null;
   private listeners: Map<string, Function[]> = new Map();
+  private processedEvents: Set<string> = new Set();
 
   connect() {
     if (this.socket?.connected) return;
@@ -32,20 +33,35 @@ class WebSocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('🔌 Conectado al servidor WebSocket');
+      // Conectado al servidor WebSocket
     });
 
     this.socket.on('disconnect', () => {
-      console.log('🔌 Desconectado del servidor WebSocket');
+      // Limpiar eventos procesados al desconectarse
+      this.processedEvents.clear();
     });
 
     this.socket.on('new-email', (data: NewEmailNotification) => {
-      console.log('📧 Nuevo correo recibido:', data);
+      // Crear ID único para este evento y evitar duplicaciones
+      const eventId = `${data.userEmail}-${data.email.subject}-${data.timestamp}`;
+      
+      if (this.processedEvents.has(eventId)) {
+        return;
+      }
+      
+      this.processedEvents.add(eventId);
       this.emit('new-email', data);
+      
+      // Limpiar eventos antiguos (mantener solo los últimos 100)
+      if (this.processedEvents.size > 100) {
+        const eventsArray = Array.from(this.processedEvents);
+        const toDelete = eventsArray.slice(0, 50);
+        toDelete.forEach(event => this.processedEvents.delete(event));
+      }
     });
 
     this.socket.on('server-status', (data) => {
-      console.log('📊 Estado del servidor:', data);
+      // Estado del servidor recibido
     });
   }
 

@@ -371,14 +371,17 @@ app.post('/emails', async (req, res) => {
                 securityAnalysis: securityAnalysis
             };
 
-            // Enviar notificación a todos los clientes conectados
-            io.emit('new-email', {
-                userEmail: to,
-                email: newEmail,
-                timestamp: new Date().toISOString()
-            });
+            // Enviar notificación solo si no es borrador
+            if (!isDraft) {
+                // Enviar a todos los clientes conectados
+                io.emit('new-email', {
+                    userEmail: to,
+                    email: newEmail,
+                    timestamp: new Date().toISOString()
+                });
 
-            console.log(`📧 Notificación enviada a ${to} - Nuevo correo de ${from}: ${subject}`);
+                console.log(`📧 Notificación enviada a ${to} - Nuevo correo de ${from}: ${subject}`);
+            }
         }
 
         await connection.commit();

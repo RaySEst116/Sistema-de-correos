@@ -15,6 +15,7 @@ export interface Email {
     unread: boolean;
     sender: string;
     email: string;
+    owner_email?: string; // Added to match API response
     replyTo?: string; // New field for spoofing checks
     subject: string;
     preview: string;

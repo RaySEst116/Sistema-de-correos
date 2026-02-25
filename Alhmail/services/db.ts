@@ -220,7 +220,6 @@ export const db = {
     },
 
     addToBlacklist: async (emailAddress: string): Promise<void> => {
-        console.log(`[FIREWALL] Added ${emailAddress} to permanent blacklist (DB & Firewall Rule).`);
         await delay(500);
         // Here you would typically call an endpoint like POST /api/blacklist
     },

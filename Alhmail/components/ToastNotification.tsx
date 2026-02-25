@@ -6,9 +6,17 @@ interface Toast {
   message: string;
   type: 'success' | 'info' | 'warning' | 'error';
   duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
-const ToastNotification: React.FC = () => {
+interface ToastNotificationProps {
+  currentUserEmail?: string; // Agregar prop para recibir el email del usuario
+}
+
+const ToastNotification: React.FC<ToastNotificationProps> = ({ currentUserEmail = '' }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
@@ -17,14 +25,28 @@ const ToastNotification: React.FC = () => {
 
     // Escuchar nuevos correos
     const handleNewEmail = (data: NewEmailNotification) => {
-      const toast: Toast = {
-        id: Date.now().toString(),
-        message: `📧 Nuevo correo de ${data.email.sender}: ${data.email.subject}`,
-        type: 'info',
-        duration: 5000
-      };
-      
-      setToasts(prev => [...prev, toast]);
+      // SOLO mostrar toast al destinatario, nunca al remitente
+      if (data.userEmail !== currentUserEmail && currentUserEmail) {
+        const toast: Toast = {
+          id: Date.now().toString(),
+          message: `📧 Nuevo correo de ${data.email.sender}: ${data.email.subject}`,
+          type: 'info',
+          duration: 8000,
+          action: {
+            label: 'Ver correo',
+            onClick: () => {
+              // Redirigir a la bandeja de entrada
+              window.location.hash = '#/inbox';
+              // Cerrar este toast específicamente
+              setToasts(prev => prev.filter(t => t.id !== toast.id));
+            }
+          }
+        };
+        
+        setToasts(prev => [...prev, toast]);
+      } else {
+        // Toast NO mostrado (remitente o sin usuario)
+      }
     };
 
     websocketService.on('new-email', handleNewEmail);
@@ -32,7 +54,7 @@ const ToastNotification: React.FC = () => {
     return () => {
       websocketService.off('new-email', handleNewEmail);
     };
-  }, []);
+  }, [currentUserEmail]);
 
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
@@ -57,8 +79,8 @@ const ToastNotification: React.FC = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      minWidth: '300px',
-      maxWidth: '400px',
+      minWidth: '350px',
+      maxWidth: '450px',
       boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       border: '1px solid',
       backgroundColor: 'var(--bg-card, #ffffff)',
@@ -135,9 +157,34 @@ const ToastNotification: React.FC = () => {
             key={toast.id}
             style={getToastStyle(toast.type)}
           >
-            <span style={{ marginRight: '10px' }}>
-              {toast.message}
-            </span>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              marginRight: '10px',
+              flex: 1
+            }}>
+              <span style={{ marginBottom: toast.action ? '5px' : '0' }}>
+                {toast.message}
+              </span>
+              {toast.action && (
+                <button
+                  onClick={toast.action.onClick}
+                  style={{
+                    background: 'var(--primary-red, #D50032)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '4px 12px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    alignSelf: 'flex-start'
+                  }}
+                >
+                  {toast.action.label}
+                </button>
+              )}
+            </div>
             <button
               onClick={() => removeToast(toast.id)}
               style={{
@@ -147,7 +194,8 @@ const ToastNotification: React.FC = () => {
                 cursor: 'pointer',
                 color: 'inherit',
                 padding: '0',
-                lineHeight: '1'
+                lineHeight: '1',
+                flexShrink: 0
               }}
             >
               ×

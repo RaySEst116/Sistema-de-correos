@@ -50,23 +50,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         const connected = await waitForConnection;
         
         if (connected) {
-          console.log('✅ Conectado por WebSocket');
           setServerStatus('online');
           
           // Verificar health por WebSocket
           try {
             const healthData = await wsService.healthCheck();
-            console.log('Estado completo del servidor:', healthData);
           } catch (healthError) {
-            console.log('Health check por WebSocket falló, pero conexión está activa');
+            // Health check por WebSocket falló, pero conexión está activa
           }
         } else {
-          console.log('❌ No se pudo conectar por WebSocket');
           setServerStatus('offline');
         }
         
       } catch (error) {
-        console.log('Error en conexión WebSocket:', error.message);
         setServerStatus('offline');
       }
     };
@@ -106,14 +102,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       let serverInfo = null;
       
       if (serverConnected) {
-        console.log('✅ Servidor conectado por WebSocket');
-        
         // Obtener información del servidor
         try {
           serverInfo = await wsService.healthCheck();
-          console.log('Estado del servidor:', serverInfo);
         } catch (healthError) {
-          console.log('Health check por WebSocket falló, pero conexión está activa');
+          // Health check por WebSocket falló, pero conexión está activa
         }
         
         // Intentar login normal por HTTP (el login sigue siendo HTTP por seguridad)
