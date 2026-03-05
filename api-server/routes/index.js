@@ -4,6 +4,7 @@ import userRoutes from './users.js';
 import emailRoutes from './emails.js';
 import contactRoutes from './contacts.js';
 import healthRoutes from './health.js';
+import aiRoutes from './ai.js';
 
 const router = Router();
 
@@ -21,5 +22,8 @@ router.use('/emails', emailRoutes);
 
 // Rutas de contactos
 router.use('/contacts', contactRoutes);
+
+// Rutas de IA
+router.use('/ai', aiRoutes);
 
 export default router;

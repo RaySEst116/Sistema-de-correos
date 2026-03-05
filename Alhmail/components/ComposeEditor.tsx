@@ -589,28 +589,52 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
       </div>
 
       <div style={{ flex: 1, minHeight: 200, position: 'relative' }}>
-        <div ref={editorContainerRef} style={{ height: '100%', border: 'none', color: 'var(--text-main, #374151)' }} />
+        <div 
+          ref={editorContainerRef} 
+          style={{ 
+            height: '100%', 
+            border: 'none', 
+            color: 'var(--text-main, #374151)',
+            pointerEvents: 'none'
+          }} 
+        />
       </div>
 
-      <button
-        onClick={onAiGenerate}
-        style={{
-          background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
-          color: 'white',
-          border: 'none',
-          padding: '8px 15px',
-          borderRadius: '20px',
-          fontSize: '0.85rem',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px',
-          marginTop: '10px',
-        }}
-      >
-        <i className="fas fa-magic"></i> IA
-      </button>
+      {/* Botón IA fuera del contenedor del editor */}
+      <div style={{ 
+        padding: '10px 0', 
+        borderTop: '1px solid var(--border-color, #e5e7eb)',
+        position: 'relative',
+        zIndex: 1000
+      }}>
+        {onAiGenerate && (
+          <button
+            className="ai-button"
+            onClick={() => {
+              console.log('🤖 Botón IA clickeado en ComposeEditor');
+              onAiGenerate();
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
+              color: 'white',
+              border: 'none',
+              padding: '8px 15px',
+              borderRadius: '20px',
+              fontSize: '0.85rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              position: 'relative',
+              zIndex: 1000,
+              pointerEvents: 'auto',
+            }}
+          >
+            <i className="fas fa-magic"></i> IA
+          </button>
+        )}
+      </div>
     </div>
   );
 };

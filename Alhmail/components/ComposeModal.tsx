@@ -173,73 +173,110 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     }
   };
 
-  // const handleAiGenerate = async () => { 
-  //   if (!window.Swal) {
-  //     alert('SweetAlert2 no está disponible');
-  //     return;
-  //   }
-  //   const { value: prompt } = await window.Swal.fire({
-  //     title: '✨ Redactor Inteligente',
-  //     input: 'textarea',
-  //     inputLabel: 'Describe el correo completo',
-  //     inputPlaceholder: 'Ej: Escribe a soporte@google.com reclamando mi cuenta...',
-  //     showCancelButton: true,
-  //     confirmButtonColor: '#8b5cf6',
-  //     confirmButtonText: 'Generar',
-  //     cancelButtonText: 'Cancelar',
-  //     footer: `<small>Se firmará automáticamente como: <b>${user.name}</b></small>`,
-  //     inputValidator: (value: string) => {
-  //       if (!value) return '¡Escribe una instrucción!';
-  //     },
-  //   });
+  const handleAiGenerate = async () => { 
+    console.log('🤖 Botón IA presionado');
+    
+    if (!window.Swal) {
+      console.error('❌ SweetAlert2 no está disponible');
+      alert('SweetAlert2 no está disponible');
+      return;
+    }
+    console.log('✅ SweetAlert2 disponible, mostrando modal');
+    
+    const { value: prompt, isConfirmed } = await window.Swal.fire({
+      title: '✨ Redactor Inteligente',
+      input: 'textarea',
+      inputLabel: 'Describe el correo completo',
+      inputPlaceholder: 'Ej: Escribe a soporte@google.com reclamando mi cuenta...',
+      showCancelButton: true,
+      confirmButtonColor: '#8b5cf6',
+      confirmButtonText: 'Generar',
+      cancelButtonText: 'Cancelar',
+      footer: `<small>Se firmará automáticamente como: <b>${user.name}</b></small>`,
+      inputValidator: (value: string) => {
+        if (!value) return '¡Escribe una instrucción!';
+      },
+      preConfirm: () => {
+        // Cerrar el modal inmediatamente después de confirmar
+        window.Swal.close();
+      }
+    });
 
-  //   if (prompt) {
-  //     await window.Swal.fire({
-  //       title: 'Analizando...',
-  //       html: 'Redactando y firmando...',
-  //       timerProgressBar: true,
-  //       didOpen: () => {
-  //         window.Swal.showLoading();
-  //       },
-  //     });
+    if (isConfirmed && prompt) {
+      console.log('📝 Prompt recibido:', prompt);
+      
+      // Mostrar modal de carga
+      const loadingModal = window.Swal.fire({
+        title: 'Analizando...',
+        html: 'Redactando y firmando...',
+        timerProgressBar: true,
+        didOpen: () => {
+          window.Swal.showLoading();
+        },
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false
+      });
 
-  //     try {
-  //       const res = await fetch(`http://localhost:3001/ai/draft`, {
-  //         method: 'POST',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify({
-  //           prompt: prompt,
-  //           senderName: user.name,
-  //         }),
-  //       });
-  //       const response = await res.json();
+      try {
+        console.log('🔗 Enviando petición a /ai/draft');
+        
+        const res = await fetch(`http://localhost:3001/ai/draft`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: prompt,
+            senderName: user.name,
+          }),
+        });
+        
+        console.log('📡 Respuesta recibida:', res.status);
+        
+        const response = await res.json();
+        console.log('📄 Datos recibidos:', response);
 
-  //       if (response.success) {
-  //         const { to: aiTo, subject: aiSubject, body: aiBody } = response.data;
-  //         if (aiSubject) setSubject(aiSubject);
-  //         if (aiTo) setTo([aiTo]);
-  //         if (aiBody) setBody(aiBody);
-  //         await window.Swal.close();
-  //         const Toast = window.Swal.mixin({
-  //           toast: true,
-  //           position: 'bottom-end',
-  //           showConfirmButton: false,
-  //           timer: 3000,
-  //         });
-  //         Toast.fire({ icon: 'success', title: '¡Correo redactado!' });
-  //       } else {
-  //         throw new Error(response.error);
-  //       }
-  //     } catch (e: any) {
-  //       console.error(e);
-  //       await window.Swal.fire({
-  //         icon: 'error',
-  //         title: 'Error IA',
-  //         text: 'No pude generar el correo.',
-  //       });
-  //     }
-  //   }
-  // };
+        // Cerrar modal de carga
+        loadingModal.close();
+
+        if (response.success) {
+          const { to: aiTo, subject: aiSubject, body: aiBody } = response.data;
+          
+          if (aiSubject) {
+            setSubject(aiSubject);
+            console.log('📋 Asunto establecido:', aiSubject);
+          }
+          if (aiTo) {
+            setTo([aiTo]);
+            console.log('📤 Destinatario establecido:', aiTo);
+          }
+          if (aiBody) {
+            setBody(aiBody);
+            console.log('📄 Cuerpo establecido');
+          }
+          
+          const Toast = window.Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+          });
+          Toast.fire({ icon: 'success', title: '¡Correo redactado!' });
+        } else {
+          throw new Error(response.error);
+        }
+      } catch (e: any) {
+        console.error('❌ Error en IA:', e);
+        loadingModal.close();
+        await window.Swal.fire({
+          icon: 'error',
+          title: 'Error IA',
+          text: 'No pude generar el correo.',
+        });
+      }
+    } else {
+      console.log('❌ Usuario canceló el prompt');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -377,7 +414,10 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
               onBccChange={setBcc}
               onSubjectChange={setSubject}
               onBodyChange={setBody}
-              onAiGenerate={undefined} // DESACTIVADO - IA DESACTIVADA
+              onAiGenerate={() => {
+                console.log('🤖 onAiGenerate llamado desde ComposeModal');
+                handleAiGenerate();
+              }}
               contacts={contacts}
               currentLang={lang}
             />

@@ -39,9 +39,9 @@ export const config = {
         }
     },
     
-    // IA (desactivada)
+    // IA (activada)
     ai: {
-        enabled: false,
+        enabled: true,
         geminiKey: process.env.GEN_AI_KEY
     },
     
