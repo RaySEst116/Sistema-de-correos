@@ -15,7 +15,10 @@ router.post('/downloaded', EmailController.deleteDownloadedEmails);
 // DELETE /emails/:id - Eliminar email específico
 router.delete('/:id', EmailController.deleteEmail);
 
-// PUT /emails/:id - Actualizar estado de email (leído/no leído)
-router.put('/:id', EmailController.updateEmailStatus);
+// PUT /emails/:id - Actualizar email completo
+router.put('/:id', EmailController.updateEmail);
+
+// PATCH /emails/:id - Actualizar estado de email (leído/no leído)
+router.patch('/:id', EmailController.updateEmailStatus);
 
 export default router;

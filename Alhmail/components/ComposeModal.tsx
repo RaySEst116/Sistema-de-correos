@@ -1,8 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { autoSaveService } from '../services/autoSaveService';
+import { aiHistoryService, AIGeneratedEmail } from '../services/aiHistoryService';
 import { db } from '../services/db';
 import { User } from '../types';
 import ComposeEditor from './ComposeEditor';
 import AttachmentsList from './AttachmentsList';
+import AIHistoryModal from './AIHistoryModal';
 
 interface Attachment {
   filename: string;
@@ -28,6 +31,14 @@ interface ComposeModalProps {
   contacts?: { name: string; email: string }[];
   currentLang?: 'es' | 'en';
   isMobile?: boolean;
+  initialEmail?: {
+    to?: string[];
+    cc?: string[];
+    bcc?: string[];
+    subject?: string;
+    body?: string;
+    attachments?: Attachment[];
+  };
 }
 
 const translations = {
@@ -55,16 +66,22 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
   contacts = [],
   currentLang = 'es',
   isMobile = false,
+  initialEmail,
 }) => {
-  const [to, setTo] = useState<string[]>([]);
-  const [cc, setCc] = useState<string[]>([]);
-  const [bcc, setBcc] = useState<string[]>([]);
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [to, setTo] = useState<string[]>(initialEmail?.to || []);
+  const [cc, setCc] = useState<string[]>(initialEmail?.cc || []);
+  const [bcc, setBcc] = useState<string[]>(initialEmail?.bcc || []);
+  const [subject, setSubject] = useState(initialEmail?.subject || '');
+  const [body, setBody] = useState(initialEmail?.body || '');
+  const [attachments, setAttachments] = useState<Attachment[]>(initialEmail?.attachments || []);
+  const [showCc, setShowCc] = useState(cc.length > 0);
+  const [showBcc, setShowBcc] = useState(bcc.length > 0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [draftId, setDraftId] = useState<string>(`draft_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [lang, setLang] = useState<'es' | 'en'>('es');
+  const [showHistory, setShowHistory] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragOverlayRef = useRef<HTMLDivElement>(null);
@@ -72,6 +89,31 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
   useEffect(() => {
     const savedLang = localStorage.getItem('alhmail_lang') as 'es' | 'en' || 'es';
     setLang(savedLang);
+  }, []);
+
+  // Configurar autoguardado inteligente
+  useEffect(() => {
+    if (isOpen && draftId) {
+      // Iniciar autoguardado
+      autoSaveService.startAutoSave(draftId, () => ({
+        id: draftId,
+        to,
+        cc,
+        bcc,
+        subject,
+        body,
+        timestamp: Date.now(),
+        isGenerating
+      }));
+
+      // Limpiar al desmontar
+      return () => {
+        autoSaveService.stopAutoSave();
+      };
+    }
+  }, [isOpen, draftId, to, cc, bcc, subject, body, isGenerating]);
+
+  useEffect(() => {
     const handleLangChange = (e: CustomEvent) => {
       setLang(e.detail.lang);
     };
@@ -125,6 +167,17 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     onClose();
   };
 
+  const clearForm = () => {
+    setTo([]);
+    setCc([]);
+    setBcc([]);
+    setSubject('');
+    setBody('');
+    setAttachments([]);
+    setIsMinimized(false);
+    setIsMaximized(false);
+  };
+
   const handleFileChange = async (files: FileList | null) => {
     if (!files) return;
     for (const file of Array.from(files)) {
@@ -173,12 +226,28 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     }
   };
 
+  // Manejar selección de correo del historial
+  const handleSelectHistoryEmail = (email: AIGeneratedEmail) => {
+    setSubject(email.subject);
+    setBody(email.body);
+    if (email.to) {
+      setTo([email.to]);
+    }
+    setShowHistory(false);
+  };
+
+  // Modificar handleAiGenerate para guardar en historial
   const handleAiGenerate = async () => { 
     console.log('🤖 Botón IA presionado');
+    setIsGenerating(true);
+    
+    // Marcar como en proceso de generación
+    autoSaveService.markAsGenerating(draftId, 'Generando correo con IA');
     
     if (!window.Swal) {
       console.error('❌ SweetAlert2 no está disponible');
       alert('SweetAlert2 no está disponible');
+      setIsGenerating(false);
       return;
     }
     console.log('✅ SweetAlert2 disponible, mostrando modal');
@@ -254,6 +323,29 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
             console.log('📄 Cuerpo establecido');
           }
           
+          // Guardar en historial de IA
+          try {
+            const category = aiHistoryService.categorizeEmail(prompt, aiSubject, aiBody);
+            const tags = aiHistoryService.extractTags(prompt, aiSubject, aiBody);
+            
+            aiHistoryService.saveGeneratedEmail({
+              prompt,
+              to: aiTo,
+              subject: aiSubject,
+              body: aiBody,
+              senderName: user.name,
+              category,
+              tags
+            });
+            
+            console.log('💾 Correo guardado en historial de IA');
+          } catch (error) {
+            console.error('❌ Error guardando en historial:', error);
+          }
+          
+          // Marcar generación como completada
+          autoSaveService.markGenerationCompleted(draftId);
+          
           const Toast = window.Swal.mixin({
             toast: true,
             position: 'bottom-end',
@@ -276,6 +368,8 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     } else {
       console.log('❌ Usuario canceló el prompt');
     }
+    
+    setIsGenerating(false);
   };
 
   if (!isOpen) return null;
@@ -286,6 +380,19 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
   const modalRight = isMobile ? '2.5vw' : (isMaximized ? '2.5vw' : '20px');
   const modalLeft = isMobile ? '2.5vw' : 'auto';
 
+  // Si se muestra el historial, devolver el modal de historial
+  if (showHistory) {
+    return (
+      <AIHistoryModal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        onSelectEmail={handleSelectHistoryEmail}
+        currentLang={lang}
+      />
+    );
+  }
+
+  // Devolver el modal principal de composición
   return (
     <div
       className="compose-modal"
@@ -346,12 +453,21 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
           color: 'var(--text-main, #374151)',
           cursor: isMinimized ? 'pointer' : 'default',
         }}
-        onClick={() => isMinimized && setIsMinimized(false)}
+        onClick={(e) => {
+          if (isMinimized) {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsMinimized(false);
+          }
+        }}
       >
         <span style={{ fontWeight: '600' }}>{t.new_message}</span>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               setIsMinimized(!isMinimized);
               setIsMaximized(false);
             }}
@@ -367,7 +483,10 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
             <i className="fas fa-minus"></i>
           </button>
           <button
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               setIsMaximized(!isMaximized);
               setIsMinimized(false);
             }}
@@ -383,7 +502,12 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
             <i className={`fas fa-${isMaximized ? 'compress' : 'expand'}`}></i>
           </button>
           <button
-            onClick={resetForm}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              resetForm();
+            }}
             style={{
               background: 'none',
               border: 'none',
@@ -414,10 +538,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
               onBccChange={setBcc}
               onSubjectChange={setSubject}
               onBodyChange={setBody}
-              onAiGenerate={() => {
-                console.log('🤖 onAiGenerate llamado desde ComposeModal');
-                handleAiGenerate();
-              }}
               contacts={contacts}
               currentLang={lang}
             />
@@ -442,6 +562,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
           >
             <div>
               <button
+                type="button"
                 onClick={handleSend}
                 style={{
                   background: 'var(--primary-red, #D50032)',
@@ -457,6 +578,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
                 {t.send}
               </button>
               <button
+                type="button"
                 onClick={handleSaveDraft}
                 style={{
                   background: 'transparent',
@@ -473,6 +595,49 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowHistory(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 15px',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+                title="Historial de correos IA"
+              >
+                <i className="fas fa-history"></i> Historial
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('🤖 Botón IA clickeado desde ComposeModal');
+                  handleAiGenerate();
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 15px',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+                title="Generar correo con IA"
+              >
+                <i className="fas fa-magic"></i> IA
+              </button>
               <input
                 type="file"
                 hidden
@@ -481,6 +646,7 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
                 onChange={(e) => handleFileChange(e.target.files)}
               />
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 style={{
                   background: 'none',
@@ -496,7 +662,8 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
                 <i className="fas fa-paperclip"></i>
               </button>
               <button
-                onClick={resetForm}
+                type="button"
+                onClick={clearForm}
                 style={{
                   background: 'none',
                   border: 'none',

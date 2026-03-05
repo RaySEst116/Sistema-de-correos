@@ -190,6 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
               padding: isCollapsed ? '12px 0' : '12px 20px',
               marginBottom: '5px',
               color: currentFolder === item.id ? 'var(--primary-red, #D50032)' : 'var(--text-muted, #6b7280)',
@@ -221,6 +222,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 textAlign: 'center',
                 fontSize: '1.1rem',
                 flexShrink: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             />
             {!isCollapsed && <span>{t[item.labelKey]}</span>}
@@ -286,7 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               height: '40px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
               color: '#047857',
               borderRadius: '8px',
               cursor: 'pointer',
@@ -296,6 +300,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               fontWeight: '600',
               background: 'rgba(4, 120, 87, 0.1)',
               border: '1px solid rgba(4, 120, 87, 0.2)',
+              padding: isCollapsed ? '0' : '0 12px',
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.background = '#047857';
@@ -308,7 +313,16 @@ const Sidebar: React.FC<SidebarProps> = ({
               e.currentTarget.style.borderColor = 'rgba(4, 120, 87, 0.2)';
             }}
           >
-            <i className="fas fa-users-cog" style={{ marginRight: isCollapsed ? '0' : '8px' }}></i>
+            <i 
+              className="fas fa-users-cog" 
+              style={{ 
+                marginRight: isCollapsed ? '0' : '8px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '20px'
+              }}
+            ></i>
             {!isCollapsed && <span>{t.users}</span>}
           </div>
         )}
@@ -321,7 +335,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             height: '40px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
             color: 'var(--text-muted, #6b7280)',
             borderRadius: '8px',
             cursor: 'pointer',
@@ -329,6 +343,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             whiteSpace: 'nowrap',
             fontSize: '0.9rem',
             fontWeight: '600',
+            padding: isCollapsed ? '0' : '0 12px',
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.background = 'var(--bg-hover, #f3f4f6)';
@@ -339,7 +354,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
           }}
         >
-          <i className="fas fa-user-circle" style={{ marginRight: isCollapsed ? '0' : '8px' }}></i>
+          <i 
+            className="fas fa-user-circle" 
+            style={{ 
+              marginRight: isCollapsed ? '0' : '8px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '20px'
+            }}
+          ></i>
           {!isCollapsed && <span>{t.account}</span>}
         </div>
 
@@ -351,7 +375,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             height: '40px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
             color: '#ef4444',
             borderRadius: '8px',
             cursor: 'pointer',
@@ -361,6 +385,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             fontWeight: '600',
             background: 'rgba(239, 68, 68, 0.1)',
             border: '1px solid rgba(239, 68, 68, 0.2)',
+            padding: isCollapsed ? '0' : '0 12px',
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.background = '#ef4444';
@@ -373,7 +398,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)';
           }}
         >
-          <i className="fas fa-sign-out-alt" style={{ marginRight: isCollapsed ? '0' : '8px' }}></i>
+          <i 
+            className="fas fa-sign-out-alt" 
+            style={{ 
+              marginRight: isCollapsed ? '0' : '8px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '20px'
+            }}
+          ></i>
           {!isCollapsed && <span>{t.logout}</span>}
         </div>
       </div>

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { suggestionService, Suggestion } from '../services/suggestionService';
+import SuggestionPopup from './SuggestionPopup';
 
 declare global {
   interface Window {
@@ -18,7 +20,6 @@ interface ComposeEditorProps {
   onBccChange: (bcc: string[]) => void;
   onSubjectChange: (subject: string) => void;
   onBodyChange: (body: string) => void;
-  onAiGenerate: () => void;
   contacts?: { name: string; email: string }[];
   currentLang?: 'es' | 'en';
 }
@@ -54,7 +55,6 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
   onBccChange,
   onSubjectChange,
   onBodyChange,
-  onAiGenerate,
   contacts = [],
   currentLang = 'es',
 }) => {
@@ -65,14 +65,30 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
   const [ccInput, setCcInput] = useState('');
   const [bccInput, setBccInput] = useState('');
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<{ name: string; email: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestionPosition, setSuggestionPosition] = useState<{ x: number; y: number } | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [currentSuggestionField, setCurrentSuggestionField] = useState<'subject' | 'body' | null>(null);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [activeField, setActiveField] = useState<'to' | 'cc' | 'bcc' | null>(null);
   const [suggestionClicked, setSuggestionClicked] = useState(false);
   const quillRef = useRef<any>(null);
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
+  const ccInputRef = useRef<HTMLInputElement>(null);
+  const bccInputRef = useRef<HTMLInputElement>(null);
+  const subjectInputRef = useRef<HTMLInputElement>(null);
 
   // Cargar Quill si no está disponible
   useEffect(() => {
+    // Cargar CSS de Quill si no está cargado
+    if (!document.querySelector('link[href*="quill.snow"]')) {
+      const link = document.createElement('link');
+      link.href = 'https://cdn.quilljs.com/1.3.6/quill.snow.css';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+
     if (!window.Quill && editorContainerRef.current) {
       const script = document.createElement('script');
       script.src = 'https://cdn.quilljs.com/1.3.6/quill.js';
@@ -88,9 +104,13 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
 
   const initQuill = () => {
     if (!window.Quill || !editorContainerRef.current || quillRef.current) return;
+    
+    // Limpiar el contenedor
+    editorContainerRef.current.innerHTML = '';
+    
     const quill = new window.Quill(editorContainerRef.current, {
       theme: 'snow',
-      placeholder: '',
+      placeholder: 'Escribe tu correo aquí...',
       modules: {
         toolbar: [
           ['bold', 'italic', 'underline', 'strike'],
@@ -100,13 +120,40 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
         ],
       },
     });
+    
+    // Habilitar el editor
+    quill.enable(true);
+    
+    // Evento de cambio de texto
     quill.on('text-change', () => {
-      onBodyChange(quill.root.innerHTML);
+      const content = quill.root.innerHTML;
+      onBodyChange(content);
     });
+    
+    // Evento de selección para manejar el foco
+    quill.on('selection-change', (range) => {
+      if (range) {
+        // El editor tiene foco
+        console.log('✅ Quill editor tiene foco');
+      }
+    });
+    
     quillRef.current = quill;
+    
+    // Establecer contenido inicial si existe
     if (body) {
       quill.clipboard.dangerouslyPasteHTML(body);
+    } else {
+      // Establecer contenido vacío para asegurar que sea editable
+      quill.setText('');
     }
+    
+    // Dar foco al editor después de un pequeño retraso
+    setTimeout(() => {
+      quill.focus();
+    }, 100);
+    
+    console.log('✅ Quill editor inicializado correctamente');
   };
 
   // Actualizar Quill cuando body cambia externamente
@@ -115,6 +162,25 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
       quillRef.current.root.innerHTML = body;
     }
   }, [body]);
+
+  // Efecto para asegurar que Quill esté inicializado y funcional
+  useEffect(() => {
+    const checkAndInitQuill = () => {
+      if (window.Quill && !quillRef.current && editorContainerRef.current) {
+        initQuill();
+      } else if (quillRef.current && !quillRef.current.isEnabled()) {
+        quillRef.current.enable(true);
+      }
+    };
+
+    // Intentar inicializar inmediatamente
+    checkAndInitQuill();
+
+    // Reintentar después de un pequeño retraso
+    const timer = setTimeout(checkAndInitQuill, 500);
+
+    return () => clearTimeout(timer);
+  }, [window.Quill]);
 
   const addChip = (value: string, field: 'to' | 'cc' | 'bcc') => {
     const trimmed = value.trim();
@@ -183,6 +249,44 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
     }
   };
 
+  const handleSubjectChange = (value: string) => {
+    onSubjectChange(value);
+    
+    // Obtener sugerencias para el asunto
+    if (value.length >= 3) {
+      suggestionService.getSuggestionsDebounced(value, 'subject', (suggestions) => {
+        setSuggestions(suggestions);
+        if (suggestions.length > 0 && subjectInputRef.current) {
+          const rect = subjectInputRef.current.getBoundingClientRect();
+          setSuggestionPosition({
+            x: rect.left,
+            y: rect.bottom + 5
+          });
+          setCurrentSuggestionField('subject');
+          setShowSuggestions(true);
+        }
+      });
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion: Suggestion) => {
+    if (currentSuggestionField === 'subject') {
+      const newSubject = suggestionService.applySuggestion(subject, suggestion);
+      onSubjectChange(newSubject);
+    } else if (currentSuggestionField === 'body' && quillRef.current) {
+      const currentText = quillRef.current.getText();
+      const newText = suggestionService.applySuggestion(currentText, suggestion);
+      quillRef.current.setText(newText);
+      onBodyChange(newText);
+    }
+    
+    setShowSuggestions(false);
+    setSuggestionClicked(true);
+    setTimeout(() => setSuggestionClicked(false), 100);
+  };
+
   const renderChips = (arr: string[], field: 'to' | 'cc' | 'bcc') => {
     return arr.map((email, index) => (
       <span
@@ -215,8 +319,8 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '5px', alignItems: 'center', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', overflow: 'hidden', padding: '0' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '2px', alignItems: 'center', position: 'relative' }}>
         <label style={{ color: 'var(--text-muted, #6b7280)', fontWeight: '600', fontSize: '0.9rem', marginRight: '10px', minWidth: '35px' }}>
           {t.from}
         </label>
@@ -227,7 +331,7 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
           style={{
             flex: 1,
             border: 'none',
-            padding: '12px 10px',
+            padding: '8px 10px',
             outline: 'none',
             fontFamily: 'inherit',
             background: 'transparent',
@@ -237,7 +341,7 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
         />
       </div>
 
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '5px', alignItems: 'flex-start', padding: '5px 0', position: 'relative' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '2px', alignItems: 'flex-start', padding: '5px 0', position: 'relative' }}>
         <label style={{ color: 'var(--text-muted, #6b7280)', fontWeight: '600', fontSize: '0.9rem', marginRight: '10px', minWidth: '35px', marginTop: '8px' }}>
           {t.to}
         </label>
@@ -570,12 +674,13 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
         </div>
       )}
 
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '5px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '2px', alignItems: 'center' }}>
         <input
           type="text"
           value={subject}
-          onChange={(e) => onSubjectChange(e.target.value)}
+          onChange={(e) => handleSubjectChange(e.target.value)}
           placeholder={t.subject}
+          ref={subjectInputRef}
           style={{
             flex: 1,
             border: 'none',
@@ -584,58 +689,37 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
             fontFamily: 'inherit',
             background: 'transparent',
             color: 'var(--text-main, #374151)',
+            fontWeight: '600',
           }}
         />
       </div>
 
-      <div style={{ flex: 1, minHeight: 200, position: 'relative' }}>
+      <div style={{ flex: 1, minHeight: 150, maxHeight: 250, position: 'relative', overflowY: 'auto' }}>
         <div 
           ref={editorContainerRef} 
           style={{ 
             height: '100%', 
             border: 'none', 
             color: 'var(--text-main, #374151)',
-            pointerEvents: 'none'
+            overflowY: 'auto',
+            backgroundColor: 'transparent',
+            borderRadius: '4px',
+            cursor: 'text'
           }} 
         />
       </div>
-
-      {/* Botón IA fuera del contenedor del editor */}
-      <div style={{ 
-        padding: '10px 0', 
-        borderTop: '1px solid var(--border-color, #e5e7eb)',
-        position: 'relative',
-        zIndex: 1000
-      }}>
-        {onAiGenerate && (
-          <button
-            className="ai-button"
-            onClick={() => {
-              console.log('🤖 Botón IA clickeado en ComposeEditor');
-              onAiGenerate();
-            }}
-            style={{
-              background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
-              color: 'white',
-              border: 'none',
-              padding: '8px 15px',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              position: 'relative',
-              zIndex: 1000,
-              pointerEvents: 'auto',
-            }}
-          >
-            <i className="fas fa-magic"></i> IA
-          </button>
-        )}
-      </div>
-    </div>
+    
+    {/* Popup de sugerencias */}
+    {showSuggestions && suggestionPosition && (
+      <SuggestionPopup
+        suggestions={suggestions}
+        position={suggestionPosition}
+        onSelect={handleSuggestionSelect}
+        onClose={() => setShowSuggestions(false)}
+        currentText={currentSuggestionField === 'subject' ? subject : body}
+      />
+    )}
+  </div>
   );
 };
 

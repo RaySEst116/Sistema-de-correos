@@ -8,6 +8,7 @@ import AccountModal from '../components/AccountModal';
 import AdminModal from '../components/AdminModal';
 import { db } from '../services/db';
 import { websocketService } from '../services/websocket';
+import { autoSaveService } from '../services/autoSaveService';
 import { classifyEmailContent /*, generateSyntheticEmail */ } from '../services/geminiService'; // IA desactivada
 import { Email, FolderType, User } from '../types';
 
@@ -78,6 +79,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [editingDraft, setEditingDraft] = useState<Email | null>(null);
 
   const API_URL = 'http://localhost:3001';
 
@@ -125,20 +127,50 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
   const loadEmails = async () => {
     setLoading(true);
     try {
-      // Solo cargar correos del API para el usuario actual
+      // Obtener correos guardados localmente primero
+      const localEmails = localStorage.getItem('alhmail_emails');
+      let localEmailsData: Email[] = [];
+      
+      if (localEmails) {
+        try {
+          localEmailsData = JSON.parse(localEmails);
+        } catch (e) {
+          console.error('Error parseando correos locales:', e);
+        }
+      }
+      
+      // Cargar correos del API
       const res = await fetch(`${API_URL}/emails?userEmail=${user.email}`);
       const emailsFromAPI = await res.json();
       
-      // Filtrar correos por usuario actual para mayor seguridad
+      // Filtrar correos por usuario actual
       const userEmails = emailsFromAPI.filter((email: Email) => 
         email.owner_email === user.email
       );
       
-      setEmails(userEmails);
-      updateUnreadCount(userEmails);
+      // Combinar datos de API con estado local de unread
+      const combinedEmails = userEmails.map((apiEmail: Email) => {
+        // Buscar si existe localmente y preservar su estado unread
+        const localEmail = localEmailsData.find((local: Email) => local.id === apiEmail.id);
+        return {
+          ...apiEmail,
+          unread: localEmail ? localEmail.unread : apiEmail.unread
+        };
+      });
       
-      // NOTA: No eliminamos correos de la BD después de cargarlos
-      // Los correos deben persistir en el sistema
+      setEmails(combinedEmails);
+      updateUnreadCount(combinedEmails);
+      
+      // Limpiar localStorage de correos que ya no existen en la API
+      const apiEmailIds = new Set(userEmails.map((e: Email) => e.id));
+      const validLocalEmails = localEmailsData.filter((local: Email) => 
+        apiEmailIds.has(local.id)
+      );
+      
+      if (validLocalEmails.length !== localEmailsData.length) {
+        localStorage.setItem('alhmail_emails', JSON.stringify(validLocalEmails));
+        console.log(`🧹 Limpiados ${localEmailsData.length - validLocalEmails.length} correos del localStorage`);
+      }
       
     } catch (error) {
       console.error('Error cargando correos:', error);
@@ -173,17 +205,63 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
   };
 
   const handleSelectEmail = async (email: Email) => {
+    // Si es un borrador, abrir el modal de edición
+    if (email.folder === 'drafts') {
+      handleEditDraft(email);
+      return;
+    }
+    
     setSelectedEmail(email);
     if (isMobile) {
       setEmailDetailOpen(true);
     }
+    
     if (email.unread) {
-      const updated = emails.map(e => e.id === email.id ? { ...e, unread: false } : e);
+      // Marcar como leído en la base de datos
+      try {
+        const res = await fetch(`${API_URL}/emails/${email.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ unread: false }),
+        });
+        
+        if (res.ok) {
+          console.log('✅ Correo marcado como leído en la base de datos');
+        } else {
+          console.error('❌ Error marcando correo como leído:', res.status);
+        }
+      } catch (error) {
+        console.error('Error marcando correo como leído:', error);
+      }
+      
+      // Actualizar estado local inmediatamente
+      const updated = emails.map(e => 
+        e.id === email.id ? { ...e, unread: false } : e
+      );
+      
       setEmails(updated);
-      localStorage.setItem('alhmail_emails', JSON.stringify(updated));
       updateUnreadCount(updated);
       setSelectedEmail({ ...email, unread: false });
+      
+      // Actualizar localStorage
+      localStorage.setItem('alhmail_emails', JSON.stringify(updated));
+      console.log('✅ Estado local actualizado - correo marcado como leído');
     }
+  };
+
+  // Función para editar un borrador
+  const handleEditDraft = (draftEmail: Email) => {
+    setEditingDraft(draftEmail);
+    setIsComposeOpen(true);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  // Función para cerrar el modal de composición
+  const handleCloseCompose = () => {
+    setIsComposeOpen(false);
+    setEditingDraft(null);
   };
 
   const handleBackToList = () => {
@@ -202,34 +280,104 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
     attachments: any[];
   }) => {
     try {
-      const res = await fetch(`${API_URL}/emails`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      // Validar datos antes de enviar
+      console.log('📧 Enviando datos:', data);
+      
+      // Validar que haya destinatarios si no es borrador
+      if (!data.isDraft && !data.to && !data.cc && !data.bcc) {
+        const t = translations[currentLang];
+        if (!window.Swal) {
+          alert(t.missing_dest || 'Debe agregar al menos un destinatario');
+          return;
+        }
+        await window.Swal.fire({
+          icon: 'error',
+          title: t.missing_dest || 'Debe agregar al menos un destinatario',
+        });
+        return;
+      }
+
+      // Preparar datos para enviar
+      const requestData = {
+        from: data.from,
+        to: data.to || '',
+        cc: data.cc || '',
+        bcc: data.bcc || '',
+        subject: data.subject || 'Sin asunto',
+        body: data.body || '',
+        isDraft: data.isDraft,
+        attachments: data.attachments || [],
+        folder: data.isDraft ? 'drafts' : 'sent',
+        owner_email: user.email
+      };
+
+      console.log('📦 Datos preparados para enviar:', requestData);
+
+      let res;
+      
+      // Si estamos editando un borrador existente, actualizarlo
+      if (editingDraft) {
+        console.log('🔄 Actualizando borrador existente:', editingDraft.id);
+        res = await fetch(`${API_URL}/emails/${editingDraft.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestData),
+        });
+      } else {
+        // Crear nuevo correo
+        console.log('➕ Creando nuevo correo');
+        res = await fetch(`${API_URL}/emails`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestData),
+        });
+      }
+      
+      console.log('📡 Respuesta del servidor:', res.status);
+      
       if (res.ok) {
+        const result = await res.json();
+        console.log('✅ Correo guardado exitosamente:', result);
+        
         const t = translations[currentLang];
         if (!window.Swal) {
           alert(data.isDraft ? t.saved_success : t.sent_success);
-          setIsComposeOpen(false);
+          handleCloseCompose();
           return;
         }
         await window.Swal.fire({
           icon: 'success',
           title: data.isDraft ? t.saved_success : t.sent_success,
         });
-        setIsComposeOpen(false);
+        handleCloseCompose();
         setTimeout(loadEmails, 500);
       } else {
+        const errorText = await res.text();
+        console.error('❌ Error del servidor:', res.status, errorText);
+        
         const t = translations[currentLang];
         if (!window.Swal) {
-          alert(t.error_send);
+          alert(t.error_send || 'Error al enviar el correo');
           return;
         }
-        await window.Swal.fire({ icon: 'error', title: t.error_send });
+        await window.Swal.fire({ 
+          icon: 'error', 
+          title: t.error_send || 'Error al enviar el correo',
+          text: `Error ${res.status}: ${errorText}`
+        });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error('❌ Error en handleSendEmail:', e);
+      const t = translations[currentLang];
+      if (!window.Swal) {
+        alert(t.error_send || 'Error al enviar el correo');
+        return;
+      }
+      await window.Swal.fire({ 
+        icon: 'error', 
+        title: t.error_send || 'Error al enviar el correo',
+        text: e.message || 'Error desconocido'
+      });
     }
   };
 
@@ -607,32 +755,26 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         </div>
       </main>
 
-        {/* Simulation & Logout Buttons */}
-        {/* <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 50, display: 'flex', gap: '8px' }}>
-          <button
-            onClick={handleAutoSimulate}
-            disabled={simulating}
-            style={{
-              background: '#1f2937', color: 'white', fontSize: '0.75rem',
-              padding: '6px 12px', borderRadius: '6px', border: 'none',
-              cursor: simulating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-              opacity: simulating ? 0.75 : 1
-            }}
-          >
-            <i className={`fas fa-random ${simulating ? 'animate-spin' : ''}`}></i>
-            {simulating ? 'Analizando...' : 'Auto Simulación'}
-          </button>
-        </div> */}
-
-      <ComposeModal
-        isOpen={isComposeOpen}
-        onClose={() => setIsComposeOpen(false)}
-        onSend={handleSendEmail}
-        user={user}
-        contacts={contacts}
-        currentLang={currentLang}
-        isMobile={isMobile}
-      />
+      {/* Modales */}
+      {isComposeOpen && (
+        <ComposeModal
+          isOpen={isComposeOpen}
+          onClose={handleCloseCompose}
+          onSend={handleSendEmail}
+          user={user}
+          contacts={contacts}
+          currentLang={currentLang}
+          isMobile={isMobile}
+          initialEmail={editingDraft ? {
+            to: editingDraft.to ? editingDraft.to.split(',').map(email => email.trim()) : [],
+            cc: editingDraft.cc ? editingDraft.cc.split(',').map(email => email.trim()) : [],
+            bcc: editingDraft.bcc ? editingDraft.bcc.split(',').map(email => email.trim()) : [],
+            subject: editingDraft.subject || '',
+            body: editingDraft.body || '',
+            attachments: editingDraft.attachments || []
+          } : undefined}
+        />
+      )}
 
       <AccountModal
         isOpen={isAccountOpen}
@@ -643,7 +785,6 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         isAdmin={user.role === 'admin'}
       />
 
-      
       <AdminModal
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}

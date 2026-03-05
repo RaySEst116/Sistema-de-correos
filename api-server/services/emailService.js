@@ -20,23 +20,38 @@ export class EmailService {
         
         let connection;
         try {
-            if (!from || !to) {
-                throw new Error('Campos "from" y "to" son requeridos.');
+            if (!from) {
+                throw new Error('El campo "from" es requerido.');
+            }
+            
+            // Para borradores, el campo 'to' no es requerido
+            if (!isDraft && !to) {
+                throw new Error('El campo "to" es requerido para enviar correos.');
             }
 
             connection = await db.getConnection();
             await connection.beginTransaction();
 
             // Validar que remitente y destinatario existan como usuarios internos
-            const senderUser = await User.findByEmail(from);
-            const recipientUser = await User.findByEmail(to);
+            let senderUser = null;
+            
+            // Solo validar remitente si no es borrador
+            if (!isDraft) {
+                senderUser = await User.findByEmail(from);
+            }
+            
+            // Solo validar destinatario si no es borrador y hay un destinatario
+            let recipientUser = null;
+            if (!isDraft && to) {
+                recipientUser = await User.findByEmail(to);
+            }
 
-            if (!senderUser) {
+            if (!isDraft && !senderUser) {
                 await connection.rollback();
                 throw new Error('El remitente no está registrado como usuario interno.');
             }
-
-            if (!recipientUser) {
+            
+            if (!isDraft && to && !recipientUser) {
                 await connection.rollback();
                 throw new Error('El destinatario no está registrado como usuario interno.');
             }
@@ -57,9 +72,9 @@ export class EmailService {
                 owner_email: from,
                 folder: isDraft ? 'drafts' : 'sent',
                 sender: 'Yo',
-                to_address: to,
+                to_address: to || 'Borrador',
                 subject: subject || '(Sin Asunto)',
-                preview: `Para: ${to} - ${previewText}`,
+                preview: to ? `Para: ${to} - ${previewText}` : `Borrador - ${previewText}`,
                 body: cleanBody,
                 date: dateNow,
                 unread: 0,
@@ -139,6 +154,56 @@ export class EmailService {
 
     static async updateEmailStatus(id, unread) {
         return await Email.updateUnreadStatus(id, unread);
+    }
+
+    static async updateEmail(id, emailData) {
+        try {
+            const connection = await db.getConnection();
+            
+            // Actualizar el correo en la base de datos
+            const [result] = await connection.execute(
+                `UPDATE emails SET 
+                    subject = ?, 
+                    body = ?, 
+                    preview = ?, 
+                    to = ?, 
+                    cc = ?, 
+                    bcc = ?, 
+                    folder = ?,
+                    attachments = ?,
+                    date = ?
+                WHERE id = ?`,
+                [
+                    emailData.subject,
+                    emailData.body,
+                    emailData.body.substring(0, 100) + '...', // Preview
+                    emailData.to || null,
+                    emailData.cc || null,
+                    emailData.bcc || null,
+                    emailData.folder,
+                    JSON.stringify(emailData.attachments || []),
+                    new Date().toISOString().slice(0, 19).replace('T', ' '),
+                    id
+                ]
+            );
+            
+            connection.release();
+            
+            if (result.affectedRows > 0) {
+                // Retornar el correo actualizado
+                const [updatedEmail] = await db.execute(
+                    'SELECT * FROM emails WHERE id = ?',
+                    [id]
+                );
+                
+                return updatedEmail[0];
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('Error en updateEmail:', error);
+            throw error;
+        }
     }
 
     static async deleteEmail(id) {

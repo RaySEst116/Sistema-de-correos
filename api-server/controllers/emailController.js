@@ -77,4 +77,22 @@ export class EmailController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    static async updateEmail(req, res) {
+        try {
+            const { id } = req.params;
+            const emailData = req.body;
+            
+            const success = await EmailService.updateEmail(id, emailData);
+            
+            if (success) {
+                res.json({ success: true, data: success });
+            } else {
+                res.status(404).json({ error: 'Email no encontrado' });
+            }
+        } catch (error) {
+            console.error('Error actualizando email:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
