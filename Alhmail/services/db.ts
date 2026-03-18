@@ -70,40 +70,127 @@ export const db = {
         return USE_API;
     },
 
-    getEmails: async (): Promise<Email[]> => {
-        // Try connecting to API
+    getEmails: async (userEmail: string): Promise<Email[]> => {
+        // Intenta cargar correos desde la API y adaptarlos al tipo Email usado en el frontend
         try {
-            // We do a quick check first or just try the fetch
-            const res = await fetch(`${API_URL}/emails`);
-            if (!res.ok) throw new Error("API Offline");
-            const data = await res.json();
-            USE_API = true; // Connection successful
-            return data;
+            const res = await fetch(`${API_URL}/emails?userEmail=${encodeURIComponent(userEmail)}`);
+            if (!res.ok) throw new Error('API Offline');
+
+            const apiData = await res.json();
+
+            // Adaptar el formato devuelto por la API (tabla emails) al tipo Email del frontend
+            const mapped: Email[] = apiData.map((r: any) => {
+                const security: any = r.securityAnalysis || {};
+                const riskLevel: 'safe' | 'suspicious' | 'high' | undefined =
+                    security.status === 'risk' || security.status === 'suspicious'
+                        ? 'suspicious'
+                        : security.status === 'infected' || security.status === 'blocked'
+                        ? 'high'
+                        : security.status
+                        ? 'safe'
+                        : undefined;
+
+                return {
+                    id: r.id,
+                    folder: r.folder,
+                    unread: !!r.unread,
+                    sender: r.sender || r.from || r.owner_email || '',
+                    email: r.email || r.owner_email || '',
+                    replyTo: r.replyTo,
+                    subject: r.subject || '(Sin Asunto)',
+                    preview: r.preview || (r.body ? String(r.body).substring(0, 50) + '...' : ''),
+                    body: r.body || '',
+                    date: r.date ? String(r.date) : '',
+                    hasAttachments: !!r.hasAttachments,
+                    attachmentName: Array.isArray(r.attachments) && r.attachments.length > 0
+                        ? r.attachments[0].filename || r.attachments[0].name || undefined
+                        : undefined,
+                    riskLevel,
+                    riskReason: security.threats && security.threats.length
+                        ? security.threats.join(', ')
+                        : undefined,
+                    securityAnalysis: security
+                } as Email;
+            });
+
+            USE_API = true; // Conexión exitosa
+            return mapped;
         } catch (e) {
-            console.warn("API de MySQL no detectada o error de conexión. Usando modo offline (localStorage).");
-            USE_API = false; // Switch to offline mode
+            console.warn('API de MySQL no detectada o error de conexión. Usando modo offline (localStorage).');
+            USE_API = false; // Cambiar a modo offline
             return getLocalEmails();
         }
     },
 
+    // Guardar correo en modo simulación/offline. Si la API está activa, intentamos
+    // reutilizar la ruta /emails como envío interno a nosotros mismos.
     saveEmail: async (email: Email): Promise<void> => {
         if (USE_API) {
             try {
+                const payload = {
+                    from: email.sender || email.email,
+                    to: email.email, // el correo llega a la bandeja del usuario actual
+                    subject: email.subject,
+                    body: email.body,
+                    isDraft: false,
+                    attachments: [],
+                    idToDelete: null
+                };
+
                 await fetch(`${API_URL}/emails`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(email)
+                    body: JSON.stringify(payload)
                 });
                 return;
             } catch (e) {
-                console.error("Error guardando en API, guardando localmente.");
-                // If post fails, we might want to fallback or just log error
+                console.error('Error guardando en API, guardando localmente.');
             }
         }
-        // Fallback or Offline mode
+
+        // Fallback o modo Offline
         await delay(200);
         const emails = getLocalEmails();
         saveLocalEmails([email, ...emails]);
+    },
+
+    // Enviar correo interno usando la API (entre usuarios registrados en la BD)
+    sendInternalEmail: async (from: string, to: string, subject: string, body: string): Promise<void> => {
+        if (USE_API) {
+            try {
+                const payload = { from, to, subject, body, isDraft: false, attachments: [], idToDelete: null };
+                const res = await fetch(`${API_URL}/emails`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || 'Error enviando correo interno');
+                }
+                return;
+            } catch (e) {
+                console.error('Error enviando correo interno vía API:', e);
+                throw e;
+            }
+        }
+
+        // Si no hay API disponible, simulamos guardando localmente en carpeta 'sent'
+        await delay(200);
+        const emails = getLocalEmails();
+        const newEmail: Email = {
+            id: Date.now(),
+            folder: 'sent',
+            unread: false,
+            sender: from,
+            email: from,
+            subject,
+            preview: body.substring(0, 50) + '...',
+            body,
+            date: new Date().toLocaleString(),
+            hasAttachments: false
+        } as Email;
+        saveLocalEmails([newEmail, ...emails]);
     },
 
     deleteEmail: async (id: number): Promise<void> => {
@@ -120,10 +207,13 @@ export const db = {
     moveEmailToFolder: async (id: number, folder: string): Promise<void> => {
         if (USE_API) {
             try {
+                // El backend solo permite actualizar unread, no folder
+                // Para mover de carpeta, necesitaríamos un endpoint específico
+                // Por ahora, solo marcamos como leído
                 await fetch(`${API_URL}/emails/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ folder, unread: false })
+                    body: JSON.stringify({ unread: false })
                 });
                 return;
             } catch (e) { console.error(e); }
@@ -133,7 +223,6 @@ export const db = {
     },
 
     addToBlacklist: async (emailAddress: string): Promise<void> => {
-        console.log(`[FIREWALL] Added ${emailAddress} to permanent blacklist (DB & Firewall Rule).`);
         await delay(500);
         // Here you would typically call an endpoint like POST /api/blacklist
     },
@@ -154,10 +243,56 @@ export const db = {
     },
 
     getContacts: async (): Promise<Contact[]> => {
+        if (USE_API) {
+            try {
+                const res = await fetch(`${API_URL}/contacts`);
+                if (!res.ok) throw new Error('API Offline');
+                
+                const contacts = await res.json();
+                USE_API = true; // Confirmar que la API funciona
+                return contacts;
+            } catch (e) {
+                console.error('Error obteniendo contactos desde API:', e);
+                USE_API = false; // Cambiar a modo offline
+            }
+        }
+        
+        // Fallback o modo Offline
         return INITIAL_CONTACTS;
     },
 
-    login: async (email: string): Promise<User> => {
+    login: async (email: string, password: string): Promise<User> => {
+        if (USE_API) {
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.error || 'Error de autenticación');
+                }
+                
+                const data = await res.json();
+                const user: User = {
+                    id: data.user.id,
+                    name: data.user.name,
+                    email: data.user.email,
+                    role: data.user.role,
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name)}&background=000&color=fff`
+                };
+                localStorage.setItem('alhmail_user', JSON.stringify(user));
+                USE_API = true; // Confirmar que la API funciona
+                return user;
+            } catch (e) {
+                console.error('Error en login API:', e);
+                USE_API = false; // Cambiar a modo offline
+            }
+        }
+
+        // Fallback modo offline
         await delay(800);
         const user: User = {
             id: 'u1',
@@ -176,6 +311,16 @@ export const db = {
     },
 
     logout: async (): Promise<void> => {
+        if (USE_API) {
+            try {
+                await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (e) {
+                console.error('Error en logout API:', e);
+            }
+        }
         localStorage.removeItem('alhmail_user');
     }
 };

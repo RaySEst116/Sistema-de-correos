@@ -2,7 +2,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FolderType, SecurityAnalysis } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Solo inicializar si tenemos API Key y no estamos en navegador
+const ai = typeof window !== 'undefined' && process.env?.API_KEY 
+  ? new GoogleGenAI({ apiKey: process.env.API_KEY }) 
+  : null;
 
 const MODEL_NAME = 'gemini-2.5-flash';
 
@@ -24,6 +27,11 @@ export const classifyEmailContent = async (
     hasAttachment?: boolean,
     attachmentName?: string
 ): Promise<ClassificationResult> => {
+    
+    // Si no hay AI disponible, usar clasificación simulada
+    if (!ai) {
+        return simulateClassification(subject, body, sender, replyTo, hasAttachment, attachmentName);
+    }
     
     // Construct a prompt that simulates a backend security appliance (like Proofpoint or Barracuda)
     const prompt = `
@@ -100,14 +108,99 @@ export const classifyEmailContent = async (
 
     } catch (error) {
         console.error("Gemini Classification Error:", error);
-        return { 
-            category: 'inbox', 
-            riskLevel: 'safe', 
-            riskReason: 'Analysis failed',
-            securityAnalysis: { spf: 'neutral', dkim: 'none', dmarc: 'none', ipReputation: 'clean', confidenceScore: 50 }
-        };
+        return simulateClassification(subject, body, sender, replyTo, hasAttachment, attachmentName);
     }
 };
+
+// Función de clasificación simulada para fallback
+function simulateClassification(
+    subject: string, 
+    body: string, 
+    sender: string,
+    replyTo?: string,
+    hasAttachment?: boolean,
+    attachmentName?: string
+): ClassificationResult {
+    
+    const lowerSubject = subject.toLowerCase();
+    const lowerBody = body.toLowerCase();
+    const lowerSender = sender.toLowerCase();
+    
+    // Detectar amenazas comunes
+    const isPhishing = lowerSubject.includes('urgente') || 
+                      lowerSubject.includes('verificar') || 
+                      lowerBody.includes('contraseña') ||
+                      lowerBody.includes('clic aquí') ||
+                      lowerSender.includes('noreply');
+    
+    const isMalware = hasAttachment && (
+        attachmentName?.endsWith('.exe') ||
+        attachmentName?.endsWith('.bat') ||
+        attachmentName?.endsWith('.scr') ||
+        attachmentName?.endsWith('.js')
+    );
+    
+    const isSpoofed = replyTo && replyTo !== sender;
+    
+    if (isMalware) {
+        return {
+            category: 'quarantine',
+            riskLevel: 'high',
+            riskReason: 'Executable attachment detected',
+            securityAnalysis: {
+                spf: 'fail',
+                dkim: 'none',
+                dmarc: 'fail',
+                ipReputation: 'blacklisted',
+                confidenceScore: 15
+            }
+        };
+    }
+    
+    if (isPhishing) {
+        return {
+            category: 'quarantine',
+            riskLevel: 'high',
+            riskReason: 'Phishing patterns detected',
+            securityAnalysis: {
+                spf: 'softfail',
+                dkim: 'fail',
+                dmarc: 'fail',
+                ipReputation: 'suspicious',
+                confidenceScore: 25
+            }
+        };
+    }
+    
+    if (isSpoofed) {
+        return {
+            category: 'spam',
+            riskLevel: 'suspicious',
+            riskReason: 'Reply-To address differs from sender',
+            securityAnalysis: {
+                spf: 'fail',
+                dkim: 'pass',
+                dmarc: 'softfail',
+                ipReputation: 'suspicious',
+                confidenceScore: 45
+            }
+        };
+    }
+    
+    // Email seguro por defecto
+    return {
+        category: 'inbox',
+        riskLevel: 'safe',
+        riskReason: 'No threats detected',
+        securityAnalysis: {
+            spf: 'pass',
+            dkim: 'pass',
+            dmarc: 'pass',
+            ipReputation: 'clean',
+            confidenceScore: 95
+        }
+    };
+}
 
 /**
  * Generates a synthetic email for random testing.

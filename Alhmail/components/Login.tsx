@@ -1,96 +1,369 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User } from '../types';
 import { db } from '../services/db';
+import { wsService } from '../services/websocketService';
+
+declare global {
+  interface Window {
+    Swal: any;
+  }
+}
 
 interface LoginProps {
-    onLogin: (user: User) => void;
+  onLogin: (user: User) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const navigate = useNavigate();
+  const API_URL = 'http://localhost:3001';
 
-    const handleGoogleLogin = async () => {
-        if (!email) {
-            alert("Por favor ingresa un correo para continuar");
-            return;
+  // Verificar estado del servidor al cargar el componente
+  useEffect(() => {
+    const checkServerStatus = async () => {
+      try {
+        // Conectar a WebSocket
+        const socket = wsService.connect();
+        
+        // Esperar a que se conecte o timeout
+        const waitForConnection = new Promise<boolean>((resolve) => {
+          const timeout = setTimeout(() => resolve(false), 3000);
+          
+          const onConnect = () => {
+            clearTimeout(timeout);
+            resolve(true);
+          };
+          
+          if (socket.connected) {
+            clearTimeout(timeout);
+            resolve(true);
+          } else {
+            socket.on('connect', onConnect);
+          }
+        });
+        
+        const connected = await waitForConnection;
+        
+        if (connected) {
+          setServerStatus('online');
+          
+          // Verificar health por WebSocket
+          try {
+            const healthData = await wsService.healthCheck();
+          } catch (healthError) {
+            // Health check por WebSocket falló, pero conexión está activa
+          }
+        } else {
+          setServerStatus('offline');
         }
-        if (!email.includes('@') || !email.includes('.')) {
-            alert("Por favor ingresa un correo válido");
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            const user = await db.login(email);
-            onLogin(user);
-        } catch (error) {
-            console.error("Login error", error);
-            alert("Error al iniciar sesión");
-        } finally {
-            setIsLoading(false);
-        }
+        
+      } catch (error) {
+        setServerStatus('offline');
+      }
     };
 
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
-            
-            <div className="mb-8 text-center animate-[fadeIn_0.5s_ease]">
-                <h1 className="text-4xl font-bold text-primary-red mb-2">Alhmail Intelligent</h1>
-                <p className="text-gray-500">Gestión de correo para ayuda humanitaria</p>
-            </div>
+    checkServerStatus();
+    
+    // Escuchar cambios de estado de conexión
+    const handleConnectionStatus = (data: { connected: boolean }) => {
+      setServerStatus(data.connected ? 'online' : 'offline');
+    };
+    
+    wsService.on('connection-status', handleConnectionStatus);
+    
+    return () => {
+      wsService.off('connection-status', handleConnectionStatus);
+    };
+  }, []);
 
-            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100 animate-[slideUp_0.4s_ease]">
-                <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i className="fas fa-user-lock text-primary-red text-2xl"></i>
-                    </div>
-                    <h2 className="text-2xl font-semibold text-gray-800">Iniciar Sesión</h2>
-                    <p className="text-sm text-gray-400 mt-1">Accede a tu cuenta institucional</p>
-                </div>
+  useEffect(() => {
+    // Cargar SweetAlert2 si no está disponible
+    if (!window.Swal) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
 
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-                        <input 
-                            type="email" 
-                            placeholder="usuario@gmail.com"
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-red focus:ring-2 focus:ring-red-100 outline-none transition-all"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-                    <button 
-                        onClick={handleGoogleLogin}
-                        disabled={isLoading}
-                        className={`
-                            w-full flex items-center justify-center gap-3 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-medium py-3 rounded-lg transition-all shadow-sm
-                            ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}
-                        `}
-                    >
-                        {isLoading ? (
-                            <i className="fas fa-circle-notch fa-spin text-primary-red"></i>
-                        ) : (
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                        )}
-                        <span>{isLoading ? 'Autenticando...' : 'Continuar con Google'}</span>
-                    </button>
-                </div>
+    try {
+      // Verificar si el servidor está conectado por WebSocket
+      const serverConnected = wsService.isConnected();
+      let serverInfo = null;
+      
+      if (serverConnected) {
+        // Obtener información del servidor
+        try {
+          serverInfo = await wsService.healthCheck();
+        } catch (healthError) {
+          // Health check por WebSocket falló, pero conexión está activa
+        }
+        
+        // Intentar login normal por HTTP (el login sigue siendo HTTP por seguridad)
+        try {
+          const user = await db.login(email, password);
+          onLogin(user);
+          navigate('/inbox');
+          
+          // Mostrar mensaje de éxito
+          if (window.Swal) {
+            await window.Swal.fire({
+              icon: 'success',
+              title: '¡Inicio de sesión exitoso!',
+              text: `Bienvenido ${user.name}`,
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+          return;
+        } catch (loginError) {
+          console.error('Error en login con servidor:', loginError);
+          setError('Error al iniciar sesión. Verifica tus credenciales.');
+          return;
+        }
+      }
 
-                <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                    <p className="text-xs text-gray-400">
-                        Este es un sistema seguro de Alhmail. <br/>
-                        Al continuar aceptas los términos de servicio.
-                    </p>
-                </div>
-            </div>
-            
-            <div className="mt-8 text-gray-400 text-sm">
-                &copy; {new Date().getFullYear()} Alhmail System
-            </div>
+      // Modo offline cuando el servidor no está conectado por WebSocket
+      if (!serverConnected) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const mockUser = {
+          id: 'offline-user',
+          name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+          email: email,
+          role: email.includes('admin') ? 'admin' : 'user' as 'admin' | 'user',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}&background=D50032&color=fff`
+        };
+
+        localStorage.setItem('alhmail_user', JSON.stringify(mockUser));
+        
+        if (window.Swal) {
+          await window.Swal.fire({
+            icon: 'warning',
+            title: 'Modo Offline',
+            html: `
+              <div>Servidor no disponible</div>
+              <small style="color: #666;">
+                ${serverInfo ? `Estado: ${serverInfo.status}` : 'No se pudo conectar por WebSocket'}
+              </small>
+              <div style="margin-top: 10px;">Iniciando sesión en modo local...</div>
+            `,
+            timer: 2500,
+            showConfirmButton: false
+          });
+        }
+
+        onLogin(mockUser);
+        navigate('/inbox');
+        return;
+      }
+
+    } catch (err) {
+      console.error('Error general en login:', err);
+      setError('Error inesperado. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!window.Swal) {
+      alert('SweetAlert2 no está disponible. Recarga la página.');
+      return;
+    }
+
+    const { value: email } = await window.Swal.fire({
+      title: 'Recuperar Contraseña',
+      text: 'Ingresa tu correo para recibir una nueva contraseña temporal.',
+      input: 'email',
+      inputPlaceholder: 'tu@correo.com',
+      showCancelButton: true,
+      confirmButtonColor: '#D50032',
+      confirmButtonText: 'Enviar',
+      cancelButtonText: 'Cancelar',
+      showLoaderOnConfirm: true,
+      preConfirm: (email) => {
+        return fetch(`${API_URL}/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        })
+          .then(response => {
+            if (!response.ok) throw new Error(response.statusText);
+            return response.json();
+          })
+          .catch(() => {
+            window.Swal.showValidationMessage('Error: No se encontró el correo');
+          });
+      },
+      allowOutsideClick: () => !window.Swal.isLoading()
+    });
+
+    if (email) {
+      await window.Swal.fire({
+        title: '¡Correo enviado!',
+        text: 'Revisa tu bandeja de entrada para ver tu nueva contraseña.',
+        icon: 'success',
+        confirmButtonColor: '#D50032'
+      });
+    }
+  };
+
+  return (
+    <div style={{
+      margin: 0,
+      padding: 0,
+      fontFamily: "'Segoe UI', sans-serif",
+      backgroundColor: '#f3f4f6',
+      height: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <div style={{
+        background: 'white',
+        padding: '40px',
+        borderRadius: '10px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        width: '100%',
+        maxWidth: '400px',
+        textAlign: 'center'
+      }}>
+        <div style={{ color: '#D50032', fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px' }}>
+          <i className="fas fa-envelope-open-text"></i> Alhmail
         </div>
-    );
+        
+        {/* Indicador de estado del servidor */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          marginBottom: '20px',
+          padding: '8px 12px',
+          borderRadius: '6px',
+          fontSize: '0.85rem',
+          backgroundColor: serverStatus === 'online' ? '#D1FAE5' : serverStatus === 'offline' ? '#FEE2E2' : '#F3F4F6',
+          color: serverStatus === 'online' ? '#065F46' : serverStatus === 'offline' ? '#991B1B' : '#6B7280'
+        }}>
+          <i className={`fas ${serverStatus === 'checking' ? 'fa-circle-notch fa-spin' : serverStatus === 'online' ? 'fa-check-circle' : 'fa-exclamation-triangle'}`}></i>
+          <span>
+            {serverStatus === 'checking' ? 'Verificando servidor...' : 
+             serverStatus === 'online' ? 'Servidor en línea' : 
+             'Modo offline disponible'}
+          </span>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#374151', fontWeight: '600', fontSize: '0.9rem' }}>
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@alhmail.com"
+              required
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: 'border 0.2s'
+              }}
+              onFocus={(e) => (e.target.style.borderColor = '#D50032')}
+              onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+            />
+          </div>
+          <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#374151', fontWeight: '600', fontSize: '0.9rem' }}>
+              Contraseña
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••"
+              required
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: 'border 0.2s'
+              }}
+              onFocus={(e) => (e.target.style.borderColor = '#D50032')}
+              onBlur={(e) => (e.target.style.borderColor = '#e5e7eb')}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              backgroundColor: '#D50032',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '1rem',
+              transition: 'background 0.2s',
+              opacity: loading ? 0.7 : 1
+            }}
+            onMouseOver={(e) => !loading && (e.currentTarget.style.backgroundColor = '#C20049')}
+            onMouseOut={(e) => !loading && (e.currentTarget.style.backgroundColor = '#D50032')}
+          >
+            {loading ? 'Conectando...' : 'Ingresar'}
+          </button>
+          {error && (
+            <div style={{ color: '#D50032', fontSize: '0.9rem', marginTop: '15px' }}>
+              {error}
+            </div>
+          )}
+
+          <a
+            type="button"
+            onClick={handleForgotPassword}
+            style={{
+              display: 'block',
+              marginTop: '15px',
+              fontSize: '0.9rem',
+              color: '#6b7280',
+              textDecoration: 'none',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.textDecoration = 'underline';
+              e.currentTarget.style.color = '#D50032';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.textDecoration = 'none';
+              e.currentTarget.style.color = '#6b7280';
+            }}
+          >
+            ¿Olvidaste tu contraseña?
+          </a>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default Login;

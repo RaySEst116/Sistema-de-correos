@@ -44,7 +44,7 @@ async function checkAvailableModels() {
             
             if (!names.includes('gemini-2.5-flash')) {
                 console.warn("\n⚠️ ATENCIÓN: 'gemini-2.5-flash' NO aparece en tu lista.");
-                console.warn("👉 Si el botón IA da error 404, cambia la línea 28 a: 'gemini-1.5-flash' o 'gemini-2.0-flash-exp'\n");
+                console.warn("Si el botón IA da error 404, cambia la línea 28 a: 'gemini-1.5-flash' o 'gemini-2.0-flash-exp'\n");
             } else {
                 console.log("✅ El modelo gemini-2.5-flash está disponible y listo para usar.");
             }
@@ -126,7 +126,7 @@ app.post('/ai/draft', async (req, res) => {
     if (!prompt) return res.status(400).json({ error: "Falta la instrucción" });
 
     try {
-        console.log("🤖 IA Procesando:", prompt);
+        console.log("IA Procesando:", prompt);
         
         const fullPrompt = `
             Eres un asistente de correo electrónico inteligente.
@@ -155,7 +155,7 @@ app.post('/ai/draft', async (req, res) => {
         res.json({ success: true, data: jsonResponse });
 
     } catch (e) {
-        console.error("❌ ERROR IA:", e.message);
+        console.error("ERROR IA:", e.message);
         res.status(500).json({ error: "La IA no pudo estructurar la respuesta." });
     }
 });
@@ -213,7 +213,7 @@ app.post('/emails', async (req, res) => {
             let finalRecipient = isSpam ? GMAIL_USER : to;
             let finalFolder = isSpam ? 'spam' : 'inbox';
 
-            if(isSpam) console.log(`🚨 SPAM detectado para ${to}. Desviando al Admin.`);
+            if(isSpam) console.log(`SPAM detectado para ${to}. Desviando al Admin.`);
 
             const [users] = await connection.query("SELECT email FROM users WHERE email = ?", [finalRecipient]);
             

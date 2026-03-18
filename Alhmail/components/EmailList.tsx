@@ -1,90 +1,236 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Email, FolderType } from '../types';
+import EmailListItem from './EmailListItem';
+import SearchBar from './SearchBar';
+import EmailToolbar from './EmailToolbar';
 
 interface EmailListProps {
-    emails: Email[];
-    folder: FolderType;
-    selectedEmailId: number | null;
-    onSelectEmail: (email: Email) => void;
-    width: number;
+  emails: Email[];
+  folder: FolderType;
+  selectedEmailId: number | null;
+  onSelectEmail: (email: Email) => void;
+  width: number;
+  onRefresh?: () => void;
+  onSort?: () => void;
+  onDeleteSelected?: (ids: number[]) => void;
+  onMarkRead?: (ids: number[]) => void;
+  currentLang?: 'es' | 'en';
+  loading?: boolean;
+  isMobile?: boolean;
 }
 
-const EmailList: React.FC<EmailListProps> = ({ emails, folder, selectedEmailId, onSelectEmail, width }) => {
-    
-    const folderTitles: Record<string, string> = {
-        'inbox': 'Bandeja de Entrada',
-        'sent': 'Enviados',
-        'drafts': 'Borradores',
-        'spam': 'Spam',
-        'trash': 'Papelera',
-        'work': 'Trabajo',
-        'personal': 'Personal',
-        'quarantine': '⚠️ Cuarentena (Amenazas Detectadas)'
-    };
+const translations = {
+  es: {
+    inbox: 'Bandeja de Entrada',
+    sent: 'Enviados',
+    drafts: 'Borradores',
+    spam: 'Spam',
+    trash: 'Papelera',
+    work: 'Trabajo',
+    personal: 'Personal',
+    quarantine: '⚠️ Cuarentena (Amenazas Detectadas)',
+    loading: 'Cargando...',
+    empty: 'Vacío',
+  },
+  en: {
+    inbox: 'Inbox',
+    sent: 'Sent',
+    drafts: 'Drafts',
+    spam: 'Spam',
+    trash: 'Trash',
+    work: 'Work',
+    personal: 'Personal',
+    quarantine: '⚠️ Quarantine (Threats Detected)',
+    loading: 'Loading...',
+    empty: 'Empty',
+  },
+};
 
+const EmailList: React.FC<EmailListProps> = ({
+  emails,
+  folder,
+  selectedEmailId,
+  onSelectEmail,
+  width,
+  onRefresh,
+  onSort,
+  onDeleteSelected,
+  onMarkRead,
+  currentLang = 'es',
+  loading = false,
+  isMobile = false,
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [lang, setLang] = useState<'es' | 'en'>('es');
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('alhmail_lang') as 'es' | 'en' || 'es';
+    setLang(savedLang);
+    const handleLangChange = (e: CustomEvent) => {
+      setLang(e.detail.lang);
+    };
+    window.addEventListener('langChanged' as any, handleLangChange);
+    return () => window.removeEventListener('langChanged' as any, handleLangChange);
+  }, []);
+
+  const t = translations[lang];
+
+  const filteredEmails = emails.filter((email) => {
+    const term = searchTerm.toLowerCase();
     return (
-        <div style={{ width: `${width}px` }} className="flex-shrink-0 flex flex-col h-full bg-white border-r border-gray-200 overflow-hidden">
-            <div className={`p-5 border-b ${folder === 'quarantine' ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'}`}>
-                <h3 className={`text-xl font-semibold ${folder === 'quarantine' ? 'text-red-700' : 'text-primary-red'}`}>
-                    {folderTitles[folder] || 'Carpeta'}
-                </h3>
-                {folder === 'quarantine' && (
-                    <p className="text-xs text-red-500 mt-1">Solo visible para administradores</p>
-                )}
-            </div>
-            
-            <div className="flex-grow overflow-y-auto">
-                {emails.length === 0 ? (
-                    <div className="p-10 text-center text-gray-400">
-                        {folder === 'quarantine' ? 'Sistema seguro. Sin amenazas.' : 'No hay correos'}
-                    </div>
-                ) : (
-                    emails.map(email => (
-                        <div 
-                            key={email.id}
-                            onClick={() => onSelectEmail(email)}
-                            className={`
-                                cursor-pointer p-4 border-b border-gray-100 border-l-4 transition-colors hover:bg-gray-50
-                                ${selectedEmailId === email.id 
-                                    ? (folder === 'quarantine' ? 'bg-red-50 border-l-red-600' : 'bg-red-50 border-l-primary-red') 
-                                    : 'border-l-transparent'}
-                                ${email.unread ? 'bg-white' : 'bg-[#f9fafb]'}
-                            `}
-                        >
-                            <div className="flex justify-between items-baseline mb-1">
-                                <h4 className={`text-sm truncate mr-2 ${email.unread ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>
-                                    {email.sender}
-                                </h4>
-                                <span className={`text-xs whitespace-nowrap ${email.unread ? 'text-gray-900 font-bold' : 'text-gray-400'}`}>
-                                    {email.date}
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center mb-1">
-                                <span className={`text-sm truncate flex-grow ${email.unread ? 'font-bold text-gray-900' : 'font-normal text-gray-600'} ${folder === 'quarantine' ? 'text-red-700' : ''}`}>
-                                    {folder === 'quarantine' && <i className="fas fa-bug text-xs mr-1"></i>}
-                                    {email.subject || '(Sin Asunto)'}
-                                </span>
-                                {email.hasAttachments && (
-                                    <i className="fas fa-paperclip text-xs text-gray-500 ml-2"></i>
-                                )}
-                            </div>
-                            <p className="text-xs text-gray-500 truncate">
-                                {email.preview}
-                            </p>
-                            {folder === 'quarantine' && (
-                                <div className="mt-1">
-                                    <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase">
-                                        {email.riskLevel}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    ))
-                )}
-            </div>
-        </div>
+      email.subject.toLowerCase().includes(term) ||
+      email.sender.toLowerCase().includes(term) ||
+      email.preview.toLowerCase().includes(term)
     );
+  });
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredEmails.map((e) => e.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleCheck = (emailId: number, checked: boolean) => {
+    const newSet = new Set(selectedIds);
+    if (checked) {
+      newSet.add(emailId);
+    } else {
+      newSet.delete(emailId);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const handleDeleteSelected = () => {
+    if (onDeleteSelected && selectedIds.size > 0) {
+      onDeleteSelected(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleMarkRead = () => {
+    if (onMarkRead && selectedIds.size > 0) {
+      onMarkRead(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
+
+  const folderTitle = t[folder] || 'Carpeta';
+
+  return (
+    <div
+      style={{
+        width: `${width}px`,
+        display: 'flex',
+        flexDirection: 'column',
+        borderRight: '1px solid var(--border-color, #e5e7eb)',
+        flexShrink: 0,
+        background: 'var(--bg-card, #ffffff)',
+      }}
+    >
+      <div
+        style={{
+          padding: '15px',
+          borderBottom: '1px solid var(--border-color, #e5e7eb)',
+          backgroundColor: 'var(--bg-card, #ffffff)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '15px',
+          }}
+        >
+          <h3
+            style={{
+              color: folder === 'quarantine' ? '#dc2626' : 'var(--primary-red, #D50032)',
+              margin: 0,
+            }}
+          >
+            {folderTitle}
+          </h3>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-muted, #6b7280)',
+                fontSize: '1.1rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: '0.2s',
+                outline: 'none',
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--border-color, #e5e7eb)';
+                e.currentTarget.style.color = 'var(--primary-red, #D50032)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+              }}
+              title="Actualizar"
+            >
+              <i className="fas fa-sync-alt"></i>
+            </button>
+          )}
+        </div>
+        <SearchBar value={searchTerm} onChange={setSearchTerm} currentLang={lang} />
+      </div>
+
+      <EmailToolbar
+        onSelectAll={handleSelectAll}
+        onDeleteSelected={handleDeleteSelected}
+        onMarkRead={handleMarkRead}
+        onSort={onSort || (() => {})}
+        hasSelected={selectedIds.size > 0}
+        currentLang={lang}
+      />
+
+      <div
+        id="emailContainer"
+        style={{
+          overflowY: 'auto',
+          flex: 1,
+        }}
+      >
+        {filteredEmails.length === 0 ? (
+          <div
+            style={{
+              padding: '40px',
+              textAlign: 'center',
+              color: 'var(--text-muted, #6b7280)',
+            }}
+          >
+            {loading ? t.loading : (searchTerm ? t.empty : t.empty)}
+          </div>
+        ) : (
+          filteredEmails.map((email) => (
+            <EmailListItem
+              key={email.id}
+              email={email}
+              isSelected={selectedEmailId === email.id}
+              isChecked={selectedIds.has(email.id)}
+              onSelect={onSelectEmail}
+              onCheck={handleCheck}
+              currentLang={lang}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default EmailList;

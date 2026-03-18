@@ -11,48 +11,148 @@ const SecurityForensics: React.FC<SecurityForensicsProps> = ({ analysis }) => {
 
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
-            case 'pass': return 'bg-green-100 text-green-800 border-green-200';
-            case 'clean': return 'bg-green-100 text-green-800 border-green-200';
-            case 'fail': return 'bg-red-100 text-red-800 border-red-200';
-            case 'blacklisted': return 'bg-red-100 text-red-800 border-red-200';
-            case 'suspicious': return 'bg-orange-100 text-orange-800 border-orange-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+            case 'pass': return { bg: '#D1FAE5', color: '#065F46', border: '#A7F3D0' };
+            case 'clean': return { bg: '#D1FAE5', color: '#065F46', border: '#A7F3D0' };
+            case 'fail': return { bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' };
+            case 'blacklisted': return { bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' };
+            case 'suspicious': return { bg: '#FED7AA', color: '#9A3412', border: '#FDBA74' };
+            default: return { bg: '#F3F4F6', color: '#374151', border: '#E5E7EB' };
         }
     };
 
+    const spfColor = getStatusColor(analysis.spf);
+    const dkimColor = getStatusColor(analysis.dkim);
+    const dmarcColor = getStatusColor(analysis.dmarc);
+    const ipColor = getStatusColor(analysis.ipReputation);
+
     return (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mt-4 font-mono text-sm">
-            <h4 className="text-gray-700 font-bold mb-3 border-b border-slate-200 pb-2 flex items-center gap-2">
+        <div style={{
+            backgroundColor: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: '0.5rem',
+            padding: '1rem',
+            marginTop: '1rem',
+            fontFamily: 'monospace',
+            fontSize: '0.875rem'
+        }}>
+            <h4 style={{
+                color: '#334155',
+                fontWeight: 'bold',
+                margin: '0 0 0.75rem 0',
+                borderBottom: '1px solid #E2E8F0',
+                paddingBottom: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+            }}>
                 <i className="fas fa-microscope"></i> Análisis Forense de Cabeceras
             </h4>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className={`border px-3 py-2 rounded flex flex-col items-center ${getStatusColor(analysis.spf)}`}>
-                    <span className="text-xs uppercase font-bold opacity-70">SPF</span>
-                    <span className="font-bold">{analysis.spf?.toUpperCase() || 'N/A'}</span>
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '1rem',
+                marginBottom: '1rem'
+            }}>
+                <div style={{
+                    border: `1px solid ${spfColor.border}`,
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '0.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    backgroundColor: spfColor.bg,
+                    color: spfColor.color
+                }}>
+                    <span style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        fontWeight: 'bold',
+                        opacity: 0.7
+                    }}>SPF</span>
+                    <span style={{ fontWeight: 'bold' }}>{analysis.spf?.toUpperCase() || 'N/A'}</span>
                 </div>
-                <div className={`border px-3 py-2 rounded flex flex-col items-center ${getStatusColor(analysis.dkim)}`}>
-                    <span className="text-xs uppercase font-bold opacity-70">DKIM</span>
-                    <span className="font-bold">{analysis.dkim?.toUpperCase() || 'N/A'}</span>
+                <div style={{
+                    border: `1px solid ${dkimColor.border}`,
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '0.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    backgroundColor: dkimColor.bg,
+                    color: dkimColor.color
+                }}>
+                    <span style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        fontWeight: 'bold',
+                        opacity: 0.7
+                    }}>DKIM</span>
+                    <span style={{ fontWeight: 'bold' }}>{analysis.dkim?.toUpperCase() || 'N/A'}</span>
                 </div>
-                <div className={`border px-3 py-2 rounded flex flex-col items-center ${getStatusColor(analysis.dmarc)}`}>
-                    <span className="text-xs uppercase font-bold opacity-70">DMARC</span>
-                    <span className="font-bold">{analysis.dmarc?.toUpperCase() || 'N/A'}</span>
+                <div style={{
+                    border: `1px solid ${dmarcColor.border}`,
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '0.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    backgroundColor: dmarcColor.bg,
+                    color: dmarcColor.color
+                }}>
+                    <span style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        fontWeight: 'bold',
+                        opacity: 0.7
+                    }}>DMARC</span>
+                    <span style={{ fontWeight: 'bold' }}>{analysis.dmarc?.toUpperCase() || 'N/A'}</span>
                 </div>
-                <div className={`border px-3 py-2 rounded flex flex-col items-center ${getStatusColor(analysis.ipReputation)}`}>
-                    <span className="text-xs uppercase font-bold opacity-70">IP REP</span>
-                    <span className="font-bold">{analysis.ipReputation?.toUpperCase() || 'N/A'}</span>
+                <div style={{
+                    border: `1px solid ${ipColor.border}`,
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '0.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    backgroundColor: ipColor.bg,
+                    color: ipColor.color
+                }}>
+                    <span style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        fontWeight: 'bold',
+                        opacity: 0.7
+                    }}>IP REP</span>
+                    <span style={{ fontWeight: 'bold' }}>{analysis.ipReputation?.toUpperCase() || 'N/A'}</span>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="flex-grow bg-gray-200 rounded-full h-2.5">
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem'
+            }}>
+                <div style={{
+                    flexGrow: 1,
+                    backgroundColor: '#E5E7EB',
+                    borderRadius: '9999px',
+                    height: '0.625rem'
+                }}>
                     <div 
-                        className={`h-2.5 rounded-full ${analysis.confidenceScore > 80 ? 'bg-green-600' : analysis.confidenceScore > 50 ? 'bg-orange-500' : 'bg-red-600'}`} 
-                        style={{ width: `${analysis.confidenceScore}%` }}
+                        style={{
+                            height: '0.625rem',
+                            borderRadius: '9999px',
+                            backgroundColor: analysis.confidenceScore > 80 ? '#059669' : analysis.confidenceScore > 50 ? '#F97316' : '#DC2626',
+                            width: `${analysis.confidenceScore}%`
+                        }} 
                     ></div>
                 </div>
-                <span className="font-bold text-gray-600 whitespace-nowrap">
+                <span style={{
+                    fontWeight: 'bold',
+                    color: '#4B5563',
+                    whiteSpace: 'nowrap'
+                }}>
                     Score: {analysis.confidenceScore}/100
                 </span>
             </div>
