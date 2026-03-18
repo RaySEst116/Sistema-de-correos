@@ -36,7 +36,6 @@ class AIHistoryService {
       const trimmedHistory = history.slice(0, this.MAX_HISTORY_ITEMS);
       
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(trimmedHistory));
-      console.log('✅ Correo guardado en historial de IA:', generatedEmail.id);
       
       return generatedEmail;
     } catch (error) {
@@ -114,7 +113,6 @@ class AIHistoryService {
       if (emailIndex >= 0) {
         history[emailIndex].used = true;
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-        console.log('✅ Correo marcado como usado:', id);
       }
     } catch (error) {
       console.error('❌ Error marcando correo como usado:', error);
@@ -127,7 +125,6 @@ class AIHistoryService {
       const history = this.getHistory();
       const filtered = history.filter(item => item.id !== id);
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
-      console.log('🗑️ Correo eliminado del historial:', id);
     } catch (error) {
       console.error('❌ Error eliminando correo del historial:', error);
     }
@@ -280,7 +277,6 @@ class AIHistoryService {
       
       if (filtered.length !== history.length) {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
-        console.log('🧹 Limpieza de historial de IA completada');
       }
     } catch (error) {
       console.error('❌ Error en limpieza de historial de IA:', error);

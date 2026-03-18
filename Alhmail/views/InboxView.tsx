@@ -11,6 +11,7 @@ import { websocketService } from '../services/websocket';
 import { autoSaveService } from '../services/autoSaveService';
 import { classifyEmailContent /*, generateSyntheticEmail */ } from '../services/geminiService'; // IA desactivada
 import { Email, FolderType, User } from '../types';
+import '../styles/components/InboxView.css';
 
 // Hook para detectar pantalla móvil
 const useIsMobile = () => {
@@ -169,7 +170,6 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
       
       if (validLocalEmails.length !== localEmailsData.length) {
         localStorage.setItem('alhmail_emails', JSON.stringify(validLocalEmails));
-        console.log(`🧹 Limpiados ${localEmailsData.length - validLocalEmails.length} correos del localStorage`);
       }
       
     } catch (error) {
@@ -226,7 +226,6 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         });
         
         if (res.ok) {
-          console.log('✅ Correo marcado como leído en la base de datos');
         } else {
           console.error('❌ Error marcando correo como leído:', res.status);
         }
@@ -245,7 +244,6 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
       
       // Actualizar localStorage
       localStorage.setItem('alhmail_emails', JSON.stringify(updated));
-      console.log('✅ Estado local actualizado - correo marcado como leído');
     }
   };
 
@@ -281,7 +279,6 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
   }) => {
     try {
       // Validar datos antes de enviar
-      console.log('📧 Enviando datos:', data);
       
       // Validar que haya destinatarios si no es borrador
       if (!data.isDraft && !data.to && !data.cc && !data.bcc) {
@@ -311,13 +308,11 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         owner_email: user.email
       };
 
-      console.log('📦 Datos preparados para enviar:', requestData);
 
       let res;
       
       // Si estamos editando un borrador existente, actualizarlo
       if (editingDraft) {
-        console.log('🔄 Actualizando borrador existente:', editingDraft.id);
         res = await fetch(`${API_URL}/emails/${editingDraft.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -325,7 +320,6 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         });
       } else {
         // Crear nuevo correo
-        console.log('➕ Creando nuevo correo');
         res = await fetch(`${API_URL}/emails`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -333,11 +327,9 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         });
       }
       
-      console.log('📡 Respuesta del servidor:', res.status);
       
       if (res.ok) {
         const result = await res.json();
-        console.log('✅ Correo guardado exitosamente:', result);
         
         const t = translations[currentLang];
         if (!window.Swal) {
@@ -618,16 +610,12 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
   const filteredEmails = emails.filter(e => e.folder === currentFolder);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-main, #f3f4f6)', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
+    <div className="inbox-view-container">
       {connecting && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          color: 'white', fontFamily: 'monospace'
-        }}>
-          <i className="fas fa-shield-virus fa-spin" style={{ fontSize: '3rem', marginBottom: '1rem', color: '#10b981' }}></i>
-          <p style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>ESTABLECIENDO TÚNEL SEGURO...</p>
-          <div style={{ fontSize: '0.75rem', color: '#10b981', opacity: 0.8, lineHeight: 1.5 }}>
+        <div className="inbox-view-connecting-overlay">
+          <i className="fas fa-shield-virus fa-spin inbox-view-connecting-icon"></i>
+          <p className="inbox-view-connecting-title">ESTABLECIENDO TÚNEL SEGURO...</p>
+          <div className="inbox-view-connecting-details">
             <p> Handshake TLS 1.3... OK</p>
             <p> Verificando Certificados... OK</p>
             <p> Escaneando Headers en busca de Spoofing... OK</p>
@@ -635,48 +623,21 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         </div>
       )}
 
-      {/* Mobile menu toggle */}
-      {isMobile && (
+      {/* Mobile menu toggle - REMOVED since it's now in EmailList */}
+      {/* {isMobile && (
         <button
-          className="mobile-menu-toggle"
+          className="inbox-view-mobile-menu-toggle"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            position: 'fixed',
-            top: '15px',
-            left: '15px',
-            zIndex: 1001,
-            background: 'var(--primary-red, #D50032)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '10px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
         >
           <i className="fas fa-bars"></i>
         </button>
-      )}
+      )} */}
 
       {/* Sidebar overlay for mobile */}
       {isMobile && sidebarOpen && (
         <div 
-          className="sidebar-overlay mobile-open"
+          className="inbox-view-sidebar-overlay"
           onClick={() => setSidebarOpen(false)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
-            zIndex: 998,
-            display: 'block'
-          }}
         />
       )}
 
@@ -696,19 +657,16 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         isOpen={sidebarOpen}
       />
 
-      <main style={{
-        flex: 1, display: 'flex', background: 'var(--bg-card, #ffffff)',
-        margin: isMobile ? '0' : '12px', borderRadius: isMobile ? '0' : '12px',
-        boxShadow: isMobile ? 'none' : '0 2px 8px rgba(0,0,0,0.08)',
-        border: isMobile ? 'none' : '1px solid var(--border-color, #e5e7eb)', overflow: 'hidden', position: 'relative'
-      }}>
+      <main className="inbox-view-main">
         {/* Email List - siempre visible en mobile, o a la izquierda en desktop */}
-        <div className={isMobile ? 'email-list-container' : ''} style={{
-          display: isMobile && emailDetailOpen ? 'none' : 'flex',
-          flexDirection: 'column',
-          width: isMobile ? '100%' : `${listWidth}px`,
-          flexShrink: 0
-        }}>
+        <div className={`inbox-view-email-list-container ${isMobile && emailDetailOpen ? 'hidden' : ''}`}
+          style={{
+            display: isMobile && emailDetailOpen ? 'none' : 'flex',
+            flexDirection: 'column',
+            width: isMobile ? '100%' : `${listWidth}px`,
+            flexShrink: 0
+          }}
+        >
           <EmailList
             emails={filteredEmails}
             folder={currentFolder}
@@ -721,6 +679,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
             currentLang={currentLang}
             loading={loading}
             isMobile={isMobile}
+            onMobileMenuToggle={() => setSidebarOpen(!sidebarOpen)}
           />
         </div>
 
@@ -728,24 +687,26 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
         {!isMobile && (
           <div
             onMouseDown={handleMouseDown}
-            style={{ width: '4px', background: 'var(--border-color, #e5e7eb)', cursor: 'col-resize', zIndex: 10 }}
+            className="inbox-view-resizer"
           />
         )}
 
         {/* Email Detail - overlay en mobile, panel normal en desktop */}
-        <div className={isMobile ? 'email-detail-container' : ''} style={{
-          flex: 1,
-          display: isMobile ? (emailDetailOpen ? 'flex' : 'none') : 'flex',
-          position: isMobile ? 'fixed' : 'relative',
-          top: isMobile ? 0 : 'auto',
-          left: isMobile ? 0 : 'auto',
-          right: isMobile ? 0 : 'auto',
-          bottom: isMobile ? 0 : 'auto',
-          zIndex: isMobile ? 1002 : 'auto',
-          background: 'var(--bg-card, #ffffff)',
-          transform: isMobile && emailDetailOpen ? 'translateX(0)' : (isMobile ? 'translateX(100%)' : 'none'),
-          transition: isMobile ? 'transform 0.3s ease' : 'none'
-        }}>
+        <div className={`inbox-view-email-detail-container ${isMobile && emailDetailOpen ? 'open' : ''}`}
+          style={{
+            flex: 1,
+            display: isMobile ? (emailDetailOpen ? 'flex' : 'none') : 'flex',
+            position: isMobile ? 'fixed' : 'relative',
+            top: isMobile ? 0 : 'auto',
+            left: isMobile ? 0 : 'auto',
+            right: isMobile ? 0 : 'auto',
+            bottom: isMobile ? 0 : 'auto',
+            zIndex: isMobile ? 1002 : 'auto',
+            background: 'var(--bg-card, #ffffff)',
+            transform: isMobile && emailDetailOpen ? 'translateX(0)' : (isMobile ? 'translateX(100%)' : 'none'),
+            transition: isMobile ? 'transform 0.3s ease' : 'none'
+          }}
+        >
           <EmailDetail
             email={selectedEmail}
             onAdminAction={handleAdminAction}

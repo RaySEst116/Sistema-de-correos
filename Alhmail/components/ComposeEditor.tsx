@@ -134,7 +134,6 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
     quill.on('selection-change', (range) => {
       if (range) {
         // El editor tiene foco
-        console.log('✅ Quill editor tiene foco');
       }
     });
     
@@ -153,7 +152,6 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
       quill.focus();
     }, 100);
     
-    console.log('✅ Quill editor inicializado correctamente');
   };
 
   // Actualizar Quill cuando body cambia externamente
@@ -321,7 +319,7 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '100%', overflow: 'hidden', padding: '0' }}>
       <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '2px', alignItems: 'center', position: 'relative' }}>
-        <label style={{ color: 'var(--text-muted, #6b7280)', fontWeight: '600', fontSize: '0.9rem', marginRight: '10px', minWidth: '35px' }}>
+        <label style={{ color: 'var(--text-muted, #6b7280)', fontWeight: '600', fontSize: '0.9rem', marginLeft: '8px', minWidth: '35px' }}>
           {t.from}
         </label>
         <input
@@ -342,7 +340,7 @@ const ComposeEditor: React.FC<ComposeEditorProps> = ({
       </div>
 
       <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color, #e5e7eb)', marginBottom: '2px', alignItems: 'flex-start', padding: '5px 0', position: 'relative' }}>
-        <label style={{ color: 'var(--text-muted, #6b7280)', fontWeight: '600', fontSize: '0.9rem', marginRight: '10px', minWidth: '35px', marginTop: '8px' }}>
+        <label style={{ color: 'var(--text-muted, #6b7280)', fontWeight: '600', fontSize: '0.9rem', marginLeft: '8px', minWidth: '35px', marginTop: '8px' }}>
           {t.to}
         </label>
         <div

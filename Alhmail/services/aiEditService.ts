@@ -23,7 +23,6 @@ class AIEditService {
   // Mejorar el contenido existente
   async improveContent(request: EditRequest): Promise<EditResult> {
     try {
-      console.log('🔧 Enviando petición de edición a IA:', request.type);
 
       const response = await fetch(this.API_URL, {
         method: 'POST',
@@ -43,7 +42,6 @@ class AIEditService {
         throw new Error(result.error || 'Error en la edición de IA');
       }
 
-      console.log('✅ Edición completada:', result.data);
       return result.data;
     } catch (error) {
       console.error('❌ Error en improveContent:', error);

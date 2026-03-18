@@ -6,6 +6,7 @@ import { User } from '../types';
 import ComposeEditor from './ComposeEditor';
 import AttachmentsList from './AttachmentsList';
 import AIHistoryModal from './AIHistoryModal';
+import '../styles/components/ComposeModal.css';
 
 interface Attachment {
   filename: string;
@@ -238,7 +239,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
 
   // Modificar handleAiGenerate para guardar en historial
   const handleAiGenerate = async () => { 
-    console.log('🤖 Botón IA presionado');
     setIsGenerating(true);
     
     // Marcar como en proceso de generación
@@ -250,7 +250,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
       setIsGenerating(false);
       return;
     }
-    console.log('✅ SweetAlert2 disponible, mostrando modal');
     
     const { value: prompt, isConfirmed } = await window.Swal.fire({
       title: '✨ Redactor Inteligente',
@@ -272,7 +271,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
     });
 
     if (isConfirmed && prompt) {
-      console.log('📝 Prompt recibido:', prompt);
       
       // Mostrar modal de carga
       const loadingModal = window.Swal.fire({
@@ -288,7 +286,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
       });
 
       try {
-        console.log('🔗 Enviando petición a /ai/draft');
         
         const res = await fetch(`http://localhost:3001/ai/draft`, {
           method: 'POST',
@@ -299,10 +296,8 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
           }),
         });
         
-        console.log('📡 Respuesta recibida:', res.status);
         
         const response = await res.json();
-        console.log('📄 Datos recibidos:', response);
 
         // Cerrar modal de carga
         loadingModal.close();
@@ -312,15 +307,12 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
           
           if (aiSubject) {
             setSubject(aiSubject);
-            console.log('📋 Asunto establecido:', aiSubject);
           }
           if (aiTo) {
             setTo([aiTo]);
-            console.log('📤 Destinatario establecido:', aiTo);
           }
           if (aiBody) {
             setBody(aiBody);
-            console.log('📄 Cuerpo establecido');
           }
           
           // Guardar en historial de IA
@@ -338,7 +330,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
               tags
             });
             
-            console.log('💾 Correo guardado en historial de IA');
           } catch (error) {
             console.error('❌ Error guardando en historial:', error);
           }
@@ -366,7 +357,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
         });
       }
     } else {
-      console.log('❌ Usuario canceló el prompt');
     }
     
     setIsGenerating(false);
@@ -618,7 +608,6 @@ const ComposeModal: React.FC<ComposeModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  console.log('🤖 Botón IA clickeado desde ComposeModal');
                   handleAiGenerate();
                 }}
                 style={{

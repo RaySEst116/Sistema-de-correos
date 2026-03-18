@@ -1,0 +1,328 @@
+/* Sidebar Component Styles */
+
+.sidebar {
+    background: var(--bg-sidebar, #ffffff);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;
+    border-right: 1px solid var(--border-color, #e5e7eb);
+    transition: 0.3s;
+    z-index: 100;
+    flex-shrink: 0;
+    position: relative;
+    left: auto;
+    transform: none;
+    height: auto;
+    box-shadow: none;
+}
+
+/* Desktop States */
+@media (min-width: 769px) {
+    .sidebar {
+        width: 250px;
+    }
+    
+    .sidebar.collapsed {
+        width: 80px;
+        padding: 20px 5px;
+    }
+}
+
+/* Mobile States */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 250px;
+        padding: 20px 10px;
+        border-right: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 1000;
+        transform: translateX(-250px);
+        transition: left 0.3s ease, transform 0.3s ease;
+        box-shadow: none;
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding: 0 10px;
+    align-items: center;
+    height: 40px;
+}
+
+.sidebar.collapsed .sidebar-header {
+    padding: 0 5px;
+    justify-content: center;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-red, #D50032);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .logo-text {
+    display: none;
+}
+
+/* Toggle Button */
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.4rem;
+    color: var(--text-muted, #6b7280);
+    width: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--text-main, #374151);
+}
+
+/* Hide mobile toggle in sidebar when on mobile (since we have external toggle) */
+@media (max-width: 768px) {
+    .sidebar .toggle-btn {
+        display: none;
+    }
+}
+
+/* Compose Button */
+.compose-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--primary-red, #D50032);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.compose-btn:hover {
+    background: #c20049;
+}
+
+.sidebar.collapsed .compose-btn {
+    padding: 12px;
+    font-size: 1.2rem;
+}
+
+.sidebar.collapsed .compose-btn span {
+    display: none;
+}
+
+/* Navigation */
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Nav Items */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-main, #374151);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-item:hover {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--primary-red, #D50032);
+}
+
+.nav-item.active {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--primary-red, #D50032);
+    font-weight: 600;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    background: var(--primary-red, #D50032);
+    border-radius: 2px;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 10px;
+    gap: 0;
+}
+
+.sidebar.collapsed .nav-item.active::before {
+    left: -5px;
+}
+
+.nav-item-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.nav-item-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar.collapsed .nav-item-label {
+    display: none;
+}
+
+/* Unread Badge */
+.nav-item-badge {
+    background: var(--primary-red, #D50032);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+    min-width: 18px;
+    text-align: center;
+}
+
+.sidebar.collapsed .nav-item-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 9px;
+    padding: 1px 4px;
+    min-width: 16px;
+}
+
+/* Bottom Actions */
+.sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.sidebar.collapsed .sidebar-bottom {
+    align-items: center;
+    padding-top: 10px;
+}
+
+.sidebar-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-main, #374151);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-action:hover {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--text-main, #374151);
+}
+
+.sidebar.collapsed .sidebar-action {
+    justify-content: center;
+    padding: 10px;
+    gap: 0;
+}
+
+.sidebar-action-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sidebar-action-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar.collapsed .sidebar-action-label {
+    display: none;
+}
+
+/* Theme & Lang Controls */
+.sidebar-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.sidebar.collapsed .sidebar-controls {
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-control-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 6px;
+    background: var(--bg-card, #ffffff);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: var(--text-muted, #6b7280);
+}
+
+.sidebar-control-btn:hover {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--text-main, #374151);
+}
+
+.sidebar.collapsed .sidebar-control-btn {
+    margin: 0;
+}

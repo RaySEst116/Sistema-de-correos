@@ -68,7 +68,6 @@ class AutoSaveService {
         .slice(0, 10);
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sortedDrafts));
-      console.log('✅ Borrador guardado automáticamente:', draft.id);
     } catch (error) {
       console.error('❌ Error guardando borrador:', error);
     }
@@ -97,7 +96,6 @@ class AutoSaveService {
       const drafts = this.getAllDrafts();
       const filtered = drafts.filter(d => d.id !== id);
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
-      console.log('🗑️ Borrador eliminado:', id);
     } catch (error) {
       console.error('❌ Error eliminando borrador:', error);
     }
@@ -127,7 +125,6 @@ class AutoSaveService {
       
       if (filtered.length !== drafts.length) {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
-        console.log('🧹 Limpieza de borradores antiguos completada');
       }
     } catch (error) {
       console.error('❌ Error en limpieza de borradores:', error);

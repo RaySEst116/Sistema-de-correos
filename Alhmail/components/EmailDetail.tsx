@@ -2,6 +2,7 @@
 import React from 'react';
 import { Email } from '../types';
 import SecurityForensics from './SecurityForensics';
+import '../styles/components/EmailDetail.css';
 
 interface EmailDetailProps {
     email: Email | null;

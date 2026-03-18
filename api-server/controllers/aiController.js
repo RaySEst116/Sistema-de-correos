@@ -31,7 +31,6 @@ export class AIController {
             // Generar borrador con IA
             const draft = await aiService.generateEmailDraft(prompt.trim(), senderName);
 
-            console.log('\x1b[32m%s\x1b[0m', ' Borrador generado para:', senderName || 'Usuario');
 
             res.json({
                 success: true,

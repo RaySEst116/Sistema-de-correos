@@ -1,0 +1,276 @@
+/* UserManagement Component Styles */
+
+.user-management-container {
+    padding: 24px;
+}
+
+.user-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.user-management-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-main, #374151);
+    margin: 0;
+}
+
+.user-management-add-btn {
+    background: var(--primary-red, #D50032);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+    box-shadow: 0 2px 4px rgba(213, 0, 50, 0.2);
+}
+
+.user-management-add-btn:hover {
+    background-color: #C20049;
+}
+
+/* Modal Styles */
+.user-management-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.user-management-modal {
+    background: var(--bg-card, #ffffff);
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.user-management-modal-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--text-main, #374151);
+    margin: 0 0 20px 0;
+}
+
+/* Form Styles */
+.user-management-form-group {
+    margin-bottom: 16px;
+}
+
+.user-management-form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main, #374151);
+    margin-bottom: 6px;
+}
+
+.user-management-form-input,
+.user-management-form-select {
+    width: 100%;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    background-color: var(--bg-card, #ffffff);
+    color: var(--text-main, #374151);
+    transition: border-color 0.2s;
+}
+
+.user-management-form-input:disabled {
+    background-color: var(--bg-hover, #f3f4f6);
+}
+
+.user-management-form-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.user-management-submit-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    flex: 1;
+}
+
+.user-management-submit-btn:hover {
+    background-color: #059669;
+}
+
+.user-management-cancel-btn {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    flex: 1;
+}
+
+.user-management-cancel-btn:hover {
+    background-color: #4b5563;
+}
+
+/* Table Styles */
+.user-management-table-container {
+    background: var(--bg-card, #ffffff);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color, #e5e7eb);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.user-management-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-management-table-header {
+    background: var(--bg-hover, #f3f4f6);
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.user-management-table-header th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.user-management-table-row {
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    transition: background-color 0.2s;
+}
+
+.user-management-table-row:hover {
+    background-color: var(--bg-hover, #f3f4f6);
+}
+
+.user-management-table-cell {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--text-main, #374151);
+}
+
+.user-management-table-cell.id {
+    color: var(--text-muted, #6b7280);
+    font-family: monospace;
+}
+
+.user-management-table-cell.name {
+    font-weight: 500;
+}
+
+.user-management-table-cell.email {
+    font-family: monospace;
+}
+
+.user-management-table-cell.actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Role Badge */
+.user-management-role-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.user-management-role-badge.admin {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+.user-management-role-badge.user {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+/* Action Buttons */
+.user-management-action-btn {
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: white;
+}
+
+.user-management-edit-btn {
+    background: #3b82f6;
+}
+
+.user-management-edit-btn:hover {
+    background-color: #2563eb;
+}
+
+.user-management-delete-btn {
+    background: #ef4444;
+}
+
+.user-management-delete-btn:hover {
+    background-color: #dc2626;
+}
+
+/* Empty State */
+.user-management-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted, #6b7280);
+}
+
+.user-management-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.user-management-empty-title {
+    font-size: 16px;
+    margin: 0;
+    font-weight: 500;
+}
+
+.user-management-empty-subtitle {
+    font-size: 14px;
+    margin: 8px 0 0 0;
+    opacity: 0.8;
+}

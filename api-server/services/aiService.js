@@ -13,14 +13,12 @@ class AIService {
             try {
                 this.genAI = new GoogleGenerativeAI(config.ai.geminiKey);
                 this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-                console.log('\x1b[32m%s\x1b[0m', 'Servicio IA inicializado correctamente');
             } catch (error) {
                 console.error('\x1b[31m%s\x1b[0m', 'Error inicializando IA:', error.message);
                 this.genAI = null;
                 this.model = null;
             }
         } else {
-            console.log('\x1b[33m%s\x1b[0m', 'IA desactivada - falta API Key o está deshabilitada');
         }
     }
 
@@ -34,7 +32,6 @@ class AIService {
         }
 
         try {
-            console.log('\x1b[36m%s\x1b[0m', '🤖 IA Procesando:', prompt);
 
             const fullPrompt = `
                 Eres un asistente de correo electrónico corporativo inteligente.
@@ -87,7 +84,6 @@ class AIService {
                 body: jsonResponse.body || '<p>Contenido no generado</p>'
             };
 
-            console.log('\x1b[32m%s\x1b[0m', 'Correo generado exitosamente');
             return validatedResponse;
 
         } catch (error) {

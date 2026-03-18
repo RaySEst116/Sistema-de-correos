@@ -4,6 +4,7 @@ import { Email, FolderType } from '../types';
 import EmailListItem from './EmailListItem';
 import SearchBar from './SearchBar';
 import EmailToolbar from './EmailToolbar';
+import '../styles/components/EmailList.css';
 
 interface EmailListProps {
   emails: Email[];
@@ -18,6 +19,7 @@ interface EmailListProps {
   currentLang?: 'es' | 'en';
   loading?: boolean;
   isMobile?: boolean;
+  onMobileMenuToggle?: () => void; // Nueva prop para el menú móvil
 }
 
 const translations = {
@@ -60,6 +62,7 @@ const EmailList: React.FC<EmailListProps> = ({
   currentLang = 'es',
   loading = false,
   isMobile = false,
+  onMobileMenuToggle, // Nueva prop
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -121,57 +124,24 @@ const EmailList: React.FC<EmailListProps> = ({
   const folderTitle = t[folder] || 'Carpeta';
 
   return (
-    <div
-      style={{
-        width: `${width}px`,
-        display: 'flex',
-        flexDirection: 'column',
-        borderRight: '1px solid var(--border-color, #e5e7eb)',
-        flexShrink: 0,
-        background: 'var(--bg-card, #ffffff)',
-      }}
-    >
-      <div
-        style={{
-          padding: '15px',
-          borderBottom: '1px solid var(--border-color, #e5e7eb)',
-          backgroundColor: 'var(--bg-card, #ffffff)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '15px',
-          }}
-        >
-          <h3
-            style={{
-              color: folder === 'quarantine' ? '#dc2626' : 'var(--primary-red, #D50032)',
-              margin: 0,
-            }}
-          >
+    <div className="email-list-container">
+      <div className="email-list-header">
+        <div className="email-list-header-content">
+          {isMobile && onMobileMenuToggle && (
+            <button
+              onClick={onMobileMenuToggle}
+              className="email-list-mobile-menu-btn"
+            >
+              <i className="fas fa-bars"></i>
+            </button>
+          )}
+          <h3 className={`email-list-title ${folder === 'quarantine' ? 'quarantine' : ''}`}>
             {folderTitle}
           </h3>
           {onRefresh && (
             <button
               onClick={onRefresh}
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted, #6b7280)',
-                fontSize: '1.1rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: '0.2s',
-                outline: 'none',
-              }}
+              className="email-list-refresh-btn"
               onMouseOver={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--border-color, #e5e7eb)';
                 e.currentTarget.style.color = 'var(--primary-red, #D50032)';
@@ -186,9 +156,8 @@ const EmailList: React.FC<EmailListProps> = ({
             </button>
           )}
         </div>
-        <SearchBar value={searchTerm} onChange={setSearchTerm} currentLang={lang} />
       </div>
-
+      <SearchBar value={searchTerm} onChange={setSearchTerm} currentLang={lang} />
       <EmailToolbar
         onSelectAll={handleSelectAll}
         onDeleteSelected={handleDeleteSelected}
@@ -197,23 +166,26 @@ const EmailList: React.FC<EmailListProps> = ({
         hasSelected={selectedIds.size > 0}
         currentLang={lang}
       />
-
       <div
         id="emailContainer"
-        style={{
-          overflowY: 'auto',
-          flex: 1,
-        }}
+        className="email-list-container-scroll"
       >
         {filteredEmails.length === 0 ? (
-          <div
-            style={{
-              padding: '40px',
-              textAlign: 'center',
-              color: 'var(--text-muted, #6b7280)',
-            }}
-          >
-            {loading ? t.loading : (searchTerm ? t.empty : t.empty)}
+          <div className="email-list-empty-state">
+            <i className="fas fa-inbox email-list-empty-icon"></i>
+            <div className="email-list-empty-title">
+              {loading ? t.loading : t.empty}
+            </div>
+            {!loading && (
+              <div className="email-list-empty-subtitle">
+                {folder === 'inbox' ? 'No hay correos nuevos' : 
+                 folder === 'sent' ? 'No hay correos enviados' :
+                 folder === 'drafts' ? 'No hay borradores' :
+                 folder === 'spam' ? 'No hay correos spam' :
+                 folder === 'trash' ? 'La papelera está vacía' :
+                 'No hay correos en esta carpeta'}
+              </div>
+            )}
           </div>
         ) : (
           filteredEmails.map((email) => (
