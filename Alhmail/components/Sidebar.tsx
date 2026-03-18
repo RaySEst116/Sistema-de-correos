@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FolderType } from '../types';
 import ThemeToggle from './ThemeToggle';
 import LangToggle from './LangToggle';
+import '../styles/components/Sidebar.css';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -83,62 +84,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <nav
-      className={`sidebar ${isMobile && isOpen ? 'mobile-open' : ''}`}
-      style={{
-        width: isMobile ? '250px' : (isCollapsed ? '80px' : '250px'),
-        background: 'var(--bg-sidebar, #ffffff)',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: isMobile ? '20px 10px' : (isCollapsed ? '20px 5px' : '20px 10px'),
-        borderRight: isMobile ? 'none' : '1px solid var(--border-color, #e5e7eb)',
-        transition: isMobile ? 'left 0.3s ease, transform 0.3s ease' : '0.3s',
-        zIndex: isMobile ? 1000 : 100,
-        flexShrink: 0,
-        position: isMobile ? 'fixed' : 'relative',
-        left: isMobile ? '0' : 'auto',
-        transform: isMobile ? (isOpen ? 'translateX(0)' : 'translateX(-250px)') : 'none',
-        top: isMobile ? '0' : 'auto',
-        height: isMobile ? '100vh' : 'auto',
-        boxShadow: isMobile && isOpen ? '2px 0 10px rgba(0,0,0,0.1)' : 'none',
-      }}
-    >
-      <div
-        className="sidebar-header"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: '30px',
-          padding: '0 10px',
-          alignItems: 'center',
-          height: '40px',
-        }}
-      >
+    <nav className={`sidebar ${isMobile && isOpen ? 'mobile-open' : ''} ${!isMobile && isCollapsed ? 'collapsed' : ''}`}>
+      <div className="sidebar-header">
         {!isCollapsed && (
-          <div
-            className="logo-text"
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: 'var(--primary-red, #D50032)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-            }}
-          >
+          <div className="logo-text">
             Alhmail
           </div>
         )}
         <button
           onClick={toggleSidebar}
           className="toggle-btn"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '1.4rem',
-            color: 'var(--text-muted, #6b7280)',
-            width: '40px',
-          }}
         >
           <i className="fas fa-bars"></i>
         </button>

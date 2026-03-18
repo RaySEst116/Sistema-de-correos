@@ -39,7 +39,6 @@ const db = mysql.createPool(dbConfig);
 const verifyConnection = async () => {
     try {
         const connection = await db.getConnection();
-        console.log('\x1b[32m%s\x1b[0m', 'Base de datos conectada (Pool)');
         connection.release();
         return true;
     } catch (error) {

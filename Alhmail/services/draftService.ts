@@ -162,7 +162,6 @@ class DraftService {
   // Limpiar borradores autoguardados antiguos
   cleanupOldAutoSaveDrafts(): void {
     // La limpieza se hace automáticamente en el servicio de autoguardado
-    console.log('🧹 Limpieza de borradores autoguardados manejada por autoSaveService');
   }
 
   // Verificar si un borrador necesita ser guardado permanentemente

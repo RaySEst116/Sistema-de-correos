@@ -12,7 +12,6 @@ export class HealthController {
 
     static async healthCheck(req, res) {
         try {
-            console.log('\x1b[36m%s\x1b[0m', 'Health check - Verificando conexión a BD...');
             
             // Verificar conexión a la base de datos
             const dbConnected = await verifyConnection();
@@ -31,7 +30,6 @@ export class HealthController {
                 }
             };
             
-            console.log('\x1b[32m%s\x1b[0m', 'Health check exitoso:', healthData);
             res.status(dbConnected ? 200 : 503).json(healthData);
             
         } catch (error) {

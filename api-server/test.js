@@ -10,14 +10,11 @@ const dbConfig = {
 
 async function prueba() {
     try {
-        console.log("1. Creando Pool...");
         const pool = mysql.createPool(dbConfig);
     
-        console.log("2. Intentando obtener conexión (getConnection)...");
         // Si esto falla aquí, es la librería. Si pasa, es tu server.js.
         const connection = await pool.getConnection(); 
         
-        console.log("✅ ¡ÉXITO! La conexión funciona y .getConnection() existe.");
         
         connection.release();
         process.exit(0);

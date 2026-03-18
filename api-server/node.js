@@ -31,7 +31,6 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 // Esto te dirá si el modelo "2.5" existe o si debes usar otro.
 async function checkAvailableModels() {
     try {
-        console.log("🔍 Verificando modelos disponibles para tu API Key...");
         // Hacemos una petición directa similar a tu CURL para ver qué modelos tienes
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEN_AI_KEY}`);
         const data = await response.json();
@@ -40,13 +39,11 @@ async function checkAvailableModels() {
             console.error("❌ ERROR API KEY:", data.error.message);
         } else if (data.models) {
             const names = data.models.map(m => m.name.replace('models/', ''));
-            console.log("✅ Modelos disponibles:", names.join(', '));
             
             if (!names.includes('gemini-2.5-flash')) {
                 console.warn("\n⚠️ ATENCIÓN: 'gemini-2.5-flash' NO aparece en tu lista.");
                 console.warn("Si el botón IA da error 404, cambia la línea 28 a: 'gemini-1.5-flash' o 'gemini-2.0-flash-exp'\n");
             } else {
-                console.log("✅ El modelo gemini-2.5-flash está disponible y listo para usar.");
             }
         }
     } catch (e) {
@@ -68,7 +65,6 @@ const dbConfig = {
 const db = mysql.createPool(dbConfig); 
 
 // Verificar conexión BD
-db.getConnection().then(c => { console.log('✅ BD Conectada (Pool)'); c.release(); }).catch(e => console.error('❌ Error BD:', e.message));
 const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: GMAIL_USER, pass: GMAIL_PASS } });
 
 // ==========================================
@@ -88,7 +84,6 @@ async function analyzeEmailSecurity(sender, subject, body, attachments) {
             if (rules[0].type === 'block') return { score: 100, threats: ["Remitente Bloqueado (Blacklist)"], status: "blocked", folder: "spam" };
             if (rules[0].type === 'allow') return { score: 0, threats: ["Remitente Confiable (Whitelist)"], status: "verified", folder: "inbox" };
         }
-    } catch(e) { console.log("Error consultando reglas:", e.message); }
 
     // 2. ESCANEO DE CONTENIDO
     const content = (subject + " " + body).toLowerCase();
@@ -126,7 +121,6 @@ app.post('/ai/draft', async (req, res) => {
     if (!prompt) return res.status(400).json({ error: "Falta la instrucción" });
 
     try {
-        console.log("IA Procesando:", prompt);
         
         const fullPrompt = `
             Eres un asistente de correo electrónico inteligente.
@@ -213,7 +207,6 @@ app.post('/emails', async (req, res) => {
             let finalRecipient = isSpam ? GMAIL_USER : to;
             let finalFolder = isSpam ? 'spam' : 'inbox';
 
-            if(isSpam) console.log(`SPAM detectado para ${to}. Desviando al Admin.`);
 
             const [users] = await connection.query("SELECT email FROM users WHERE email = ?", [finalRecipient]);
             
@@ -254,4 +247,3 @@ async function syncGmailInbox() {
     /* ... (Tu código IMAP igual que antes) ... */
 }
 setInterval(syncGmailInbox, 20000);
-app.listen(3001, () => console.log('🚀 Servidor Listo.'));

@@ -13,7 +13,6 @@ export class WebSocketService {
 
     setupEventHandlers() {
         this.io.on('connection', (socket) => {
-            console.log('\x1b[36m%s\x1b[0m', `WebSocket: Cliente conectado: ${socket.id}`);
             
             // Enviar estado del servidor inmediatamente
             socket.emit('server-status', {
@@ -55,7 +54,6 @@ export class WebSocketService {
             });
             
             socket.on('disconnect', () => {
-                console.log('\x1b[33m%s\x1b[0m', `WebSocket: Cliente desconectado: ${socket.id}`);
             });
         });
     }
@@ -68,7 +66,6 @@ export class WebSocketService {
             timestamp: new Date().toISOString()
         });
         
-        console.log('\x1b[32m%s\x1b[0m', `Email: Notificación enviada a ${userEmail} - Nuevo correo de ${emailData.sender}: ${emailData.subject}`);
     }
 
     // Método para emitir actualizaciones de estado

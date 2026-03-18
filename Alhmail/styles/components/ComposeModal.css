@@ -1,0 +1,276 @@
+/* ComposeModal Component Styles */
+
+.compose-modal {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 500px;
+    height: 600px;
+    background: var(--bg-card, #ffffff);
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.compose-modal.minimized {
+    height: 40px;
+}
+
+.compose-modal.maximized {
+    bottom: 0;
+    right: 0;
+    width: 95vw;
+    height: 90vh;
+    border-radius: 0;
+}
+
+/* Drag & Drop Overlay */
+.compose-modal-drag-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(59, 130, 246, 0.1);
+    border: 2px dashed #3b82f6;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.compose-modal-drag-overlay.active {
+    opacity: 1;
+}
+
+.compose-modal-drag-overlay-content {
+    text-align: center;
+    color: #3b82f6;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.compose-modal-drag-overlay-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+/* Header */
+.compose-modal-header {
+    background: var(--bg-hover, #f3f4f6);
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    cursor: move;
+}
+
+.compose-modal-title {
+    font-weight: 600;
+    color: var(--text-main, #374151);
+}
+
+.compose-modal-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.compose-modal-control-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: var(--text-muted, #6b7280);
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.compose-modal-control-btn:hover {
+    background: var(--bg-secondary, #f9fafb);
+}
+
+.compose-modal-control-btn.close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Body */
+.compose-modal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Footer */
+.compose-modal-footer {
+    padding: 10px 15px;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary, #f9fafb);
+}
+
+.compose-modal-main-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.compose-modal-send-btn {
+    background: var(--primary-red, #D50032);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.compose-modal-send-btn:hover {
+    background: #c20049;
+}
+
+.compose-modal-save-btn {
+    background: transparent;
+    color: var(--text-muted, #6b7280);
+    border: 1px solid var(--border-color, #e5e7eb);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.compose-modal-save-btn:hover {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--text-main, #374151);
+}
+
+.compose-modal-secondary-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.compose-modal-history-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.compose-modal-history-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.compose-modal-ai-btn {
+    background: linear-gradient(135deg, #8b5cf6, #d946ef);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.compose-modal-ai-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.compose-modal-attach-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    color: var(--text-muted, #6b7280);
+    transition: background-color 0.2s;
+    font-size: 16px;
+}
+
+.compose-modal-attach-btn:hover {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--text-main, #374151);
+}
+
+.compose-modal-clear-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    color: var(--text-muted, #6b7280);
+    transition: background-color 0.2s;
+    font-size: 16px;
+}
+
+.compose-modal-clear-btn:hover {
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--text-main, #374151);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .compose-modal {
+        bottom: 2.5vh;
+        right: 2.5vw;
+        width: 95vw;
+        height: 95vh;
+        border-radius: 8px;
+    }
+    
+    .compose-modal.maximized {
+        bottom: 0;
+        right: 0;
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .compose-modal-footer {
+        padding: 8px 12px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .compose-modal-main-actions,
+    .compose-modal-secondary-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}

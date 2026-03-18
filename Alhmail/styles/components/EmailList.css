@@ -1,0 +1,139 @@
+/* EmailList Component Styles */
+
+.email-list-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-secondary, #f9fafb);
+}
+
+.email-list-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    background-color: var(--bg-card, #ffffff);
+}
+
+.email-list-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Mobile Menu Button */
+.email-list-mobile-menu-btn {
+    background: var(--primary-red, #D50032);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.email-list-mobile-menu-btn:hover {
+    background: #c20049;
+}
+
+.email-list-title {
+    color: var(--primary-red, #D50032);
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+.email-list-title.quarantine {
+    color: #dc2626;
+}
+
+.email-list-refresh-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-hover, #f3f4f6);
+    color: var(--text-muted, #6b7280);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.email-list-refresh-btn:hover {
+    background: var(--primary-red, #D50032);
+    color: white;
+    transform: rotate(90deg);
+}
+
+.email-list-refresh-btn.spinning i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.email-list-container-scroll {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.email-list-empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted, #6b7280);
+}
+
+.email-list-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.email-list-empty-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+}
+
+.email-list-empty-subtitle {
+    font-size: 0.875rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .email-list-header {
+        padding: 12px;
+    }
+    
+    .email-list-title {
+        font-size: 1.125rem;
+    }
+    
+    .email-list-refresh-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .email-list-empty-state {
+        padding: 24px;
+    }
+    
+    .email-list-empty-icon {
+        font-size: 2.5rem;
+    }
+}

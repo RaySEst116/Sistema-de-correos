@@ -39,23 +39,15 @@ setWebSocketService(webSocketService);
 async function startServer() {
     try {
         // Verificar conexión a la base de datos
-        console.log('\x1b[36m%s\x1b[0m', 'Verificando conexión a la base de datos...');
         const dbConnected = await verifyConnection();
         
         if (!dbConnected) {
             console.error('\x1b[31m%s\x1b[0m', 'ERROR: No se pudo conectar a la base de datos. El servidor se iniciará pero algunas funciones pueden no estar disponibles.');
         } else {
-            console.log('\x1b[32m%s\x1b[0m', 'Base de datos conectada correctamente');
         }
         
         // Iniciar servidor
         server.listen(config.port, () => {
-            console.log('\x1b[32m%s\x1b[0m', 'Servidor iniciado exitosamente');
-            console.log('\x1b[34m%s\x1b[0m', `Puerto: ${config.port}`);
-            console.log('\x1b[36m%s\x1b[0m', 'WebSocket habilitado para comunicación en tiempo real');
-            console.log('\x1b[35m%s\x1b[0m', `CORS configurado para: ${config.cors.origin}`);
-            console.log('\x1b[33m%s\x1b[0m', `IA: ${config.ai.enabled ? 'habilitada' : 'deshabilitada'}`);
-            console.log('\x1b[37m%s\x1b[0m', '=====================================');
         });
         
         // Manejo de errores no capturados
@@ -71,17 +63,13 @@ async function startServer() {
         
         // Manejo de cierre graceful
         process.on('SIGTERM', () => {
-            console.log('\x1b[33m%s\x1b[0m', 'Recibida señal SIGTERM. Cerrando servidor...');
             server.close(() => {
-                console.log('\x1b[32m%s\x1b[0m', 'Servidor cerrado correctamente');
                 process.exit(0);
             });
         });
         
         process.on('SIGINT', () => {
-            console.log('\x1b[33m%s\x1b[0m', 'Recibida señal SIGINT. Cerrando servidor...');
             server.close(() => {
-                console.log('\x1b[32m%s\x1b[0m', 'Servidor cerrado correctamente');
                 process.exit(0);
             });
         });

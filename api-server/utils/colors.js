@@ -21,12 +21,6 @@ export const colors = {
 
 // Funciones helper para logging con colores
 export const log = {
-    success: (message) => console.log(`${colors.green}%s${colors.reset}`, message),
     error: (message) => console.error(`${colors.red}%s${colors.reset}`, message),
     warning: (message) => console.warn(`${colors.yellow}%s${colors.reset}`, message),
-    info: (message) => console.log(`${colors.cyan}%s${colors.reset}`, message),
-    server: (message) => console.log(`${colors.blue}%s${colors.reset}`, message),
-    websocket: (message) => console.log(`${colors.magenta}%s${colors.reset}`, message),
-    database: (message) => console.log(`${colors.green}%s${colors.reset}`, message),
-    highlight: (message) => console.log(`${colors.bright}${colors.white}%s${colors.reset}`, message)
 };

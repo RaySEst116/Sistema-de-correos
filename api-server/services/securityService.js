@@ -21,7 +21,6 @@ export class SecurityService {
                 }
             }
         } catch (e) {
-            console.log("Error consultando reglas:", e.message);
         }
 
         // 2. ESCANEO DE CONTENIDO
