@@ -185,7 +185,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction, onBack,
                 
                 {/* Header */}
                 <div style={{
-                    borderBottom: '1px solid #F3F4F6',
+                    borderBottom: '1px solid var(--border-color, #e5e7eb)',
                     paddingBottom: '1.5rem',
                     marginBottom: '1.5rem'
                 }}>
@@ -198,7 +198,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction, onBack,
                         <h2 style={{
                             fontSize: '1.5rem',
                             fontWeight: 'bold',
-                            color: '#111827',
+                            color: 'var(--text-main, #111827)',
                             margin: 0
                         }}>{email.subject || '(Sin Asunto)'}</h2>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -262,7 +262,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction, onBack,
                             </div>
                             <div>
                                 <h4 style={{
-                                    color: '#111827',
+                                    color: 'var(--text-main, #111827)',
                                     fontWeight: 'bold',
                                     margin: 0,
                                     display: 'flex',
@@ -285,14 +285,14 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction, onBack,
                                 </h4>
                                 <span style={{
                                     fontSize: '0.875rem',
-                                    color: '#6B7280',
+                                    color: 'var(--text-muted, #6B7280)',
                                     fontFamily: 'monospace'
                                 }}>&lt;{email.email}&gt;</span>
                             </div>
                         </div>
                         <div style={{
                             fontSize: '0.875rem',
-                            color: '#9CA3AF'
+                            color: 'var(--text-muted, #9CA3AF)'
                         }}>
                             {email.date}
                         </div>
@@ -305,7 +305,7 @@ const EmailDetail: React.FC<EmailDetailProps> = ({ email, onAdminAction, onBack,
                 {/* Body - Sanitized */}
                 <div 
                     style={{
-                        color: '#374151',
+                        color: 'var(--text-main, #374151)',
                         lineHeight: 1.625,
                         whiteSpace: 'pre-line',
                         marginBottom: '2rem',

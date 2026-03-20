@@ -702,7 +702,7 @@ const InboxView: React.FC<InboxViewProps> = ({ user, onLogout }) => {
             right: isMobile ? 0 : 'auto',
             bottom: isMobile ? 0 : 'auto',
             zIndex: isMobile ? 1002 : 'auto',
-            background: 'var(--bg-card, #ffffff)',
+            background: 'var(--bg-card)',
             transform: isMobile && emailDetailOpen ? 'translateX(0)' : (isMobile ? 'translateX(100%)' : 'none'),
             transition: isMobile ? 'transform 0.3s ease' : 'none'
           }}

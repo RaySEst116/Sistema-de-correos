@@ -48,15 +48,15 @@ const EmailListItem: React.FC<EmailListItemProps> = ({
     <div
       style={{
         padding: '15px',
-        borderBottom: '1px solid var(--border-color, #e5e7eb)',
+        borderBottom: '1px solid var(--border-color)',
         cursor: 'pointer',
         display: 'flex',
         gap: '12px',
         alignItems: 'flex-start',
         borderLeft: '4px solid transparent',
-        color: 'var(--text-muted, #6b7280)',
-        backgroundColor: isSelected ? 'var(--bg-active, #fee2e2)' : email.unread ? 'var(--bg-card, #ffffff)' : 'transparent',
-        borderLeftColor: (isSelected || email.unread) ? 'var(--primary-red, #D50032)' : 'transparent',
+        color: 'var(--text-main)',
+        backgroundColor: isSelected ? 'var(--bg-active)' : email.unread ? 'var(--bg-card)' : 'transparent',
+        borderLeftColor: (isSelected || email.unread) ? 'var(--primary-red)' : 'transparent',
       }}
       onClick={() => onSelect(email)}
     >
@@ -69,10 +69,10 @@ const EmailListItem: React.FC<EmailListItemProps> = ({
           appearance: 'none',
           width: '18px',
           height: '18px',
-          border: '2px solid var(--text-muted, #6b7280)',
+          border: '2px solid var(--text-muted)',
           borderRadius: '4px',
           cursor: 'pointer',
-          background: isChecked ? 'var(--primary-red, #D50032)' : 'var(--bg-card, #ffffff)',
+          background: isChecked ? 'var(--primary-red)' : 'var(--bg-card)',
           position: 'relative',
           flexShrink: 0,
           marginTop: '2px',
@@ -114,20 +114,20 @@ const EmailListItem: React.FC<EmailListItemProps> = ({
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2px' }}>
-          <div style={{ fontWeight: 700, color: 'var(--text-main, #374151)', fontSize: '0.95rem' }}>
+          <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>
             {rawName}
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted, #6b7280)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
             {new Date(email.date).toLocaleDateString()}
           </span>
         </div>
-        <div style={{ fontSize: '0.9rem', color: 'var(--text-main, #374151)', marginBottom: '2px' }}>
+        <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '2px' }}>
           {email.subject}
         </div>
         <div
           style={{
             fontSize: '0.8rem',
-            color: 'var(--text-muted, #6b7280)',
+            color: 'var(--text-muted)',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
