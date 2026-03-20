@@ -1,6 +1,24 @@
-version: '3.8'
-
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: alhmail-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: alhmail_security
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./api-server/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - alhmail-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   backend:
     build:
       context: ./api-server
@@ -10,8 +28,16 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=production
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=alhmail_security
+      - DB_USER=root
+      - DB_PASSWORD=
     env_file:
       - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - alhmail-network
     restart: unless-stopped
@@ -44,5 +70,7 @@ networks:
     driver: bridge
 
 volumes:
+  mysql_data:
+    driver: local
   node_modules_backend:
     driver: local
