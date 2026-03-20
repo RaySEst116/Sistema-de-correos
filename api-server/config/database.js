@@ -29,7 +29,8 @@ const dbConfig = {
     database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    family: 4
 };
 
 // Crear pool de conexiones
