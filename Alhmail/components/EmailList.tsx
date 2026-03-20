@@ -143,12 +143,12 @@ const EmailList: React.FC<EmailListProps> = ({
               onClick={onRefresh}
               className="email-list-refresh-btn"
               onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--border-color, #e5e7eb)';
-                e.currentTarget.style.color = 'var(--primary-red, #D50032)';
+                e.currentTarget.style.backgroundColor = 'var(--border-color)';
+                e.currentTarget.style.color = 'var(--primary-red)';
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+                e.currentTarget.style.color = 'var(--text-muted)';
               }}
               title="Actualizar"
             >

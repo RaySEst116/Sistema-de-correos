@@ -3,7 +3,7 @@
 .inbox-view-container {
     display: flex;
     height: 100vh;
-    background: var(--bg-main, #f3f4f6);
+    background: var(--bg-main);
     font-family: system-ui, sans-serif;
     position: relative;
 }
@@ -57,7 +57,7 @@
 .inbox-view-main {
     flex: 1;
     display: flex;
-    background: var(--bg-card, #ffffff);
+    background: var(--bg-card);
     margin: 0;
     border-radius: 0;
     box-shadow: none;
@@ -72,7 +72,7 @@
         margin: 12px;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid var(--border-color, #e5e7eb);
+        border: 1px solid var(--border-color);
     }
 }
 
@@ -100,7 +100,7 @@
     right: 0;
     bottom: 0;
     z-index: 1002;
-    background: var(--bg-card, #ffffff);
+    background: var(--bg-card);
     transform: translateX(100%);
     transition: transform 0.3s ease;
 }
@@ -127,7 +127,7 @@
 /* Resizer (Desktop only) */
 .inbox-view-resizer {
     width: 4px;
-    background: var(--border-color, #e5e7eb);
+    background: var(--border-color);
     cursor: col-resize;
     z-index: 10;
 }

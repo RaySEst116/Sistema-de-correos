@@ -38,8 +38,8 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
     <div
       style={{
         padding: '8px 15px',
-        background: 'var(--bg-hover, #f3f4f6)',
-        borderBottom: '1px solid var(--border-color, #e5e7eb)',
+        background: 'var(--bg-hover)',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
@@ -54,18 +54,18 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
           appearance: 'none',
           width: '18px',
           height: '18px',
-          border: '2px solid var(--text-muted, #6b7280)',
+          border: '2px solid var(--text-muted)',
           borderRadius: '4px',
           cursor: 'pointer',
-          background: 'var(--bg-card, #ffffff)',
+          background: 'var(--bg-card)',
           position: 'relative',
           flexShrink: 0,
         }}
         onClick={(e) => {
           const checked = (e.target as HTMLInputElement).checked;
           if (checked) {
-            (e.target as HTMLInputElement).style.background = 'var(--primary-red, #D50032)';
-            (e.target as HTMLInputElement).style.borderColor = 'var(--primary-red, #D50032)';
+            (e.target as HTMLInputElement).style.background = 'var(--primary-red)';
+            (e.target as HTMLInputElement).style.borderColor = 'var(--primary-red)';
             const after = document.createElement('span');
             after.style.position = 'absolute';
             after.style.left = '5px';
@@ -77,8 +77,8 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
             after.style.transform = 'rotate(45deg)';
             (e.target as HTMLInputElement).appendChild(after);
           } else {
-            (e.target as HTMLInputElement).style.background = 'var(--bg-card, #ffffff)';
-            (e.target as HTMLInputElement).style.borderColor = 'var(--text-muted, #6b7280)';
+            (e.target as HTMLInputElement).style.background = 'var(--bg-card)';
+            (e.target as HTMLInputElement).style.borderColor = 'var(--text-muted)';
             const after = (e.target as HTMLInputElement).querySelector('span');
             if (after) after.remove();
           }
@@ -95,7 +95,7 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
           background: 'transparent',
           border: 'none',
           cursor: hasSelected ? 'pointer' : 'not-allowed',
-          color: hasSelected ? 'var(--text-muted, #6b7280)' : 'var(--border-color, #e5e7eb)',
+          color: hasSelected ? 'var(--text-muted)' : 'var(--border-color)',
           fontSize: '1.1rem',
           display: 'inline-flex',
           alignItems: 'center',
@@ -106,14 +106,14 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
         }}
         onMouseOver={(e) => {
           if (hasSelected) {
-            e.currentTarget.style.backgroundColor = 'var(--border-color, #e5e7eb)';
-            e.currentTarget.style.color = 'var(--primary-red, #D50032)';
+            e.currentTarget.style.backgroundColor = 'var(--border-color)';
+            e.currentTarget.style.color = 'var(--primary-red)';
             e.currentTarget.style.transform = 'scale(1.05)';
           }
         }}
         onMouseOut={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
-          e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+          e.currentTarget.style.color = 'var(--text-muted)';
           e.currentTarget.style.transform = 'scale(1)';
         }}
         onMouseDown={(e) => {
@@ -136,7 +136,7 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
           background: 'transparent',
           border: 'none',
           cursor: hasSelected ? 'pointer' : 'not-allowed',
-          color: hasSelected ? 'var(--text-muted, #6b7280)' : 'var(--border-color, #e5e7eb)',
+          color: hasSelected ? 'var(--text-muted)' : 'var(--border-color)',
           fontSize: '1.1rem',
           display: 'inline-flex',
           alignItems: 'center',
@@ -147,14 +147,14 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
         }}
         onMouseOver={(e) => {
           if (hasSelected) {
-            e.currentTarget.style.backgroundColor = 'var(--border-color, #e5e7eb)';
-            e.currentTarget.style.color = 'var(--primary-red, #D50032)';
+            e.currentTarget.style.backgroundColor = 'var(--border-color)';
+            e.currentTarget.style.color = 'var(--primary-red)';
             e.currentTarget.style.transform = 'scale(1.05)';
           }
         }}
         onMouseOut={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
-          e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+          e.currentTarget.style.color = 'var(--text-muted)';
           e.currentTarget.style.transform = 'scale(1)';
         }}
         onMouseDown={(e) => {
@@ -176,7 +176,7 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
           background: 'transparent',
           border: 'none',
           cursor: 'pointer',
-          color: 'var(--text-muted, #6b7280)',
+          color: 'var(--text-muted)',
           fontSize: '1.1rem',
           display: 'inline-flex',
           alignItems: 'center',
@@ -185,13 +185,13 @@ const EmailToolbar: React.FC<EmailToolbarProps> = ({
           outline: 'none',
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--border-color, #e5e7eb)';
-          e.currentTarget.style.color = 'var(--primary-red, #D50032)';
+          e.currentTarget.style.backgroundColor = 'var(--border-color)';
+          e.currentTarget.style.color = 'var(--primary-red)';
           e.currentTarget.style.transform = 'scale(1.05)';
         }}
         onMouseOut={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
-          e.currentTarget.style.color = 'var(--text-muted, #6b7280)';
+          e.currentTarget.style.color = 'var(--text-muted)';
           e.currentTarget.style.transform = 'scale(1)';
         }}
         onMouseDown={(e) => {

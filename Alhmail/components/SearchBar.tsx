@@ -30,7 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           left: '10px',
           top: '50%',
           transform: 'translateY(-50%)',
-          color: 'var(--text-muted, #6b7280)',
+          color: 'var(--text-muted)',
         }}
       />
       <input
@@ -41,10 +41,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
         style={{
           width: '100%',
           padding: '8px 10px 8px 35px',
-          border: '1px solid var(--border-color, #e5e7eb)',
+          border: '1px solid var(--border-color)',
           borderRadius: '6px',
-          background: 'var(--input-bg, #f9fafb)',
-          color: 'var(--text-main, #374151)',
+          background: 'var(--input-bg)',
+          color: 'var(--text-main)',
           outline: 'none',
         }}
       />

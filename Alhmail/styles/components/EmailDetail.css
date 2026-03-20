@@ -3,7 +3,7 @@
 .email-detail-container {
     flex-grow: 1;
     height: 100%;
-    background-color: var(--bg-card, #FFFFFF);
+    background-color: var(--bg-card);
     overflow-y: auto;
 }
 
@@ -15,7 +15,7 @@
     align-items: center;
     justify-content: center;
     color: #9CA3AF;
-    background-color: var(--bg-card, #FFFFFF);
+    background-color: var(--bg-card);
 }
 
 .email-detail-empty-icon {
@@ -35,7 +35,7 @@
     position: sticky;
     top: 0;
     left: 0;
-    background: var(--bg-card, #FFFFFF);
+    background: var(--bg-card);
     border: none;
     padding: 12px 16px;
     border-radius: 0;

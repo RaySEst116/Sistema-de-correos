@@ -1,4 +1,19 @@
 {
+  "name": "sistema-de-correos",
+  "version": "1.0.0",
+  "description": "Email system with frontend and backend",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd Alhmail && npm run dev",
+    "dev:backend": "cd api-server && npm run dev",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:frontend": "cd Alhmail && npm run build && npm run preview",
+    "start:backend": "cd api-server && npm start",
+    "install:all": "npm install && cd Alhmail && npm install && cd ../api-server && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "mysql2": "^3.15.3",

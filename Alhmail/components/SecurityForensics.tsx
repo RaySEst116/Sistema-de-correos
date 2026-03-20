@@ -11,13 +11,39 @@ const SecurityForensics: React.FC<SecurityForensicsProps> = ({ analysis }) => {
 
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
-            case 'pass': return { bg: '#D1FAE5', color: '#065F46', border: '#A7F3D0' };
-            case 'clean': return { bg: '#D1FAE5', color: '#065F46', border: '#A7F3D0' };
-            case 'fail': return { bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' };
-            case 'blacklisted': return { bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' };
-            case 'suspicious': return { bg: '#FED7AA', color: '#9A3412', border: '#FDBA74' };
-            default: return { bg: '#F3F4F6', color: '#374151', border: '#E5E7EB' };
+            case 'pass': 
+            case 'clean':
+                return { 
+                    bg: 'var(--success-bg)', 
+                    color: 'var(--success-text)', 
+                    border: 'var(--success-border)' 
+                };
+            case 'fail': 
+            case 'blacklisted':
+                return { 
+                    bg: 'var(--danger-bg)', 
+                    color: 'var(--danger-text)', 
+                    border: 'var(--danger-border)' 
+                };
+            case 'suspicious':
+                return { 
+                    bg: 'var(--warning-bg)', 
+                    color: 'var(--warning-text)', 
+                    border: 'var(--warning-border)' 
+                };
+            default:
+                return { 
+                    bg: 'var(--bg-card)', 
+                    color: 'var(--text-main)', 
+                    border: 'var(--border-color)' 
+                };
         }
+    };
+
+    const getScoreColor = (score: number) => {
+        if (score > 80) return 'var(--score-high)';
+        if (score > 50) return 'var(--score-medium)';
+        return 'var(--score-low)';
     };
 
     const spfColor = getStatusColor(analysis.spf);
@@ -27,8 +53,8 @@ const SecurityForensics: React.FC<SecurityForensicsProps> = ({ analysis }) => {
 
     return (
         <div style={{
-            backgroundColor: '#F8FAFC',
-            border: '1px solid #E2E8F0',
+            backgroundColor: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
             borderRadius: '0.5rem',
             padding: '1rem',
             marginTop: '1rem',
@@ -36,10 +62,10 @@ const SecurityForensics: React.FC<SecurityForensicsProps> = ({ analysis }) => {
             fontSize: '0.875rem'
         }}>
             <h4 style={{
-                color: '#334155',
+                color: 'var(--text-main)',
                 fontWeight: 'bold',
                 margin: '0 0 0.75rem 0',
-                borderBottom: '1px solid #E2E8F0',
+                borderBottom: '1px solid var(--border-color)',
                 paddingBottom: '0.5rem',
                 display: 'flex',
                 alignItems: 'center',
@@ -135,7 +161,7 @@ const SecurityForensics: React.FC<SecurityForensicsProps> = ({ analysis }) => {
             }}>
                 <div style={{
                     flexGrow: 1,
-                    backgroundColor: '#E5E7EB',
+                    backgroundColor: 'var(--border-color)',
                     borderRadius: '9999px',
                     height: '0.625rem'
                 }}>
@@ -143,14 +169,14 @@ const SecurityForensics: React.FC<SecurityForensicsProps> = ({ analysis }) => {
                         style={{
                             height: '0.625rem',
                             borderRadius: '9999px',
-                            backgroundColor: analysis.confidenceScore > 80 ? '#059669' : analysis.confidenceScore > 50 ? '#F97316' : '#DC2626',
+                            backgroundColor: getScoreColor(analysis.confidenceScore),
                             width: `${analysis.confidenceScore}%`
                         }} 
                     ></div>
                 </div>
                 <span style={{
                     fontWeight: 'bold',
-                    color: '#4B5563',
+                    color: 'var(--text-muted)',
                     whiteSpace: 'nowrap'
                 }}>
                     Score: {analysis.confidenceScore}/100
